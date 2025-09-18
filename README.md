@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Portfolio Website
 
 A modern, minimalist portfolio website inspired by the clean design aesthetic of zhile-huang.com. Built with vanilla HTML, CSS, and JavaScript for optimal performance and accessibility.
@@ -105,3 +106,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 Built with ❤️ for modern web development
+=======
+# portfolio
+portfolio of tracy 
+>>>>>>> 20e1ed2ee6d95b42506f803bfc43425d1f6246ff
