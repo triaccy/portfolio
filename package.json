@@ -1,0 +1,36 @@
+{
+  "name": "portfolio-website",
+  "version": "1.0.0",
+  "description": "A modern, minimalist portfolio website built with HTML, CSS, and JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "http-server dist -p 3000",
+    "lint": "eslint . --ext .js,.html --fix",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "portfolio",
+    "website",
+    "html",
+    "css",
+    "javascript",
+    "responsive",
+    "minimalist"
+  ],
+  "author": "Tracy",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "http-server": "^14.1.1",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/triaccy/portfolio.git"
+  },
+  "homepage": "https://triaccy.github.io/portfolio"
+}

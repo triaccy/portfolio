@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="#home">Your Name</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#work" class="nav-link">Work</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Your Name</h1>
+                <p class="hero-subtitle">Creative Developer & Designer</p>
+                <div class="hero-description">
+                    <p>Building digital experiences that matter</p>
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <div class="scroll-arrow"></div>
+            </div>
+        </section>
+
+        <section id="work" class="work">
+            <div class="container">
+                <h2 class="section-title">Selected Work</h2>
+                <div class="projects-grid">
+                    <div class="project-card" data-project="1">
+                        <div class="project-image">
+                            <div class="project-placeholder">
+                                <span>Project 1</span>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">E-commerce Platform</h3>
+                            <p class="project-description">A modern e-commerce solution built with React and Node.js</p>
+                            <div class="project-tags">
+                                <span class="tag">React</span>
+                                <span class="tag">Node.js</span>
+                                <span class="tag">MongoDB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card" data-project="2">
+                        <div class="project-image">
+                            <div class="project-placeholder">
+                                <span>Project 2</span>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">Mobile App Design</h3>
+                            <p class="project-description">UI/UX design for a productivity mobile application</p>
+                            <div class="project-tags">
+                                <span class="tag">Figma</span>
+                                <span class="tag">UI/UX</span>
+                                <span class="tag">Prototyping</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-card" data-project="3">
+                        <div class="project-image">
+                            <div class="project-placeholder">
+                                <span>Project 3</span>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">Data Visualization</h3>
+                            <p class="project-description">Interactive dashboard for analytics and reporting</p>
+                            <div class="project-tags">
+                                <span class="tag">D3.js</span>
+                                <span class="tag">Python</span>
+                                <span class="tag">Data Science</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2 class="section-title">About Me</h2>
+                        <p class="about-description">
+                            I'm a passionate developer and designer with over 5 years of experience creating 
+                            digital solutions that bridge the gap between technology and human needs. 
+                            I specialize in full-stack development, UI/UX design, and creating 
+                            meaningful user experiences.
+                        </p>
+                        <p class="about-description">
+                            When I'm not coding, you can find me exploring new technologies, 
+                            contributing to open source projects, or sharing knowledge with the community.
+                        </p>
+                        <div class="skills">
+                            <h3>Skills</h3>
+                            <div class="skills-grid">
+                                <div class="skill-category">
+                                    <h4>Frontend</h4>
+                                    <ul>
+                                        <li>React</li>
+                                        <li>Vue.js</li>
+                                        <li>TypeScript</li>
+                                        <li>CSS/SCSS</li>
+                                    </ul>
+                                </div>
+                                <div class="skill-category">
+                                    <h4>Backend</h4>
+                                    <ul>
+                                        <li>Node.js</li>
+                                        <li>Python</li>
+                                        <li>PostgreSQL</li>
+                                        <li>MongoDB</li>
+                                    </ul>
+                                </div>
+                                <div class="skill-category">
+                                    <h4>Design</h4>
+                                    <ul>
+                                        <li>Figma</li>
+                                        <li>Adobe Creative Suite</li>
+                                        <li>Prototyping</li>
+                                        <li>User Research</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="contact-content">
+                    <p class="contact-description">
+                        I'm always interested in new opportunities and exciting projects. 
+                        Let's discuss how we can work together.
+                    </p>
+                    <div class="contact-links">
+                        <a href="mailto:your.email@example.com" class="contact-link">
+                            <span class="contact-icon">✉</span>
+                            your.email@example.com
+                        </a>
+                        <a href="https://linkedin.com/in/yourprofile" class="contact-link" target="_blank">
+                            <span class="contact-icon">💼</span>
+                            LinkedIn
+                        </a>
+                        <a href="https://github.com/yourusername" class="contact-link" target="_blank">
+                            <span class="contact-icon">🐙</span>
+                            GitHub
+                        </a>
+                        <a href="https://twitter.com/yourusername" class="contact-link" target="_blank">
+                            <span class="contact-icon">🐦</span>
+                            Twitter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Your Name. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
