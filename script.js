@@ -48,30 +48,46 @@
     });
   }
 
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
   function createTopicLinks(topics, anchorX, anchorY) {
     // Clear existing topic links
     topicsLayer.innerHTML = '';
     
-    topics.forEach((topic, idx) => {
+    const rect = container.getBoundingClientRect();
+    const margin = 12;
+
+    topics.forEach(() => {
       const link = document.createElement('a');
       link.className = 'topic-link';
-      link.textContent = topic;
-      link.href = `#${topic}`;
-      
-      // Position topics around the hovered year
-      const angle = (idx / topics.length) * Math.PI * 2;
-      const radius = 80;
-      const x = anchorX + Math.cos(angle) * radius;
-      const y = anchorY + Math.sin(angle) * radius;
-      
-      link.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      link.href = '#';
+
+      // Random nearby polar placement
+      const baseRadius = 60 + Math.random() * 60; // 60-120px
+      const angle = Math.random() * Math.PI * 2;  // 0-360 deg
+      const jitterR = (Math.random() - 0.5) * 20; // ±20px
+      const r = baseRadius + jitterR;
+
+      let x = anchorX + Math.cos(angle) * r;
+      let y = anchorY + Math.sin(angle) * r;
+
+      x = clamp(Math.round(x), margin, rect.width - margin);
+      y = clamp(Math.round(y), margin, rect.height - margin);
+
+      link.style.transform = `translate(${x}px, ${y}px)`;
+      topicsLayer.appendChild(link);
+    });
+
+    // After positions are set, assign text so width doesn't affect clamping calc
+    const links = Array.from(topicsLayer.querySelectorAll('.topic-link'));
+    links.forEach((link, i) => {
+      link.textContent = topics[i];
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log(`Clicked topic: ${topic}`);
-        // Add your topic click handler here
+        console.log(`Clicked topic: ${topics[i]}`);
       });
-      
-      topicsLayer.appendChild(link);
     });
   }
 
