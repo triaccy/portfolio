@@ -6,10 +6,32 @@
     <title>Topic</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-      body { padding: 24px; }
-      .topic-title { font-size: 18px; text-decoration: underline; text-underline-offset: 4px; }
-      .back { display: inline-block; margin-top: 16px; font-size: 12px; }
-      .content { margin-top: 16px; font-size: 12px; color: var(--muted); max-width: 60ch; }
+      body { 
+        padding: 24px; 
+        max-width: 1200px; 
+        margin: 0 auto; 
+      }
+      .topic-title { 
+        font-size: 24px; 
+        text-decoration: underline; 
+        text-underline-offset: 4px; 
+        margin-bottom: 20px;
+      }
+      .back { 
+        display: inline-block; 
+        margin-bottom: 20px; 
+        font-size: 12px; 
+        color: var(--fg);
+        text-decoration: none;
+      }
+      .back:hover {
+        opacity: 0.7;
+      }
+      .content { 
+        font-size: 14px; 
+        color: var(--fg); 
+        line-height: 1.6;
+      }
       
       /* Video sizing - adjust these variables to change size */
       :root {
@@ -28,29 +50,54 @@
         height: var(--video-height);
         border-radius: 8px;
       }
+      
+      .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+      }
+      
+      .project-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 16px;
+        background: #fafafa;
+      }
+      
+      .project-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .project-description {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+      
+      .project-link {
+        font-size: 12px;
+        color: var(--accent);
+        text-decoration: none;
+      }
+      
+      .project-link:hover {
+        text-decoration: underline;
+      }
     </style>
 </head>
 <body>
-    <a class="back" href="./">← Back</a>
+    <a class="back" href="./">← Back to Portfolio</a>
     <h1 class="topic-title" id="title">Topic</h1>
     <div class="content" id="content">Loading…</div>
 
     <script>
-      (function(){
-        const params = new URLSearchParams(location.search);
-        const topic = (params.get('t') || '').trim();
-        const title = document.getElementById('title');
-        const content = document.getElementById('content');
-        if (!topic) {
-          title.textContent = 'Unknown topic';
-          content.textContent = 'No topic specified.';
-          return;
-        }
-        title.textContent = topic;
-        
-        // Special content for specific topics
-        if (topic === 'interaction') {
-          content.innerHTML = `
+      // Topic content configuration
+      const topicContent = {
+        'interaction': {
+          title: 'Interaction Design',
+          content: `
             <div class="video-container">
               <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
                       title="YouTube video player" 
@@ -59,12 +106,176 @@
                       allowfullscreen>
               </iframe>
             </div>
-            `;
-        } else {
-          content.textContent = `This is a placeholder page for "${topic}". Add your projects, text, and media here.`;
+            <p>Interactive design and user experience projects from 2025.</p>
+          `
+        },
+        'events': {
+          title: 'Events',
+          content: `
+            <p>Event design and experience projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Event Project 1</div>
+                <div class="project-description">Description of your event project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'machine': {
+          title: 'Machine Learning',
+          content: `
+            <p>Machine learning and AI projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">ML Project 1</div>
+                <div class="project-description">Description of your ML project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'conservation': {
+          title: 'Conservation',
+          content: `
+            <p>Environmental conservation and sustainability projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Conservation Project 1</div>
+                <div class="project-description">Description of your conservation project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'chemistry': {
+          title: 'Chemistry',
+          content: `
+            <p>Chemistry and scientific research projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Chemistry Project 1</div>
+                <div class="project-description">Description of your chemistry project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'biology': {
+          title: 'Biology',
+          content: `
+            <p>Biology and life sciences projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Biology Project 1</div>
+                <div class="project-description">Description of your biology project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'graphics': {
+          title: 'Graphics',
+          content: `
+            <p>Graphic design and visual communication projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Graphics Project 1</div>
+                <div class="project-description">Description of your graphics project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'installation': {
+          title: 'Installation',
+          content: `
+            <p>Installation art and spatial design projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Installation Project 1</div>
+                <div class="project-description">Description of your installation project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'architecture': {
+          title: 'Architecture',
+          content: `
+            <p>Architectural design and built environment projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Architecture Project 1</div>
+                <div class="project-description">Description of your architecture project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'web': {
+          title: 'Web Development',
+          content: `
+            <p>Web development and digital projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Web Project 1</div>
+                <div class="project-description">Description of your web project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'illustration': {
+          title: 'Illustration',
+          content: `
+            <p>Illustration and visual storytelling projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Illustration Project 1</div>
+                <div class="project-description">Description of your illustration project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        'motion': {
+          title: 'Motion Graphics',
+          content: `
+            <p>Motion graphics and animation projects.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Motion Project 1</div>
+                <div class="project-description">Description of your motion project.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        }
+      };
+
+      // Initialize page
+      (function(){
+        const params = new URLSearchParams(location.search);
+        const topic = (params.get('t') || '').trim();
+        const title = document.getElementById('title');
+        const content = document.getElementById('content');
+        
+        if (!topic) {
+          title.textContent = 'Unknown Topic';
+          content.textContent = 'No topic specified.';
+          return;
         }
         
-        document.title = `Topic — ${topic}`;
+        // Get topic data or use default
+        const topicData = topicContent[topic] || {
+          title: topic.charAt(0).toUpperCase() + topic.slice(1),
+          content: `<p>This is a placeholder page for "${topic}". Add your projects, text, and media here.</p>`
+        };
+        
+        title.textContent = topicData.title;
+        content.innerHTML = topicData.content;
+        document.title = `${topicData.title} — Portfolio`;
       })();
     </script>
 </body>
