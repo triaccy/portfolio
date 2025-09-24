@@ -57,38 +57,41 @@
     topicsLayer.innerHTML = '';
     
     const rect = container.getBoundingClientRect();
-    const margin = 12;
+    const margin = 8;
 
-    topics.forEach(() => {
+    topics.forEach((topic) => {
       const link = document.createElement('a');
       link.className = 'topic-link';
       link.href = '#';
+      link.textContent = topic;
+      topicsLayer.appendChild(link);
 
       // Random nearby polar placement
-      const baseRadius = 60 + Math.random() * 60; // 60-120px
+      const baseRadius = 70 + Math.random() * 90; // 70-160px
       const angle = Math.random() * Math.PI * 2;  // 0-360 deg
-      const jitterR = (Math.random() - 0.5) * 20; // ±20px
+      const jitterR = (Math.random() - 0.5) * 24; // ±24px
       const r = baseRadius + jitterR;
 
       let x = anchorX + Math.cos(angle) * r;
       let y = anchorY + Math.sin(angle) * r;
 
-      x = clamp(Math.round(x), margin, rect.width - margin);
-      y = clamp(Math.round(y), margin, rect.height - margin);
+      // Clamp using element size to keep fully in-bounds
+      const box = link.getBoundingClientRect();
+      const w = Math.ceil(box.width || 60);
+      const h = Math.ceil(box.height || 16);
+      x = clamp(Math.round(x), margin, rect.width - margin - w);
+      y = clamp(Math.round(y), margin, rect.height - margin - h);
 
       link.style.transform = `translate(${x}px, ${y}px)`;
-      topicsLayer.appendChild(link);
-    });
 
-    // After positions are set, assign text so width doesn't affect clamping calc
-    const links = Array.from(topicsLayer.querySelectorAll('.topic-link'));
-    links.forEach((link, i) => {
-      link.textContent = topics[i];
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log(`Clicked topic: ${topics[i]}`);
+        console.log(`Clicked topic: ${topic}`);
       });
     });
+
+    topicsLayer.classList.add('active');
+    topicsLayer.setAttribute('aria-hidden', 'false');
   }
 
   function showTopicsForAnchor(a) {
@@ -98,27 +101,39 @@
     
     nav.classList.add('fade-back');
     createTopicLinks(topics, ax, ay);
-    topicsLayer.classList.add('active');
-    topicsLayer.setAttribute('aria-hidden', 'false');
   }
 
-  function hideTopics() {
+  function clearTopics() {
     nav.classList.remove('fade-back');
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
     topicsLayer.innerHTML = '';
   }
 
+  // Hover shows topics; they remain until next hover or background click
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
     a.addEventListener('focus', () => showTopicsForAnchor(a));
-    a.addEventListener('mouseleave', hideTopics);
-    a.addEventListener('blur', hideTopics);
+  });
+
+  // Click outside topics or years clears
+  container.addEventListener('click', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (target.closest('.topic-link') || target.closest('.years a')) return;
+    clearTopics();
   });
 
   window.addEventListener('resize', () => {
     layout();
-    hideTopics();
+    // keep topics but re-clamp positions if visible
+    if (!topicsLayer.classList.contains('active')) return;
+    const firstAnchor = anchors[0];
+    if (!firstAnchor) return;
+    const ax = Number(firstAnchor.dataset.x || 0);
+    const ay = Number(firstAnchor.dataset.y || 0);
+    const texts = Array.from(topicsLayer.querySelectorAll('.topic-link')).map(l => l.textContent || '');
+    if (texts.length) createTopicLinks(texts, ax, ay);
   });
 
   window.addEventListener('load', layout);
