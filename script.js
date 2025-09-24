@@ -31,6 +31,13 @@
     return { w: Math.ceil(box.width || 60), h: Math.ceil(box.height || 16) };
   }
 
+  function sizeWebToContainer() {
+    const rect = container.getBoundingClientRect();
+    webSvg.setAttribute('width', String(Math.round(rect.width)));
+    webSvg.setAttribute('height', String(Math.round(rect.height)));
+    webSvg.setAttribute('viewBox', `0 0 ${Math.round(rect.width)} ${Math.round(rect.height)}`);
+  }
+
   function layoutYearsNoOverlap() {
     const rect = container.getBoundingClientRect();
     const margin = 15;
@@ -89,11 +96,10 @@
   }
 
   function updateWeb() {
-    // Clear lines
+    sizeWebToContainer();
     while (webSvg.firstChild) webSvg.removeChild(webSvg.firstChild);
 
-    // For each topic with 2+ nodes, draw lines connecting all pairs
-    topicMap.forEach((nodes, topic) => {
+    topicMap.forEach((nodes) => {
       if (!nodes || nodes.length < 2) return;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -142,7 +148,6 @@
       });
       created.push(link);
 
-      // Register in topic map
       const arr = topicMap.get(topic) || [];
       arr.push(link);
       topicMap.set(topic, arr);
@@ -160,7 +165,6 @@
     activeYears.add(anchor);
     nav.classList.add('fade-back');
 
-    // Build occupied with current years and existing topics
     const occupied = [];
     anchors.forEach(a => {
       const { w, h } = measureSize(a);
@@ -205,6 +209,7 @@
   });
 
   window.addEventListener('resize', () => {
+    sizeWebToContainer();
     const occupied = layoutYearsNoOverlap();
     if (activeYears.size) {
       activeYears.forEach(a => {
@@ -218,8 +223,12 @@
   });
 
   window.addEventListener('load', () => {
+    sizeWebToContainer();
     layoutYearsNoOverlap();
+    updateWeb();
   });
 
+  sizeWebToContainer();
   layoutYearsNoOverlap();
+  updateWeb();
 })();
