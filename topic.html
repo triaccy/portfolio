@@ -10,6 +10,24 @@
       .topic-title { font-size: 18px; text-decoration: underline; text-underline-offset: 4px; }
       .back { display: inline-block; margin-top: 16px; font-size: 12px; }
       .content { margin-top: 16px; font-size: 12px; color: var(--muted); max-width: 60ch; }
+      
+      /* Video sizing - adjust these variables to change size */
+      :root {
+        --video-width: 720px;
+        --video-height: 405px;
+      }
+      
+      .video-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      
+      .video-container iframe {
+        width: var(--video-width);
+        height: var(--video-height);
+        border-radius: 8px;
+      }
     </style>
 </head>
 <body>
@@ -33,17 +51,15 @@
         // Special content for specific topics
         if (topic === 'interaction') {
           content.innerHTML = `
-            <div style="margin-bottom: 20px;">
-              <iframe width="560" height="315" 
-                      src="https://www.youtube.com/embed/iZ_jGXTwNPw" 
+            <div class="video-container">
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                       allowfullscreen>
               </iframe>
             </div>
-            <p>Interactive design and user experience projects from 2025.</p>
-          `;
+            `;
         } else {
           content.textContent = `This is a placeholder page for "${topic}". Add your projects, text, and media here.`;
         }
