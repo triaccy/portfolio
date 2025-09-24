@@ -170,10 +170,13 @@
     topics.forEach(topic => {
       const link = document.createElement('a');
       link.className = 'topic-link';
-      link.href = `topic.html?t=${encodeURIComponent(topic)}`;
+      // Create unique URL with year and topic
+      const year = anchor.textContent.trim();
+      link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
       // Remove target and rel to navigate in same tab
       link.textContent = topic;
       link.dataset.topic = topic;
+      link.dataset.year = year;
       topicsLayer.appendChild(link);
       positionTopicNearNoOverlap(ax, ay, link, occupied);
       created.push(link);
