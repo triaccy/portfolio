@@ -8,11 +8,13 @@
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
   const topicsLayer = document.getElementById('topics');
-  if (!container || !nav || !topicsLayer) return;
+  const webSvg = document.getElementById('web');
+  if (!container || !nav || !topicsLayer || !webSvg) return;
 
   const anchors = Array.from(nav.querySelectorAll('a'));
   const activeYears = new Set();
   const yearToTopics = new Map(); // anchor -> Array<HTMLElement>
+  const topicMap = new Map(); // topicName -> Array<HTMLElement>
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
   function overlaps(a, b, gap = 4) {
@@ -49,7 +51,6 @@
           placed = true;
         }
       }
-      // fallback: if not placed, keep previous position
     });
 
     return occupied;
@@ -76,13 +77,53 @@
         return;
       }
     }
-    // fallback: place near anchor without overlap guarantee (rare)
     el.style.transform = `translate(${anchorX}px, ${anchorY}px)`;
     occupied.push({ left: anchorX, top: anchorY, right: anchorX + w, bottom: anchorY + h });
   }
 
+  function parseTopics(anchor) {
+    return (anchor.getAttribute('data-topics') || '')
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function updateWeb() {
+    // Clear lines
+    while (webSvg.firstChild) webSvg.removeChild(webSvg.firstChild);
+
+    // For each topic with 2+ nodes, draw lines connecting all pairs
+    topicMap.forEach((nodes, topic) => {
+      if (!nodes || nodes.length < 2) return;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const aPos = getNodePosition(a);
+          const bPos = getNodePosition(b);
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', String(aPos.x));
+          line.setAttribute('y1', String(aPos.y));
+          line.setAttribute('x2', String(bPos.x));
+          line.setAttribute('y2', String(bPos.y));
+          webSvg.appendChild(line);
+        }
+      }
+    });
+  }
+
+  function getNodePosition(el) {
+    const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform || '');
+    const rect = el.getBoundingClientRect();
+    const appRect = container.getBoundingClientRect();
+    const x = match ? Number(match[1]) : rect.left - appRect.left;
+    const y = match ? Number(match[2]) : rect.top - appRect.top;
+    const size = measureSize(el);
+    return { x: x + size.w / 2, y: y + size.h / 2 };
+  }
+
   function createTopicsForYear(anchor, occupied) {
-    const topics = (anchor.getAttribute('data-topics') || '').split(',').map(s => s.trim()).filter(Boolean);
+    const topics = parseTopics(anchor);
     const ax = Number(anchor.dataset.x || 0);
     const ay = Number(anchor.dataset.y || 0);
 
@@ -92,6 +133,7 @@
       link.className = 'topic-link';
       link.href = '#';
       link.textContent = topic;
+      link.dataset.topic = topic;
       topicsLayer.appendChild(link);
       positionTopicNearNoOverlap(ax, ay, link, occupied);
       link.addEventListener('click', (e) => {
@@ -99,10 +141,16 @@
         console.log(`Clicked topic: ${topic}`);
       });
       created.push(link);
+
+      // Register in topic map
+      const arr = topicMap.get(topic) || [];
+      arr.push(link);
+      topicMap.set(topic, arr);
     });
 
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
+    updateWeb();
     return created;
   }
 
@@ -121,11 +169,11 @@
       if (!isNaN(x) && !isNaN(y)) occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
     });
     Array.from(topicsLayer.querySelectorAll('.topic-link')).forEach(el => {
-      const box = el.getBoundingClientRect();
-      const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform || '');
-      const tx = match ? Number(match[1]) : box.left;
-      const ty = match ? Number(match[2]) : box.top;
-      occupied.push({ left: tx, top: ty, right: tx + Math.ceil(box.width), bottom: ty + Math.ceil(box.height) });
+      const pos = getNodePosition(el);
+      const { w, h } = measureSize(el);
+      const x = Math.round(pos.x - w / 2);
+      const y = Math.round(pos.y - h / 2);
+      occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
     });
 
     const els = createTopicsForYear(anchor, occupied);
@@ -136,10 +184,12 @@
     activeYears.forEach(a => a.classList.remove('active'));
     activeYears.clear();
     yearToTopics.clear();
+    topicMap.clear();
     nav.classList.remove('fade-back');
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
     topicsLayer.innerHTML = '';
+    while (webSvg.firstChild) webSvg.removeChild(webSvg.firstChild);
   }
 
   anchors.forEach(a => {
@@ -155,9 +205,7 @@
   });
 
   window.addEventListener('resize', () => {
-    // Relayout years without overlap
     const occupied = layoutYearsNoOverlap();
-    // Reposition all active topics respecting new occupied rects
     if (activeYears.size) {
       activeYears.forEach(a => {
         const ax = Number(a.dataset.x || 0);
@@ -166,12 +214,12 @@
         links.forEach(link => positionTopicNearNoOverlap(ax, ay, link, occupied));
       });
     }
+    updateWeb();
   });
 
   window.addEventListener('load', () => {
     layoutYearsNoOverlap();
   });
 
-  // Initial layout
   layoutYearsNoOverlap();
 })();
