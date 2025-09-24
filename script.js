@@ -14,66 +14,74 @@
   const activeYears = new Set();
   const yearToTopics = new Map(); // anchor -> Array<HTMLElement>
 
-  function randomPositions(count, width, height) {
-    const positions = [];
-    const margin = 40;
-    const usableWidth = width - margin * 2;
-    const usableHeight = height - margin * 2;
-    
-    for (let i = 0; i < count; i++) {
-      let attempts = 0;
-      let x, y;
-      
-      do {
-        x = margin + Math.random() * usableWidth;
-        y = margin + Math.random() * usableHeight;
-        attempts++;
-      } while (attempts < 50 && positions.some(pos => {
-        const dx = x - pos.x;
-        const dy = y - pos.y;
-        return Math.sqrt(dx * dx + dy * dy) < 60; // minimum distance
-      }));
-      
-      positions.push({ x, y });
-    }
-    return positions;
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function overlaps(a, b, gap = 4) {
+    return !(
+      a.right + gap < b.left ||
+      a.left - gap > b.right ||
+      a.bottom + gap < b.top ||
+      a.top - gap > b.bottom
+    );
   }
 
-  function layout() {
-    const rect = container.getBoundingClientRect();
-    const positions = randomPositions(anchors.length, rect.width, rect.height);
-    anchors.forEach((a, idx) => {
-      const { x, y } = positions[idx];
-      a.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-      a.dataset.x = String(Math.round(x));
-      a.dataset.y = String(Math.round(y));
-    });
+  function measureSize(el) {
+    const box = el.getBoundingClientRect();
+    return { w: Math.ceil(box.width || 60), h: Math.ceil(box.height || 16) };
   }
 
-  function clamp(val, min, max) {
-    return Math.max(min, Math.min(max, val));
-  }
-
-  function positionTopicNear(anchorX, anchorY, el) {
+  function layoutYearsNoOverlap() {
     const rect = container.getBoundingClientRect();
     const margin = 8;
-    const baseRadius = 70 + Math.random() * 90; // 70-160px
-    const angle = Math.random() * Math.PI * 2;  // 0-360 deg
-    const jitterR = (Math.random() - 0.5) * 24; // ±24px
-    const r = baseRadius + jitterR;
+    const occupied = [];
 
-    let x = anchorX + Math.cos(angle) * r;
-    let y = anchorY + Math.sin(angle) * r;
+    anchors.forEach(a => {
+      const { w, h } = measureSize(a);
+      let placed = false;
+      for (let i = 0; i < 200 && !placed; i++) {
+        const x = clamp(Math.round(Math.random() * (rect.width - w - margin * 2)) + margin, margin, rect.width - margin - w);
+        const y = clamp(Math.round(Math.random() * (rect.height - h - margin * 2)) + margin, margin, rect.height - margin - h);
+        const candidate = { left: x, top: y, right: x + w, bottom: y + h };
+        if (!occupied.some(r => overlaps(candidate, r))) {
+          a.style.transform = `translate(${x}px, ${y}px)`;
+          a.dataset.x = String(x);
+          a.dataset.y = String(y);
+          occupied.push(candidate);
+          placed = true;
+        }
+      }
+      // fallback: if not placed, keep previous position
+    });
 
-    const box = el.getBoundingClientRect();
-    const w = Math.ceil(box.width || 60);
-    const h = Math.ceil(box.height || 16);
-    x = clamp(Math.round(x), margin, rect.width - margin - w);
-    y = clamp(Math.round(y), margin, rect.height - margin - h);
-    el.style.transform = `translate(${x}px, ${y}px)`;
+    return occupied;
   }
 
-  function createTopicsForYear(anchor) {
+  function positionTopicNearNoOverlap(anchorX, anchorY, el, occupied) {
+    const rect = container.getBoundingClientRect();
+    const margin = 8;
+    const { w, h } = measureSize(el);
+
+    for (let i = 0; i < 200; i++) {
+      const baseRadius = 70 + Math.random() * 120; // 70-190px
+      const angle = Math.random() * Math.PI * 2;
+      const jitterR = (Math.random() - 0.5) * 24;
+      const r = baseRadius + jitterR;
+      let x = anchorX + Math.cos(angle) * r;
+      let y = anchorY + Math.sin(angle) * r;
+      x = clamp(Math.round(x), margin, rect.width - margin - w);
+      y = clamp(Math.round(y), margin, rect.height - margin - h);
+      const candidate = { left: x, top: y, right: x + w, bottom: y + h };
+      if (!occupied.some(r2 => overlaps(candidate, r2))) {
+        el.style.transform = `translate(${x}px, ${y}px)`;
+        occupied.push(candidate);
+        return;
+      }
+    }
+    // fallback: place near anchor without overlap guarantee (rare)
+    el.style.transform = `translate(${anchorX}px, ${anchorY}px)`;
+    occupied.push({ left: anchorX, top: anchorY, right: anchorX + w, bottom: anchorY + h });
+  }
+
+  function createTopicsForYear(anchor, occupied) {
     const topics = (anchor.getAttribute('data-topics') || '').split(',').map(s => s.trim()).filter(Boolean);
     const ax = Number(anchor.dataset.x || 0);
     const ay = Number(anchor.dataset.y || 0);
@@ -85,7 +93,7 @@
       link.href = '#';
       link.textContent = topic;
       topicsLayer.appendChild(link);
-      positionTopicNear(ax, ay, link);
+      positionTopicNearNoOverlap(ax, ay, link, occupied);
       link.addEventListener('click', (e) => {
         e.preventDefault();
         console.log(`Clicked topic: ${topic}`);
@@ -104,7 +112,24 @@
     activeYears.add(anchor);
     nav.classList.add('fade-back');
 
-    const els = createTopicsForYear(anchor);
+    // Build occupied with current years and existing topics
+    const occupied = [];
+    anchors.forEach(a => {
+      const { w, h } = measureSize(a);
+      const x = Number(a.dataset.x || 0);
+      const y = Number(a.dataset.y || 0);
+      if (!isNaN(x) && !isNaN(y)) occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
+    });
+    Array.from(topicsLayer.querySelectorAll('.topic-link')).forEach(el => {
+      const box = el.getBoundingClientRect();
+      // translate values are relative to container, approximate via current transform positions
+      const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform || '');
+      const tx = match ? Number(match[1]) : box.left;
+      const ty = match ? Number(match[2]) : box.top;
+      occupied.push({ left: tx, top: ty, right: tx + Math.ceil(box.width), bottom: ty + Math.ceil(box.height) });
+    });
+
+    const els = createTopicsForYear(anchor, occupied);
     yearToTopics.set(anchor, els);
   }
 
@@ -131,17 +156,23 @@
   });
 
   window.addEventListener('resize', () => {
-    layout();
-    if (!activeYears.size) return;
-    // Reposition all active topics near their respective active year
-    activeYears.forEach(a => {
-      const ax = Number(a.dataset.x || 0);
-      const ay = Number(a.dataset.y || 0);
-      const links = yearToTopics.get(a) || [];
-      links.forEach(link => positionTopicNear(ax, ay, link));
-    });
+    // Relayout years without overlap
+    const occupied = layoutYearsNoOverlap();
+    // Reposition all active topics respecting new occupied rects
+    if (activeYears.size) {
+      activeYears.forEach(a => {
+        const ax = Number(a.dataset.x || 0);
+        const ay = Number(a.dataset.y || 0);
+        const links = yearToTopics.get(a) || [];
+        links.forEach(link => positionTopicNearNoOverlap(ax, ay, link, occupied));
+      });
+    }
   });
 
-  window.addEventListener('load', layout);
-  layout();
+  window.addEventListener('load', () => {
+    layoutYearsNoOverlap();
+  });
+
+  // Initial layout
+  layoutYearsNoOverlap();
 })();
