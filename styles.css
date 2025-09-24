@@ -12,6 +12,7 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-12: 48px;
   --radius-2: 8px;
   --radius-3: 12px;
 }
@@ -20,6 +21,12 @@ body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, syst
 /* Layout scaffold */
 #app { min-height: 100vh; display: grid; place-items: center; padding: var(--space-8); }
 .placeholder { opacity: 0.6; color: var(--muted); font-size: 14px; letter-spacing: 0.02em; }
+
+/* Landing: Years */
+.years { display: grid; gap: var(--space-12); justify-items: center; }
+.years a { color: var(--fg); text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; font-size: clamp(24px, 3.6vw, 40px); letter-spacing: 0.01em; }
+.years a:hover { opacity: 0.7; }
+.years a:focus { outline: 2px solid var(--fg); outline-offset: 4px; }
 
 /* Utility */
 .hidden { display: none !important; }
