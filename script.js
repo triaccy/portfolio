@@ -31,7 +31,7 @@
 
   function layoutYearsNoOverlap() {
     const rect = container.getBoundingClientRect();
-    const margin = 8;
+    const margin = 15;
     const occupied = [];
 
     anchors.forEach(a => {
@@ -57,7 +57,7 @@
 
   function positionTopicNearNoOverlap(anchorX, anchorY, el, occupied) {
     const rect = container.getBoundingClientRect();
-    const margin = 8;
+    const margin = 15;
     const { w, h } = measureSize(el);
 
     for (let i = 0; i < 200; i++) {
@@ -122,7 +122,6 @@
     });
     Array.from(topicsLayer.querySelectorAll('.topic-link')).forEach(el => {
       const box = el.getBoundingClientRect();
-      // translate values are relative to container, approximate via current transform positions
       const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(el.style.transform || '');
       const tx = match ? Number(match[1]) : box.left;
       const ty = match ? Number(match[2]) : box.top;
