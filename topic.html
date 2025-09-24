@@ -19,7 +19,7 @@
       }
       .back { 
         position: fixed;
-        top: 12px;
+        bottom: 12px;
         left: 12px;
         z-index: 1000;
         font-size: 12px; 
@@ -92,7 +92,7 @@
     </style>
 </head>
 <body>
-    <a class="back" href="./">← Back to Portfolio</a>
+    <a class="back" href="./">← back</a>
     <h1 class="topic-title" id="title">Topic</h1>
     <div class="content" id="content">Loading…</div>
 
@@ -100,7 +100,7 @@
       // Topic content configuration
       const topicContent = {
         'interaction': {
-          title: 'Interaction Design',
+        
           content: `
             <div class="video-container">
               <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
@@ -110,7 +110,7 @@
                       allowfullscreen>
               </iframe>
             </div>
-            <p>Interactive design and user experience projects from 2025.</p>
+            
           `
         },
         'events': {
