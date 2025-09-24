@@ -138,6 +138,8 @@
       const link = document.createElement('a');
       link.className = 'topic-link';
       link.href = `topic.html?t=${encodeURIComponent(topic)}`;
+      link.target = '_blank';
+      link.rel = 'noopener';
       link.textContent = topic;
       link.dataset.topic = topic;
       topicsLayer.appendChild(link);
