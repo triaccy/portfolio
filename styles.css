@@ -26,13 +26,10 @@ body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, syst
 .years a { position: absolute; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; font-size: 12px; letter-spacing: 0.01em; white-space: nowrap; transition: opacity 120ms ease; }
 .years a:focus { outline: 2px solid var(--fg); outline-offset: 2px; }
 
-/* Topics hover label: two separate links */
+/* Topics: two dispersed links */
 .topics { position: absolute; inset: 0; pointer-events: none; font-size: 12px; color: var(--fg); z-index: 2; }
-.topics .label { position: absolute; background: transparent; white-space: nowrap; opacity: 0; transition: opacity 120ms ease; }
-.topics .label a { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; pointer-events: auto; }
-.topics .label .sep { margin: 0 var(--space-2); opacity: 0.7; }
-.topics .connector { position: absolute; height: 1px; background: var(--fg); transform-origin: left center; opacity: 0; transition: opacity 120ms ease; }
-.topics.active .label, .topics.active .connector { opacity: 0.9; }
+.topics .item { position: absolute; pointer-events: auto; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; opacity: 0; transition: opacity 140ms ease; white-space: nowrap; }
+.topics.active .item { opacity: 0.95; }
 
 /* Utility */
 .hidden { display: none !important; }
