@@ -96,6 +96,18 @@
       .project-link:hover {
         text-decoration: underline;
       }
+      
+      .video-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      
+      .video-container media-item {
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+      }
     </style>
 </head>
 <body>
@@ -104,38 +116,8 @@
     <div class="content">
       <p>Early spatial design and environmental interaction installations from 2021.</p>
       
-      <div class="image-gallery">
-        <div class="image-item">
-          <img src="../../images/installation-2021-1.jpg" alt="Early spatial work" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <div style="display:none; padding:20px; background:#f0f0f0; border-radius:8px; color:#666;">Image: Early spatial work<br><small>Add your image file: images/installation-2021-1.jpg</small></div>
-          <p>Early spatial work</p>
-        </div>
-        
-        <div class="image-item">
-          <img src="../../images/installation-2021-2.jpg" alt="Environmental interaction" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <div style="display:none; padding:20px; background:#f0f0f0; border-radius:8px; color:#666;">Image: Environmental interaction<br><small>Add your image file: images/installation-2021-2.jpg</small></div>
-          <p>Environmental interaction</p>
-        </div>
-        
-        <div class="image-item">
-          <img src="../../images/installation-2021-3.jpg" alt="Spatial exploration" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <div style="display:none; padding:20px; background:#f0f0f0; border-radius:8px; color:#666;">Image: Spatial exploration<br><small>Add your image file: images/installation-2021-3.jpg</small></div>
-          <p>Spatial exploration</p>
-        </div>
-      </div>
-      
-      <div class="project-grid">
-        <div class="project-card">
-          <div class="project-title">Spatial Environment Study</div>
-          <div class="project-description">Research into how people interact with transformed spaces and environmental design.</div>
-          <a href="../../project.html?id=spatial-env-2021" class="project-link">View Project →</a>
-        </div>
-        
-        <div class="project-card">
-          <div class="project-title">Interactive Environment</div>
-          <div class="project-description">Early exploration of interactive elements within spatial installations.</div>
-          <a href="../../project.html?id=interactive-env-2021" class="project-link">View Project →</a>
-        </div>
+      <div class="video-container">
+        <media-item autoplay="true" class="zoomable" disable-scroll-animation="true" hash="G1986167848255995259289520559702" limit-by="width" loop="true" muted="true" scale="100%"></media-item>
       </div>
     </div>
 </body>
