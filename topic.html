@@ -287,6 +287,84 @@
               </div>
             </div>
           `
+        },
+        '2024-machine': {
+          title: 'Machine Learning (2024)',
+          content: `
+            <p>Advanced machine learning and AI projects from 2024.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Advanced ML Project</div>
+                <div class="project-description">Cutting-edge machine learning research and applications.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        '2023-machine': {
+          title: 'Machine Learning (2023)',
+          content: `
+            <p>Early machine learning exploration and foundational projects from 2023.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Early ML Research</div>
+                <div class="project-description">Initial exploration of machine learning concepts and applications.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        '2024-conservation': {
+          title: 'Conservation (2024)',
+          content: `
+            <p>Environmental conservation and sustainability projects from 2024.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Advanced Conservation</div>
+                <div class="project-description">Advanced environmental conservation initiatives and research.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        '2023-conservation': {
+          title: 'Conservation (2023)',
+          content: `
+            <p>Early environmental conservation and sustainability projects from 2023.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Conservation Research</div>
+                <div class="project-description">Initial research into environmental conservation methods.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        '2024-chemistry': {
+          title: 'Chemistry (2024)',
+          content: `
+            <p>Advanced chemistry and scientific research projects from 2024.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Advanced Chemistry</div>
+                <div class="project-description">Advanced chemical research and applications.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
+        },
+        '2022-chemistry': {
+          title: 'Chemistry (2022)',
+          content: `
+            <p>Chemistry and scientific research projects from 2022.</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-title">Chemistry Research</div>
+                <div class="project-description">Chemical research and laboratory work.</div>
+                <a href="#" class="project-link">View Project →</a>
+              </div>
+            </div>
+          `
         }
       };
 
@@ -294,6 +372,7 @@
       (function(){
         const params = new URLSearchParams(location.search);
         const topic = (params.get('t') || '').trim();
+        const year = (params.get('y') || '').trim();
         const title = document.getElementById('title');
         const content = document.getElementById('content');
         
@@ -303,10 +382,13 @@
           return;
         }
         
+        // Create unique key for year-topic combination
+        const uniqueKey = year ? `${year}-${topic}` : topic;
+        
         // Get topic data or use default
-        const topicData = topicContent[topic] || {
-          title: topic.charAt(0).toUpperCase() + topic.slice(1),
-          content: `<p>This is a placeholder page for "${topic}". Add your projects, text, and media here.</p>`
+        const topicData = topicContent[uniqueKey] || topicContent[topic] || {
+          title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
+          content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
         };
         
         title.textContent = topicData.title;
