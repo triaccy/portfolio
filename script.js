@@ -11,6 +11,7 @@
   if (!container || !nav || !topicsLayer) return;
 
   const anchors = Array.from(nav.querySelectorAll('a'));
+  let activeYear = null;
 
   function randomPositions(count, width, height) {
     const positions = [];
@@ -94,29 +95,36 @@
     topicsLayer.setAttribute('aria-hidden', 'false');
   }
 
+  function activateYear(a) {
+    if (activeYear) activeYear.classList.remove('active');
+    activeYear = a;
+    activeYear.classList.add('active');
+    nav.classList.add('fade-back');
+  }
+
   function showTopicsForAnchor(a) {
     const topics = a.getAttribute('data-topics').split(',');
     const ax = Number(a.dataset.x || 0);
     const ay = Number(a.dataset.y || 0);
-    
-    nav.classList.add('fade-back');
+    activateYear(a);
     createTopicLinks(topics, ax, ay);
   }
 
   function clearTopics() {
+    if (activeYear) activeYear.classList.remove('active');
+    activeYear = null;
     nav.classList.remove('fade-back');
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
     topicsLayer.innerHTML = '';
   }
 
-  // Hover shows topics; they remain until next hover or background click
+  // Hover/focus sets active and persists fade; background click clears
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
     a.addEventListener('focus', () => showTopicsForAnchor(a));
   });
 
-  // Click outside topics or years clears
   container.addEventListener('click', (e) => {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
@@ -127,11 +135,9 @@
   window.addEventListener('resize', () => {
     layout();
     // keep topics but re-clamp positions if visible
-    if (!topicsLayer.classList.contains('active')) return;
-    const firstAnchor = anchors[0];
-    if (!firstAnchor) return;
-    const ax = Number(firstAnchor.dataset.x || 0);
-    const ay = Number(firstAnchor.dataset.y || 0);
+    if (!topicsLayer.classList.contains('active') || !activeYear) return;
+    const ax = Number(activeYear.dataset.x || 0);
+    const ay = Number(activeYear.dataset.y || 0);
     const texts = Array.from(topicsLayer.querySelectorAll('.topic-link')).map(l => l.textContent || '');
     if (texts.length) createTopicLinks(texts, ax, ay);
   });
