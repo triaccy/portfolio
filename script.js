@@ -17,12 +17,30 @@
   const topicMap = new Map(); // topicName -> Array<HTMLElement>
 
   // Layout tuning
-  const SAFE_MARGIN = 5;       // distance to viewport edges
+  const CANVAS_PADDING = 10;   // minimum distance from canvas edges
   const MIN_GAP = 28;          // minimum gap between any two labels (px)
   const YEAR_ATTEMPTS = 600;   // attempts to place each year
   const TOPIC_ATTEMPTS = 600;  // attempts to place each topic
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  
+  // Universal padding function for any canvas element
+  function ensureCanvasPadding(element, canvasRect) {
+    const elementRect = element.getBoundingClientRect();
+    const elementWidth = elementRect.width;
+    const elementHeight = elementRect.height;
+    
+    // Get current position
+    const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(element.style.transform || '');
+    let x = match ? Number(match[1]) : elementRect.left - canvasRect.left;
+    let y = match ? Number(match[2]) : elementRect.top - canvasRect.top;
+    
+    // Apply padding constraints
+    x = clamp(x, CANVAS_PADDING, canvasRect.width - elementWidth - CANVAS_PADDING);
+    y = clamp(y, CANVAS_PADDING, canvasRect.height - elementHeight - CANVAS_PADDING);
+    
+    return { x: Math.round(x), y: Math.round(y) };
+  }
   function overlaps(a, b, gap = MIN_GAP) {
     return !(
       a.right + gap < b.left ||
@@ -52,8 +70,8 @@
       const { w, h } = measureSize(a);
       let placed = false;
       for (let i = 0; i < YEAR_ATTEMPTS && !placed; i++) {
-        const x = clamp(Math.round(Math.random() * (rect.width - w - SAFE_MARGIN * 2)) + SAFE_MARGIN, SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
-        const y = clamp(Math.round(Math.random() * (rect.height - h - SAFE_MARGIN * 2)) + SAFE_MARGIN, SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
+        const x = clamp(Math.round(Math.random() * (rect.width - w - CANVAS_PADDING * 2)) + CANVAS_PADDING, CANVAS_PADDING, rect.width - CANVAS_PADDING - w);
+        const y = clamp(Math.round(Math.random() * (rect.height - h - CANVAS_PADDING * 2)) + CANVAS_PADDING, CANVAS_PADDING, rect.height - CANVAS_PADDING - h);
         const candidate = { left: x, top: y, right: x + w, bottom: y + h };
         if (!occupied.some(r => overlaps(candidate, r))) {
           a.style.transform = `translate(${x}px, ${y}px)`;
@@ -64,8 +82,8 @@
         }
       }
       if (!placed) {
-        // fallback: place at safe margin (very rare)
-        const x = SAFE_MARGIN; const y = SAFE_MARGIN;
+        // fallback: place at canvas padding (very rare)
+        const x = CANVAS_PADDING; const y = CANVAS_PADDING;
         a.style.transform = `translate(${x}px, ${y}px)`;
         a.dataset.x = String(x);
         a.dataset.y = String(y);
@@ -87,8 +105,8 @@
       const r = baseRadius + jitterR;
       let x = anchorX + Math.cos(angle) * r;
       let y = anchorY + Math.sin(angle) * r;
-      x = clamp(Math.round(x), SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
-      y = clamp(Math.round(y), SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
+      x = clamp(Math.round(x), CANVAS_PADDING, rect.width - CANVAS_PADDING - w);
+      y = clamp(Math.round(y), CANVAS_PADDING, rect.height - CANVAS_PADDING - h);
       const candidate = { left: x, top: y, right: x + w, bottom: y + h };
       if (!occupied.some(r2 => overlaps(candidate, r2))) {
         el.style.transform = `translate(${x}px, ${y}px)`;
@@ -96,9 +114,9 @@
         return;
       }
     }
-    // fallback near anchor
-    const x = clamp(Math.round(anchorX), SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
-    const y = clamp(Math.round(anchorY), SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
+    // fallback near anchor with padding
+    const x = clamp(Math.round(anchorX), CANVAS_PADDING, rect.width - CANVAS_PADDING - w);
+    const y = clamp(Math.round(anchorY), CANVAS_PADDING, rect.height - CANVAS_PADDING - h);
     el.style.transform = `translate(${x}px, ${y}px)`;
     occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
   }
