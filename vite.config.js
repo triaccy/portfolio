@@ -1,25 +1,9 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/portfolio/',
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: true,
     rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['vite']
-        }
-      }
+      external: ['fsevents']
     }
-  },
-  server: {
-    port: 3000,
-    open: true
-  },
-  preview: {
-    port: 4173,
-    open: true
   }
 })
