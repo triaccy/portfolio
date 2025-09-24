@@ -3,7 +3,7 @@
   console.log('Landing loaded');
 })();
 
-// Randomize year link positions within the app container and show topics on hover/click
+// Randomize year link positions within the app container and toggle-persist topics
 (function () {
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
@@ -46,63 +46,53 @@
       a.dataset.y = String(Math.round(y));
     });
     if (pinnedAnchor) {
-      showTopicsForAnchor(pinnedAnchor);
+      renderTopicsForAnchor(pinnedAnchor);
     }
   }
 
   function ensureTopicElements() {
-    let label = topicsLayer.querySelector('.label');
-    let connector = topicsLayer.querySelector('.connector');
-    if (!label) {
-      label = document.createElement('div');
-      label.className = 'label';
-      topicsLayer.appendChild(label);
+    let itemA = topicsLayer.querySelector('.item.a');
+    let itemB = topicsLayer.querySelector('.item.b');
+    if (!itemA) {
+      itemA = document.createElement('a');
+      itemA.className = 'item a';
+      topicsLayer.appendChild(itemA);
     }
-    if (!connector) {
-      connector = document.createElement('div');
-      connector.className = 'connector';
-      topicsLayer.appendChild(connector);
+    if (!itemB) {
+      itemB = document.createElement('a');
+      itemB.className = 'item b';
+      topicsLayer.appendChild(itemB);
     }
-    return { label, connector };
+    return { itemA, itemB };
   }
 
-  function renderTopics(labelEl, a) {
+  function disperseAround(ax, ay, width, height) {
+    const r = Math.max(80, Math.min(width, height) * 0.25);
+    const angleA = Math.random() * Math.PI * 2;
+    const angleB = angleA + (Math.PI / 3 + Math.random() * Math.PI / 3);
+    const xA = Math.max(8, Math.min(width - 8, ax + Math.cos(angleA) * r));
+    const yA = Math.max(8, Math.min(height - 8, ay + Math.sin(angleA) * r));
+    const xB = Math.max(8, Math.min(width - 8, ax + Math.cos(angleB) * r));
+    const yB = Math.max(8, Math.min(height - 8, ay + Math.sin(angleB) * r));
+    return { xA, yA, xB, yB };
+  }
+
+  function renderTopicsForAnchor(a) {
+    const { itemA, itemB } = ensureTopicElements();
     const tA = a.getAttribute('data-topic-a') || '';
     const tB = a.getAttribute('data-topic-b') || '';
-    labelEl.innerHTML = '';
-    const linkA = document.createElement('a');
-    linkA.href = `#${tA}`;
-    linkA.textContent = tA;
-    const sep = document.createElement('span');
-    sep.className = 'sep';
-    sep.textContent = 'and';
-    const linkB = document.createElement('a');
-    linkB.href = `#${tB}`;
-    linkB.textContent = tB;
-    labelEl.appendChild(linkA);
-    labelEl.appendChild(sep);
-    labelEl.appendChild(linkB);
-  }
-
-  function showTopicsForAnchor(a) {
-    const { label, connector } = ensureTopicElements();
     const ax = Number(a.dataset.x || 0);
     const ay = Number(a.dataset.y || 0);
 
-    renderTopics(label, a);
+    itemA.textContent = tA;
+    itemA.href = `#${tA}`;
+    itemB.textContent = tB;
+    itemB.href = `#${tB}`;
 
-    // Place label slightly offset to the right/bottom of the anchor
-    const lx = ax + 40;
-    const ly = ay + 16;
-    label.style.transform = `translate(${lx}px, ${ly}px)`;
-
-    // Draw connector from anchor to label
-    const dx = lx - ax;
-    const dy = ly - ay;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    connector.style.width = `${Math.max(10, Math.round(dist - 4))}px`;
-    connector.style.transform = `translate(${ax}px, ${ay}px) rotate(${angle}deg)`;
+    const rect = container.getBoundingClientRect();
+    const { xA, yA, xB, yB } = disperseAround(ax, ay, rect.width, rect.height);
+    itemA.style.transform = `translate(${Math.round(xA)}px, ${Math.round(yA)}px)`;
+    itemB.style.transform = `translate(${Math.round(xB)}px, ${Math.round(yB)}px)`;
 
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
@@ -113,48 +103,27 @@
     topicsLayer.setAttribute('aria-hidden', 'true');
   }
 
+  function togglePin(a) {
+    if (pinnedAnchor === a) {
+      pinnedAnchor = null;
+      hideTopics();
+    } else {
+      pinnedAnchor = a;
+      renderTopicsForAnchor(a);
+    }
+  }
+
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => {
-      if (!pinnedAnchor) showTopicsForAnchor(a);
-    });
-    a.addEventListener('focus', () => {
-      if (!pinnedAnchor) showTopicsForAnchor(a);
-    });
-    a.addEventListener('mouseleave', () => {
-      if (!pinnedAnchor) hideTopics();
-    });
-    a.addEventListener('blur', () => {
-      if (!pinnedAnchor) hideTopics();
+      if (!pinnedAnchor) togglePin(a); // trigger on first hover
     });
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      if (pinnedAnchor === a) {
-        pinnedAnchor = null;
-        hideTopics();
-      } else {
-        pinnedAnchor = a;
-        showTopicsForAnchor(a);
-      }
+      togglePin(a);
     });
   });
 
-  // Dismiss on background click or Escape
-  container.addEventListener('click', (e) => {
-    if (pinnedAnchor) {
-      const withinYear = anchors.some(a => a === e.target);
-      const withinTopics = topicsLayer.contains(e.target);
-      if (!withinYear && !withinTopics) {
-        pinnedAnchor = null;
-        hideTopics();
-      }
-    }
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && pinnedAnchor) {
-      pinnedAnchor = null;
-      hideTopics();
-    }
-  });
+  // Only unpin when the same year is interacted again (handled in togglePin)
 
   window.addEventListener('resize', layout);
   window.addEventListener('load', layout);
