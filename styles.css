@@ -22,14 +22,17 @@ body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, syst
 #app { min-height: 100vh; position: relative; padding: var(--space-8); }
 
 /* Landing: Years */
-.years { position: relative; width: 100%; height: 100%; z-index: 2; }
-.years a { position: absolute; left: 0; top: 0; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; font-size: 12px; letter-spacing: 0.01em; white-space: nowrap; transition: opacity 120ms ease; }
+.years { position: relative; width: 100%; height: 100%; z-index: 1; }
+.years a { position: absolute; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; font-size: 12px; letter-spacing: 0.01em; white-space: nowrap; transition: opacity 200ms ease; }
+.years a:hover { opacity: 1; }
 .years a:focus { outline: 2px solid var(--fg); outline-offset: 2px; }
+.years.fade-back a:not(:hover) { opacity: 0.2; }
 
-/* Topics: two dispersed links */
-.topics { position: absolute; inset: 0; pointer-events: none; font-size: 12px; color: var(--fg); z-index: 1; }
-.topics .item { position: absolute; left: 0; top: 0; pointer-events: auto; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; opacity: 0; transition: opacity 140ms ease; white-space: nowrap; }
-.topics.active .item { opacity: 0.95; }
+/* Topics hover labels */
+.topics { position: absolute; inset: 0; pointer-events: none; font-size: 12px; color: var(--fg); z-index: 2; }
+.topics .topic-link { position: absolute; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; background: transparent; white-space: nowrap; opacity: 0; transition: opacity 200ms ease; pointer-events: auto; cursor: pointer; }
+.topics .topic-link:hover { opacity: 0.7; }
+.topics.active .topic-link { opacity: 0.9; }
 
 /* Utility */
 .hidden { display: none !important; }
