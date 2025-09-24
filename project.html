@@ -159,8 +159,9 @@
           projectData.images.forEach(img => {
             contentHTML += `
               <div class="image-item">
-                <img src="${img.src}" alt="${img.alt}" />
-                <p>${img.caption}</p>
+                <img src="${img.src}" alt="${img.alt}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <p style="display:none; padding:20px; background:#f0f0f0; border-radius:8px; color:#666;">Image: ${img.caption}<br><small>Add your image file: ${img.src}</small></p>
+                <p style="display:block;">${img.caption}</p>
               </div>
             `;
           });
