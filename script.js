@@ -17,7 +17,7 @@
   const topicMap = new Map(); // topicName -> Array<HTMLElement>
 
   // Layout tuning
-  const SAFE_MARGIN = 25;      // distance to viewport edges
+  const SAFE_MARGIN = 5;       // distance to viewport edges
   const MIN_GAP = 28;          // minimum gap between any two labels (px)
   const YEAR_ATTEMPTS = 600;   // attempts to place each year
   const TOPIC_ATTEMPTS = 600;  // attempts to place each topic
