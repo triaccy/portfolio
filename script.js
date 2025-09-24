@@ -3,7 +3,7 @@
   console.log('Landing loaded');
 })();
 
-// Randomize year link positions within the app container and toggle-persist topics
+// Randomize year link positions and show separate topic links on hover
 (function () {
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
@@ -11,127 +11,100 @@
   if (!container || !nav || !topicsLayer) return;
 
   const anchors = Array.from(nav.querySelectorAll('a'));
-  let pinnedAnchor = null;
 
-  function jitteredPositions(count, width, height) {
+  function randomPositions(count, width, height) {
     const positions = [];
-    const cols = Math.ceil(Math.sqrt(count));
-    const rows = Math.ceil(count / cols);
-    const cellW = width / cols;
-    const cellH = height / rows;
-
+    const margin = 40;
+    const usableWidth = width - margin * 2;
+    const usableHeight = height - margin * 2;
+    
     for (let i = 0; i < count; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const baseX = col * cellW + cellW / 2;
-      const baseY = row * cellH + cellH / 2;
-      const jitterX = (Math.random() - 0.5) * cellW * 0.6;
-      const jitterY = (Math.random() - 0.5) * cellH * 0.6;
-      let x = baseX + jitterX;
-      let y = baseY + jitterY;
-      x = Math.max(8, Math.min(width - 8, x));
-      y = Math.max(8, Math.min(height - 8, y));
+      let attempts = 0;
+      let x, y;
+      
+      do {
+        x = margin + Math.random() * usableWidth;
+        y = margin + Math.random() * usableHeight;
+        attempts++;
+      } while (attempts < 50 && positions.some(pos => {
+        const dx = x - pos.x;
+        const dy = y - pos.y;
+        return Math.sqrt(dx * dx + dy * dy) < 60; // minimum distance
+      }));
+      
       positions.push({ x, y });
     }
     return positions;
   }
 
-  function place(el, x, y) {
-    el.style.left = `${Math.round(x)}px`;
-    el.style.top = `${Math.round(y)}px`;
-  }
-
   function layout() {
     const rect = container.getBoundingClientRect();
-    const positions = jitteredPositions(anchors.length, rect.width, rect.height);
+    const positions = randomPositions(anchors.length, rect.width, rect.height);
     anchors.forEach((a, idx) => {
       const { x, y } = positions[idx];
-      place(a, x, y);
+      a.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
       a.dataset.x = String(Math.round(x));
       a.dataset.y = String(Math.round(y));
     });
-    if (pinnedAnchor) {
-      renderTopicsForAnchor(pinnedAnchor);
-    }
   }
 
-  function ensureTopicElements() {
-    let itemA = topicsLayer.querySelector('.item.a');
-    let itemB = topicsLayer.querySelector('.item.b');
-    if (!itemA) {
-      itemA = document.createElement('a');
-      itemA.className = 'item a';
-      topicsLayer.appendChild(itemA);
-    }
-    if (!itemB) {
-      itemB = document.createElement('a');
-      itemB.className = 'item b';
-      topicsLayer.appendChild(itemB);
-    }
-    return { itemA, itemB };
+  function createTopicLinks(topics, anchorX, anchorY) {
+    // Clear existing topic links
+    topicsLayer.innerHTML = '';
+    
+    topics.forEach((topic, idx) => {
+      const link = document.createElement('a');
+      link.className = 'topic-link';
+      link.textContent = topic;
+      link.href = `#${topic}`;
+      
+      // Position topics around the hovered year
+      const angle = (idx / topics.length) * Math.PI * 2;
+      const radius = 80;
+      const x = anchorX + Math.cos(angle) * radius;
+      const y = anchorY + Math.sin(angle) * radius;
+      
+      link.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log(`Clicked topic: ${topic}`);
+        // Add your topic click handler here
+      });
+      
+      topicsLayer.appendChild(link);
+    });
   }
 
-  function disperseAround(ax, ay, width, height) {
-    const r = Math.max(80, Math.min(width, height) * 0.25);
-    const angleA = Math.random() * Math.PI * 2;
-    const angleB = angleA + (Math.PI / 3 + Math.random() * Math.PI / 3);
-    const xA = Math.max(8, Math.min(width - 8, ax + Math.cos(angleA) * r));
-    const yA = Math.max(8, Math.min(height - 8, ay + Math.sin(angleA) * r));
-    const xB = Math.max(8, Math.min(width - 8, ax + Math.cos(angleB) * r));
-    const yB = Math.max(8, Math.min(height - 8, ay + Math.sin(angleB) * r));
-    return { xA, yA, xB, yB };
-  }
-
-  function renderTopicsForAnchor(a) {
-    const { itemA, itemB } = ensureTopicElements();
-    const tA = a.getAttribute('data-topic-a') || '';
-    const tB = a.getAttribute('data-topic-b') || '';
+  function showTopicsForAnchor(a) {
+    const topics = a.getAttribute('data-topics').split(',');
     const ax = Number(a.dataset.x || 0);
     const ay = Number(a.dataset.y || 0);
-
-    itemA.textContent = tA;
-    itemA.href = `#${tA}`;
-    itemB.textContent = tB;
-    itemB.href = `#${tB}`;
-
-    const rect = container.getBoundingClientRect();
-    const { xA, yA, xB, yB } = disperseAround(ax, ay, rect.width, rect.height);
-    place(itemA, xA, yA);
-    place(itemB, xB, yB);
-
+    
+    nav.classList.add('fade-back');
+    createTopicLinks(topics, ax, ay);
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
   }
 
   function hideTopics() {
+    nav.classList.remove('fade-back');
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
-  }
-
-  function togglePin(a) {
-    if (pinnedAnchor === a) {
-      pinnedAnchor = null;
-      hideTopics();
-    } else {
-      pinnedAnchor = a;
-      renderTopicsForAnchor(a);
-    }
+    topicsLayer.innerHTML = '';
   }
 
   anchors.forEach(a => {
-    a.addEventListener('mouseenter', () => {
-      if (!pinnedAnchor) renderTopicsForAnchor(a); // preview only
-    });
-    a.addEventListener('mouseleave', () => {
-      if (!pinnedAnchor) hideTopics();
-    });
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      togglePin(a); // pin/unpin on click only
-    });
+    a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
+    a.addEventListener('focus', () => showTopicsForAnchor(a));
+    a.addEventListener('mouseleave', hideTopics);
+    a.addEventListener('blur', hideTopics);
   });
 
-  window.addEventListener('resize', layout);
+  window.addEventListener('resize', () => {
+    layout();
+    hideTopics();
+  });
+
   window.addEventListener('load', layout);
   layout();
 })();
