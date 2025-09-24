@@ -62,16 +62,34 @@
     return { label, connector };
   }
 
+  function renderTopics(labelEl, a) {
+    const tA = a.getAttribute('data-topic-a') || '';
+    const tB = a.getAttribute('data-topic-b') || '';
+    labelEl.innerHTML = '';
+    const linkA = document.createElement('a');
+    linkA.href = `#${tA}`;
+    linkA.textContent = tA;
+    const sep = document.createElement('span');
+    sep.className = 'sep';
+    sep.textContent = 'and';
+    const linkB = document.createElement('a');
+    linkB.href = `#${tB}`;
+    linkB.textContent = tB;
+    labelEl.appendChild(linkA);
+    labelEl.appendChild(sep);
+    labelEl.appendChild(linkB);
+  }
+
   function showTopicsForAnchor(a) {
     const { label, connector } = ensureTopicElements();
-    const text = a.getAttribute('data-topics') || '';
     const ax = Number(a.dataset.x || 0);
     const ay = Number(a.dataset.y || 0);
+
+    renderTopics(label, a);
 
     // Place label slightly offset to the right/bottom of the anchor
     const lx = ax + 40;
     const ly = ay + 16;
-    label.textContent = text;
     label.style.transform = `translate(${lx}px, ${ly}px)`;
 
     // Draw connector from anchor to label
@@ -84,23 +102,29 @@
 
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
+
+    // Dim non-hovered years
+    nav.classList.add('dimmed');
+    anchors.forEach(el => el.classList.toggle('hovered', el === a));
   }
 
-  function hideTopics() {
+  function resetYearsAndTopics() {
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
+    nav.classList.remove('dimmed');
+    anchors.forEach(el => el.classList.remove('hovered'));
   }
 
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
     a.addEventListener('focus', () => showTopicsForAnchor(a));
-    a.addEventListener('mouseleave', hideTopics);
-    a.addEventListener('blur', hideTopics);
+    a.addEventListener('mouseleave', resetYearsAndTopics);
+    a.addEventListener('blur', resetYearsAndTopics);
   });
 
   window.addEventListener('resize', () => {
     layout();
-    hideTopics();
+    resetYearsAndTopics();
   });
 
   window.addEventListener('load', layout);
