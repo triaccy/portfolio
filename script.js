@@ -82,10 +82,12 @@
     connector.style.width = `${Math.max(10, Math.round(dist - 4))}px`;
     connector.style.transform = `translate(${ax}px, ${ay}px) rotate(${angle}deg)`;
 
+    topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
   }
 
   function hideTopics() {
+    topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
   }
 
