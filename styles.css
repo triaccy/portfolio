@@ -24,8 +24,6 @@ body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, syst
 /* Landing: Years */
 .years { position: relative; width: 100%; height: 100%; z-index: 1; }
 .years a { position: absolute; color: var(--fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; font-size: 12px; letter-spacing: 0.01em; white-space: nowrap; transition: opacity 120ms ease; }
-.years.dimmed a { opacity: 0.25; }
-.years.dimmed a.hovered { opacity: 1; }
 .years a:focus { outline: 2px solid var(--fg); outline-offset: 2px; }
 
 /* Topics hover label: two separate links */
