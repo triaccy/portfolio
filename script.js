@@ -36,12 +36,17 @@
     return positions;
   }
 
+  function place(el, x, y) {
+    el.style.left = `${Math.round(x)}px`;
+    el.style.top = `${Math.round(y)}px`;
+  }
+
   function layout() {
     const rect = container.getBoundingClientRect();
     const positions = jitteredPositions(anchors.length, rect.width, rect.height);
     anchors.forEach((a, idx) => {
       const { x, y } = positions[idx];
-      a.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      place(a, x, y);
       a.dataset.x = String(Math.round(x));
       a.dataset.y = String(Math.round(y));
     });
@@ -91,8 +96,8 @@
 
     const rect = container.getBoundingClientRect();
     const { xA, yA, xB, yB } = disperseAround(ax, ay, rect.width, rect.height);
-    itemA.style.transform = `translate(${Math.round(xA)}px, ${Math.round(yA)}px)`;
-    itemB.style.transform = `translate(${Math.round(xB)}px, ${Math.round(yB)}px)`;
+    place(itemA, xA, yA);
+    place(itemB, xB, yB);
 
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
@@ -115,15 +120,16 @@
 
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => {
-      if (!pinnedAnchor) togglePin(a); // trigger on first hover
+      if (!pinnedAnchor) renderTopicsForAnchor(a); // preview only
+    });
+    a.addEventListener('mouseleave', () => {
+      if (!pinnedAnchor) hideTopics();
     });
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      togglePin(a);
+      togglePin(a); // pin/unpin on click only
     });
   });
-
-  // Only unpin when the same year is interacted again (handled in togglePin)
 
   window.addEventListener('resize', layout);
   window.addEventListener('load', layout);
