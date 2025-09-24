@@ -17,7 +17,7 @@
   const topicMap = new Map(); // topicName -> Array<HTMLElement>
 
   // Layout tuning
-  const SAFE_MARGIN = 15;      // distance to viewport edges
+  const SAFE_MARGIN = 25;      // distance to viewport edges
   const MIN_GAP = 28;          // minimum gap between any two labels (px)
   const YEAR_ATTEMPTS = 600;   // attempts to place each year
   const TOPIC_ATTEMPTS = 600;  // attempts to place each topic
@@ -212,6 +212,7 @@
   anchors.forEach(a => {
     a.addEventListener('mouseenter', () => activateYear(a));
     a.addEventListener('focus', () => activateYear(a));
+    a.addEventListener('mousedown', (e) => e.preventDefault()); // prevent focus on click
   });
 
   container.addEventListener('click', (e) => {
