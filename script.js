@@ -3,7 +3,7 @@
   console.log('Landing loaded');
 })();
 
-// Randomize year link positions within the app container and show topics on hover
+// Randomize year link positions within the app container and show topics on hover/click
 (function () {
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
@@ -11,6 +11,7 @@
   if (!container || !nav || !topicsLayer) return;
 
   const anchors = Array.from(nav.querySelectorAll('a'));
+  let pinnedAnchor = null;
 
   function jitteredPositions(count, width, height) {
     const positions = [];
@@ -44,6 +45,9 @@
       a.dataset.x = String(Math.round(x));
       a.dataset.y = String(Math.round(y));
     });
+    if (pinnedAnchor) {
+      showTopicsForAnchor(pinnedAnchor);
+    }
   }
 
   function ensureTopicElements() {
@@ -102,31 +106,57 @@
 
     topicsLayer.classList.add('active');
     topicsLayer.setAttribute('aria-hidden', 'false');
-
-    // Dim non-hovered years
-    nav.classList.add('dimmed');
-    anchors.forEach(el => el.classList.toggle('hovered', el === a));
   }
 
-  function resetYearsAndTopics() {
+  function hideTopics() {
     topicsLayer.classList.remove('active');
     topicsLayer.setAttribute('aria-hidden', 'true');
-    nav.classList.remove('dimmed');
-    anchors.forEach(el => el.classList.remove('hovered'));
   }
 
   anchors.forEach(a => {
-    a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
-    a.addEventListener('focus', () => showTopicsForAnchor(a));
-    a.addEventListener('mouseleave', resetYearsAndTopics);
-    a.addEventListener('blur', resetYearsAndTopics);
+    a.addEventListener('mouseenter', () => {
+      if (!pinnedAnchor) showTopicsForAnchor(a);
+    });
+    a.addEventListener('focus', () => {
+      if (!pinnedAnchor) showTopicsForAnchor(a);
+    });
+    a.addEventListener('mouseleave', () => {
+      if (!pinnedAnchor) hideTopics();
+    });
+    a.addEventListener('blur', () => {
+      if (!pinnedAnchor) hideTopics();
+    });
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (pinnedAnchor === a) {
+        pinnedAnchor = null;
+        hideTopics();
+      } else {
+        pinnedAnchor = a;
+        showTopicsForAnchor(a);
+      }
+    });
   });
 
-  window.addEventListener('resize', () => {
-    layout();
-    resetYearsAndTopics();
+  // Dismiss on background click or Escape
+  container.addEventListener('click', (e) => {
+    if (pinnedAnchor) {
+      const withinYear = anchors.some(a => a === e.target);
+      const withinTopics = topicsLayer.contains(e.target);
+      if (!withinYear && !withinTopics) {
+        pinnedAnchor = null;
+        hideTopics();
+      }
+    }
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && pinnedAnchor) {
+      pinnedAnchor = null;
+      hideTopics();
+    }
   });
 
+  window.addEventListener('resize', layout);
   window.addEventListener('load', layout);
   layout();
 })();
