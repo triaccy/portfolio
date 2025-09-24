@@ -16,8 +16,14 @@
   const yearToTopics = new Map(); // anchor -> Array<HTMLElement>
   const topicMap = new Map(); // topicName -> Array<HTMLElement>
 
+  // Layout tuning
+  const SAFE_MARGIN = 15;      // distance to viewport edges
+  const MIN_GAP = 28;          // minimum gap between any two labels (px)
+  const YEAR_ATTEMPTS = 600;   // attempts to place each year
+  const TOPIC_ATTEMPTS = 600;  // attempts to place each topic
+
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-  function overlaps(a, b, gap = 4) {
+  function overlaps(a, b, gap = MIN_GAP) {
     return !(
       a.right + gap < b.left ||
       a.left - gap > b.right ||
@@ -40,15 +46,14 @@
 
   function layoutYearsNoOverlap() {
     const rect = container.getBoundingClientRect();
-    const margin = 15;
     const occupied = [];
 
     anchors.forEach(a => {
       const { w, h } = measureSize(a);
       let placed = false;
-      for (let i = 0; i < 200 && !placed; i++) {
-        const x = clamp(Math.round(Math.random() * (rect.width - w - margin * 2)) + margin, margin, rect.width - margin - w);
-        const y = clamp(Math.round(Math.random() * (rect.height - h - margin * 2)) + margin, margin, rect.height - margin - h);
+      for (let i = 0; i < YEAR_ATTEMPTS && !placed; i++) {
+        const x = clamp(Math.round(Math.random() * (rect.width - w - SAFE_MARGIN * 2)) + SAFE_MARGIN, SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
+        const y = clamp(Math.round(Math.random() * (rect.height - h - SAFE_MARGIN * 2)) + SAFE_MARGIN, SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
         const candidate = { left: x, top: y, right: x + w, bottom: y + h };
         if (!occupied.some(r => overlaps(candidate, r))) {
           a.style.transform = `translate(${x}px, ${y}px)`;
@@ -58,6 +63,14 @@
           placed = true;
         }
       }
+      if (!placed) {
+        // fallback: place at safe margin (very rare)
+        const x = SAFE_MARGIN; const y = SAFE_MARGIN;
+        a.style.transform = `translate(${x}px, ${y}px)`;
+        a.dataset.x = String(x);
+        a.dataset.y = String(y);
+        occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
+      }
     });
 
     return occupied;
@@ -65,18 +78,17 @@
 
   function positionTopicNearNoOverlap(anchorX, anchorY, el, occupied) {
     const rect = container.getBoundingClientRect();
-    const margin = 15;
     const { w, h } = measureSize(el);
 
-    for (let i = 0; i < 200; i++) {
-      const baseRadius = 70 + Math.random() * 120; // 70-190px
+    for (let i = 0; i < TOPIC_ATTEMPTS; i++) {
+      const baseRadius = 90 + Math.random() * 140; // 90-230px, spread more
       const angle = Math.random() * Math.PI * 2;
-      const jitterR = (Math.random() - 0.5) * 24;
+      const jitterR = (Math.random() - 0.5) * 32;
       const r = baseRadius + jitterR;
       let x = anchorX + Math.cos(angle) * r;
       let y = anchorY + Math.sin(angle) * r;
-      x = clamp(Math.round(x), margin, rect.width - margin - w);
-      y = clamp(Math.round(y), margin, rect.height - margin - h);
+      x = clamp(Math.round(x), SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
+      y = clamp(Math.round(y), SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
       const candidate = { left: x, top: y, right: x + w, bottom: y + h };
       if (!occupied.some(r2 => overlaps(candidate, r2))) {
         el.style.transform = `translate(${x}px, ${y}px)`;
@@ -84,8 +96,11 @@
         return;
       }
     }
-    el.style.transform = `translate(${anchorX}px, ${anchorY}px)`;
-    occupied.push({ left: anchorX, top: anchorY, right: anchorX + w, bottom: anchorY + h });
+    // fallback near anchor
+    const x = clamp(Math.round(anchorX), SAFE_MARGIN, rect.width - SAFE_MARGIN - w);
+    const y = clamp(Math.round(anchorY), SAFE_MARGIN, rect.height - SAFE_MARGIN - h);
+    el.style.transform = `translate(${x}px, ${y}px)`;
+    occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
   }
 
   function parseTopics(anchor) {
