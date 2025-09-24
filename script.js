@@ -137,15 +137,11 @@
     topics.forEach(topic => {
       const link = document.createElement('a');
       link.className = 'topic-link';
-      link.href = '#';
+      link.href = `topic.html?t=${encodeURIComponent(topic)}`;
       link.textContent = topic;
       link.dataset.topic = topic;
       topicsLayer.appendChild(link);
       positionTopicNearNoOverlap(ax, ay, link, occupied);
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        console.log(`Clicked topic: ${topic}`);
-      });
       created.push(link);
 
       const arr = topicMap.get(topic) || [];

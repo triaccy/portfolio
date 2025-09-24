@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      body { padding: 24px; }
+      .topic-title { font-size: 18px; text-decoration: underline; text-underline-offset: 4px; }
+      .back { display: inline-block; margin-top: 16px; font-size: 12px; }
+      .content { margin-top: 16px; font-size: 12px; color: var(--muted); max-width: 60ch; }
+    </style>
+</head>
+<body>
+    <a class="back" href="./">← Back</a>
+    <h1 class="topic-title" id="title">Topic</h1>
+    <div class="content" id="content">Loading…</div>
+
+    <script>
+      (function(){
+        const params = new URLSearchParams(location.search);
+        const topic = (params.get('t') || '').trim();
+        const title = document.getElementById('title');
+        const content = document.getElementById('content');
+        if (!topic) {
+          title.textContent = 'Unknown topic';
+          content.textContent = 'No topic specified.';
+          return;
+        }
+        title.textContent = topic;
+        content.textContent = `This is a placeholder page for "${topic}". Add your projects, text, and media here.`;
+        document.title = `Topic — ${topic}`;
+      })();
+    </script>
+</body>
+</html>
