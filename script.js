@@ -3,11 +3,12 @@
   console.log('Landing loaded');
 })();
 
-// Randomize year link positions within the app container
+// Randomize year link positions within the app container and show topics on hover
 (function () {
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
-  if (!container || !nav) return;
+  const topicsLayer = document.getElementById('topics');
+  if (!container || !nav || !topicsLayer) return;
 
   const anchors = Array.from(nav.querySelectorAll('a'));
 
@@ -39,16 +40,67 @@
     const positions = jitteredPositions(anchors.length, rect.width, rect.height);
     anchors.forEach((a, idx) => {
       const { x, y } = positions[idx];
-      // place with transform to keep text crisp
       a.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      a.dataset.x = String(Math.round(x));
+      a.dataset.y = String(Math.round(y));
     });
   }
 
-  window.addEventListener('resize', () => {
-    layout();
+  function ensureTopicElements() {
+    let label = topicsLayer.querySelector('.label');
+    let connector = topicsLayer.querySelector('.connector');
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'label';
+      topicsLayer.appendChild(label);
+    }
+    if (!connector) {
+      connector = document.createElement('div');
+      connector.className = 'connector';
+      topicsLayer.appendChild(connector);
+    }
+    return { label, connector };
+  }
+
+  function showTopicsForAnchor(a) {
+    const { label, connector } = ensureTopicElements();
+    const text = a.getAttribute('data-topics') || '';
+    const ax = Number(a.dataset.x || 0);
+    const ay = Number(a.dataset.y || 0);
+
+    // Place label slightly offset to the right/bottom of the anchor
+    const lx = ax + 40;
+    const ly = ay + 16;
+    label.textContent = text;
+    label.style.transform = `translate(${lx}px, ${ly}px)`;
+
+    // Draw connector from anchor to label
+    const dx = lx - ax;
+    const dy = ly - ay;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    connector.style.width = `${Math.max(10, Math.round(dist - 4))}px`;
+    connector.style.transform = `translate(${ax}px, ${ay}px) rotate(${angle}deg)`;
+
+    topicsLayer.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideTopics() {
+    topicsLayer.setAttribute('aria-hidden', 'true');
+  }
+
+  anchors.forEach(a => {
+    a.addEventListener('mouseenter', () => showTopicsForAnchor(a));
+    a.addEventListener('focus', () => showTopicsForAnchor(a));
+    a.addEventListener('mouseleave', hideTopics);
+    a.addEventListener('blur', hideTopics);
   });
 
-  // Initial after fonts/layout settle
+  window.addEventListener('resize', () => {
+    layout();
+    hideTopics();
+  });
+
   window.addEventListener('load', layout);
   layout();
 })();
