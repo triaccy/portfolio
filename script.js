@@ -1,11 +1,4 @@
-// Starter script — safe to remove when designing
+// Landing has no JS requirements yet — reserved for future interactions
 (function () {
-  const app = document.getElementById('app');
-  if (app) {
-    const div = document.createElement('div');
-    div.className = 'placeholder';
-    div.textContent = 'Design canvas ready — add your components here.';
-    app.appendChild(div);
-  }
-  console.log('Scaffold loaded');
+  console.log('Landing loaded');
 })();
