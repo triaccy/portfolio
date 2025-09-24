@@ -29,7 +29,25 @@
           return;
         }
         title.textContent = topic;
-        content.textContent = `This is a placeholder page for "${topic}". Add your projects, text, and media here.`;
+        
+        // Special content for specific topics
+        if (topic === 'interaction') {
+          content.innerHTML = `
+            <div style="margin-bottom: 20px;">
+              <iframe width="560" height="315" 
+                      src="https://www.youtube.com/embed/iZ_jGXTwNPw" 
+                      title="YouTube video player" 
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+            <p>Interactive design and user experience projects from 2025.</p>
+          `;
+        } else {
+          content.textContent = `This is a placeholder page for "${topic}". Add your projects, text, and media here.`;
+        }
+        
         document.title = `Topic — ${topic}`;
       })();
     </script>
