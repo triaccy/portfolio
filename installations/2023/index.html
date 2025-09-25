@@ -83,24 +83,37 @@
         height: 50px;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background 0.2s ease;
         z-index: 10;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
       }
       
       .gallery-nav:hover {
         background: rgba(0,0,0,0.9);
+        cursor: pointer;
       }
       
       .gallery-nav.prev {
         left: 20px;
       }
       
+      .gallery-nav.prev::before {
+        content: "◀";
+        margin-left: -2px;
+      }
+      
       .gallery-nav.next {
         right: 20px;
+      }
+      
+      .gallery-nav.next::before {
+        content: "▶";
+        margin-left: 2px;
       }
       
       .project-grid {
@@ -151,8 +164,8 @@
           <img src="../../images/installation-2.jpg" class="gallery-image" />
           <img src="../../images/installation-3.jpg" class="gallery-image" />
           
-          <button class="gallery-nav prev" onclick="changeImage(-1)">‹</button>
-          <button class="gallery-nav next" onclick="changeImage(1)">›</button>
+          <button class="gallery-nav prev" onclick="changeImage(-1)"></button>
+          <button class="gallery-nav next" onclick="changeImage(1)"></button>
         </div>
       </div>
       
