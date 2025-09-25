@@ -143,10 +143,9 @@
 </head>
 <body>
     <a class="back" href="../../">← back</a>
-    <h1 class="topic-title">Installation 2023</h1>
+    
     <div class="content">
-      <p>Large-scale immersive installations featuring inflatable sculptures, light art, and interactive spaces from 2023.</p>
-      
+    
       <div class="image-gallery">
         <div class="gallery-container">
           <img src="../../images/installation-1.jpg" class="gallery-image active" />
@@ -221,6 +220,13 @@
           isTransitioning = false;
         }, 500);
       }
+      
+      // Click anywhere on image to go to next
+      document.querySelector('.gallery-container').addEventListener('click', (e) => {
+        // Don't trigger if clicking on navigation buttons
+        if (e.target.classList.contains('gallery-nav')) return;
+        changeImage(1);
+      });
       
       // Keyboard navigation
       document.addEventListener('keydown', (e) => {
