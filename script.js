@@ -172,8 +172,20 @@
       link.className = 'topic-link';
       // Create unique URL with year and topic
       const year = anchor.textContent.trim();
-      link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
-      // Remove target and rel to navigate in same tab
+      
+      // Special handling for installation topics - link directly to year pages
+      if (topic === 'installation') {
+        if (year === '2023') {
+          link.href = `installations/2023/`;
+        } else if (year === '2021') {
+          link.href = `installations/2021/`;
+        } else {
+          link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
+        }
+      } else {
+        link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
+      }
+      
       link.textContent = topic;
       link.dataset.topic = topic;
       link.dataset.year = year;
