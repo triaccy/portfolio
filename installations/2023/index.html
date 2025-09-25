@@ -59,11 +59,17 @@
         height: 100%;
         object-fit: cover;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transform: translateX(100%);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
       .gallery-image.active {
         opacity: 1;
+        transform: translateX(0);
+      }
+      
+      .gallery-image.prev {
+        transform: translateX(-100%);
       }
       
       .gallery-nav {
@@ -141,9 +147,9 @@
       
       <div class="image-gallery">
         <div class="gallery-container">
-          <img src="../../images/installation-1.jpg" alt="Inflatable installation corridor view" class="gallery-image active" />
-          <img src="../../images/installation-2.jpg" alt="Colorful archway installation" class="gallery-image" />
-          <img src="../../images/installation-3.jpg" alt="Suspended glowing sculptures" class="gallery-image" />
+          <img src="../../images/installation-1.jpg" class="gallery-image active" />
+          <img src="../../images/installation-2.jpg" class="gallery-image" />
+          <img src="../../images/installation-3.jpg" class="gallery-image" />
           
           <button class="gallery-nav prev" onclick="changeImage(-1)">‹</button>
           <button class="gallery-nav next" onclick="changeImage(1)">›</button>
@@ -168,24 +174,50 @@
     <script>
       const images = document.querySelectorAll('.gallery-image');
       let currentImageIndex = 0;
+      let isTransitioning = false;
       
-      function updateGallery() {
-        images.forEach((img, index) => {
-          img.classList.toggle('active', index === currentImageIndex);
+      function updateGallery(direction = 0) {
+        // Remove all classes first
+        images.forEach(img => {
+          img.classList.remove('active', 'prev');
         });
+        
+        // Set up sliding animation
+        if (direction === 1) {
+          // Moving right: new image slides in from right
+          images[currentImageIndex].classList.add('active');
+        } else if (direction === -1) {
+          // Moving left: new image slides in from left
+          images[currentImageIndex].classList.add('active');
+        } else {
+          // Initial load: just show current image
+          images[currentImageIndex].classList.add('active');
+        }
       }
       
       function changeImage(direction) {
-        currentImageIndex += direction;
+        if (isTransitioning) return;
         
-        // Loop infinitely
-        if (currentImageIndex >= images.length) {
-          currentImageIndex = 0;
-        } else if (currentImageIndex < 0) {
-          currentImageIndex = images.length - 1;
+        isTransitioning = true;
+        
+        // Calculate new index with looping
+        let newIndex = currentImageIndex + direction;
+        if (newIndex >= images.length) {
+          newIndex = 0;
+        } else if (newIndex < 0) {
+          newIndex = images.length - 1;
         }
         
-        updateGallery();
+        // Update index
+        currentImageIndex = newIndex;
+        
+        // Update gallery with direction
+        updateGallery(direction);
+        
+        // Reset transition lock after animation completes
+        setTimeout(() => {
+          isTransitioning = false;
+        }, 500);
       }
       
       // Keyboard navigation
