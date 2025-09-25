@@ -16,7 +16,8 @@ export default defineConfig({
         const filesToCopy = [
           'topic.html',
           'project.html',
-          'installations'
+          'installations',
+          'images'
         ]
         
         filesToCopy.forEach(file => {
@@ -24,7 +25,7 @@ export default defineConfig({
           const dest = join(process.cwd(), 'dist', file)
           
           if (existsSync(src)) {
-            if (file === 'installations') {
+            if (file === 'installations' || file === 'images') {
               // Copy directory recursively
               const { execSync } = require('child_process')
               execSync(`cp -r ${src} ${dest}`)
