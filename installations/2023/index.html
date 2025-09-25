@@ -42,6 +42,7 @@
         max-width: 800px;
         margin: 20px auto;
         overflow: hidden;
+        --nav-pad: 24px; /* equal distance from image edge for nav triggers */
       }
       
       .gallery-container {
@@ -49,7 +50,7 @@
         width: 100%;
         height: 500px;
         background: #f8f8f8;
-        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text x="16" y="20" text-anchor="middle" font-size="16" fill="white">↔</text></svg>'), auto;
+        cursor: ew-resize; /* look like <--> when hover over image */
       }
       
       .gallery-image {
@@ -60,17 +61,16 @@
         height: 100%;
         object-fit: cover;
         opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: none;
+        transition: none; /* clean, no dynamic animation */
       }
       
       .gallery-image.active {
         opacity: 1;
-        transform: translateX(0);
       }
       
       .gallery-image.prev {
-        transform: translateX(-100%);
+        transform: none;
       }
       
       .gallery-nav {
@@ -80,30 +80,32 @@
         background: transparent;
         color: white;
         border: none;
-        width: 60px;
-        height: 100%;
+        width: 48px;
+        height: 48px;
         cursor: pointer;
-        font-size: 24px;
+        font-size: 0; /* hide text, we draw chevron with CSS */
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
         z-index: 10;
-        opacity: 0;
+        opacity: 0.8;
+        padding: 0;
       }
-      
-      .gallery-nav:hover {
-        opacity: 1;
-        background: rgba(0,0,0,0.1);
+      .gallery-nav:hover { opacity: 1; }
+      .gallery-nav:focus { outline: none; }
+      .gallery-nav::before {
+        content: "";
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-left: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        opacity: 0.9;
       }
-      
-      .gallery-nav.prev {
-        left: -60px;
-      }
-      
-      .gallery-nav.next {
-        right: -60px;
-      }
+      .gallery-nav.prev { left: calc(var(--nav-pad) * -1); }
+      .gallery-nav.prev::before { transform: rotate(45deg); }
+      .gallery-nav.next { right: calc(var(--nav-pad) * -1); }
+      .gallery-nav.next::before { transform: rotate(-135deg); }
       
       .project-grid {
         display: grid;
