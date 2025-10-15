@@ -34,9 +34,6 @@ jobs:
       - name: Show vite version
         run: npx vite --version
 
-      - name: Build portfolio
-        run: npm run build
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

@@ -70,3 +70,5 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
   return created;
 }
 
+
+
