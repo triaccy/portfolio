@@ -95,35 +95,42 @@ function initImageDisplays() {
   const galleryContainers = document.querySelectorAll('.image-display.gallery .display-container');
   
   galleryContainers.forEach(container => {
+    // Get both images and videos
     const allImages = container.querySelectorAll('.display-image');
+    const allVideos = container.querySelectorAll('.display-video');
+    const allMedia = Array.from(allImages).concat(Array.from(allVideos));
     
-    // Filter out images that fail to load
-    // For dynamically inserted images, we need to wait for them to load
-    const checkImages = () => {
-      const images = Array.from(allImages).filter(img => {
+    // Filter out media that fail to load
+    // For dynamically inserted media, we need to wait for them to load
+    const checkMedia = () => {
+      const media = Array.from(allMedia).filter(item => {
         // Skip if already hidden
-        if (img.style.display === 'none') {
+        if (item.style.display === 'none') {
           return false;
         }
+        // For videos (iframes), always include them
+        if (item.tagName === 'IFRAME') {
+          return true;
+        }
         // For images that haven't loaded yet, include them (they'll be checked on load)
-        if (!img.complete) {
+        if (!item.complete) {
           return true;
         }
         // If image loaded but has 0 height, it's broken
-        if (img.naturalHeight === 0) {
-          img.style.display = 'none';
+        if (item.naturalHeight === 0) {
+          item.style.display = 'none';
           return false;
         }
         return true;
       });
       
-      return images;
+      return media;
     };
     
-    let images = checkImages();
+    let media = checkMedia();
     
-    // If no images are ready yet, wait for them to load
-    if (images.length === 0 && allImages.length > 0) {
+    // If no media are ready yet, wait for images to load (videos don't need to wait)
+    if (media.length === 0 && allImages.length > 0) {
       // Wait for images to load
       const imagePromises = Array.from(allImages).map(img => {
         if (img.complete) return Promise.resolve();
@@ -134,17 +141,17 @@ function initImageDisplays() {
       });
       
       Promise.allSettled(imagePromises).then(() => {
-        images = checkImages();
-        if (images.length > 0) {
-          initializeGallery(container, images, allImages);
+        media = checkMedia();
+        if (media.length > 0) {
+          initializeGallery(container, media, allMedia);
         }
       });
       return;
     }
     
-    if (images.length === 0) return;
+    if (media.length === 0) return;
     
-    initializeGallery(container, images, allImages);
+    initializeGallery(container, media, allMedia);
   });
 }
 

@@ -164,6 +164,41 @@
         window.createImageDisplay = function() { return ''; };
       }
       
+      // Create video gallery function
+      function createVideoGallery(videos, options = {}) {
+        if (!videos || videos.length === 0) return '';
+        const displayId = options.id || `video-gallery-${Date.now()}`;
+        
+        const escapeAttr = (str) => {
+          if (!str) return '';
+          return String(str).replace(/&/g, '&amp;')
+                            .replace(/"/g, '&quot;');
+        };
+        
+        const videoElements = videos.map((video, index) => {
+          const src = escapeAttr(video.src);
+          const title = escapeAttr(video.title || 'Video');
+          const allow = escapeAttr(video.allow || 'autoplay; fullscreen; picture-in-picture');
+          return `<iframe src="${src}" 
+                  class="display-video ${index === 0 ? 'active' : ''}" 
+                  title="${title}" 
+                  frameborder="0" 
+                  allow="${allow}" 
+                  allowfullscreen>
+                  </iframe>`;
+        }).join('\n');
+        
+        return `
+          <div class="image-display gallery" data-display-id="${displayId}">
+            <div class="display-container">
+              ${videoElements}
+              <button class="display-nav prev" data-display-id="${displayId}">‹</button>
+              <button class="display-nav next" data-display-id="${displayId}">›</button>
+            </div>
+          </div>
+        `;
+      }
+      
       const topicContent = {
         'interaction': {
           content: `
@@ -299,32 +334,18 @@ My work focused on pioneering the optimization of a green chemical extraction me
         },
         '2024-conservation': {
           title: 'Conservation (2024)',
-          content: `
-            <div class="video-container">
-              <iframe src="https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
-                      title="Vimeo video player" 
-                      frameborder="0" 
-                      allow="autoplay; fullscreen; picture-in-picture" 
-                      allowfullscreen>
-              </iframe>
-            </div>
-            <div class="video-container">
-              <iframe src="https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
-                      title="Vimeo video player" 
-                      frameborder="0" 
-                      allow="autoplay; fullscreen; picture-in-picture" 
-                      allowfullscreen>
-              </iframe>
-            </div>
-            <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/jKCMreZw1CQ?autoplay=1&mute=1&loop=1&playlist=jKCMreZw1CQ&controls=0&modestbranding=1&rel=0" 
-                      title="YouTube video player" 
-                      frameborder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen>
-              </iframe>
-            </div>
-          `
+          content: createVideoGallery([
+            { 
+              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 1',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            },
+            { 
+              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 2',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            }
+          ], { id: 'conservation-video-gallery' })
         },
         '2023-conservation': {
           content: `None`
