@@ -33,12 +33,12 @@ export default defineConfig({
               if (!existsSync(dest)) {
                 mkdirSync(dest, { recursive: true })
               }
-              // Use cross-platform copy command
+              // Use cross-platform copy command - copy contents, not the directory itself
               const isWindows = process.platform === 'win32'
               if (isWindows) {
-                execSync(`xcopy /E /I /Y "${src}" "${dest}"`, { stdio: 'inherit' })
+                execSync(`xcopy /E /I /Y "${src}\\*" "${dest}\\"`, { stdio: 'inherit' })
               } else {
-                execSync(`cp -r "${src}" "${dest}"`, { stdio: 'inherit' })
+                execSync(`cp -r "${src}/." "${dest}/"`, { stdio: 'inherit' })
               }
             } else {
               copyFileSync(src, dest)
