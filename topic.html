@@ -114,6 +114,67 @@
         color: var(--muted);
         margin: 0;
       }
+      
+      /* Installation-style gallery */
+      .gallery-container {
+        position: relative;
+        width: 100%;
+        height: 650px;
+        background: #f8f8f8;
+        cursor: ew-resize;
+        max-width: 1100px;
+        margin: 20px auto;
+      }
+      
+      .gallery-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transform: none;
+        transition: none;
+      }
+      
+      .gallery-image.active {
+        opacity: 1;
+      }
+      
+      .gallery-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        color: white;
+        border: none;
+        width: 48px;
+        height: 48px;
+        cursor: pointer;
+        font-size: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        opacity: 0.8;
+        padding: 0;
+      }
+      .gallery-nav:hover { opacity: 1; }
+      .gallery-nav:focus { outline: none; }
+      .gallery-nav::before {
+        content: "";
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-left: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        opacity: 0.9;
+      }
+      .gallery-nav.prev { left: 12px; }
+      .gallery-nav.prev::before { transform: rotate(45deg); }
+      .gallery-nav.next { right: 12px; }
+      .gallery-nav.next::before { transform: rotate(-135deg); }
     </style>
 </head>
 <body>
@@ -188,13 +249,15 @@
           `
         },
         '2023-machine': {
-
           content: `
-            <div class="image-gallery">
-              <div class="image-item">
-                <img src="images/Sustainably-Honoring-Beached-Whales--2-dragged.png" alt="Sustainably Honoring Beached Whales">
-                <p>Caption for image</p>
-              </div>
+            <div class="gallery-container" id="whale-gallery">
+              <img src="images/Sustainably-Honoring-Beached-Whales--2-dragged.png" class="gallery-image active" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 2" />
+              <img src="images/Sustainably-Honoring-Beached-Whales--3-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 3" />
+              <img src="images/Sustainably-Honoring-Beached-Whales--4-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 4" />
+              <img src="images/Sustainably-Honoring-Beached-Whales--5-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 5" />
+              
+              <button class="gallery-nav prev" onclick="changeWhaleImage(-1)">‹</button>
+              <button class="gallery-nav next" onclick="changeWhaleImage(1)">›</button>
             </div>
           `
         },
@@ -265,7 +328,82 @@
           document.title = `${pageTitle} — Portfolio`;
         }
         content.innerHTML = topicData.content || '<p>No content available.</p>';
+        
+        // Initialize whale gallery if it exists
+        setTimeout(() => {
+          const whaleGallery = document.getElementById('whale-gallery');
+          if (whaleGallery) {
+            initWhaleGallery();
+          }
+        }, 100);
       })();
+      
+      // Whale gallery functionality
+      let whaleGalleryState = {
+        images: [],
+        currentImageIndex: 0
+      };
+      
+      function initWhaleGallery() {
+        const allImages = document.querySelectorAll('#whale-gallery .gallery-image');
+        whaleGalleryState.images = Array.from(allImages).filter(img => {
+          if (!img.complete || img.naturalHeight === 0) {
+            img.style.display = 'none';
+            return false;
+          }
+          return true;
+        });
+        
+        whaleGalleryState.currentImageIndex = 0;
+        
+        if (whaleGalleryState.images.length <= 1) {
+          document.querySelectorAll('#whale-gallery .gallery-nav').forEach(btn => btn.style.display = 'none');
+        }
+        
+        function updateGallery(direction = 0) {
+          if (whaleGalleryState.images.length === 0) return;
+          
+          whaleGalleryState.images.forEach(img => {
+            img.classList.remove('active', 'prev');
+          });
+          
+          whaleGalleryState.images[whaleGalleryState.currentImageIndex].classList.add('active');
+        }
+        
+        window.changeWhaleImage = function(direction) {
+          if (whaleGalleryState.images.length === 0) return;
+          
+          let newIndex = whaleGalleryState.currentImageIndex + direction;
+          if (newIndex >= whaleGalleryState.images.length) {
+            newIndex = 0;
+          } else if (newIndex < 0) {
+            newIndex = whaleGalleryState.images.length - 1;
+          }
+          
+          whaleGalleryState.currentImageIndex = newIndex;
+          updateGallery(direction);
+        };
+        
+        const container = document.getElementById('whale-gallery');
+        if (container) {
+          container.addEventListener('click', (e) => {
+            if (e.target.classList.contains('gallery-nav')) return;
+            changeWhaleImage(1);
+          });
+        }
+        
+        allImages.forEach(img => {
+          img.addEventListener('error', function() {
+            this.style.display = 'none';
+            const newImages = Array.from(allImages).filter(i => i.style.display !== 'none' && (i.complete && i.naturalHeight > 0));
+            if (newImages.length <= 1) {
+              document.querySelectorAll('#whale-gallery .gallery-nav').forEach(btn => btn.style.display = 'none');
+            }
+          });
+        });
+        
+        updateGallery();
+      }
     </script>
 </body>
 </html>
