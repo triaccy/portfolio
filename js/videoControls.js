@@ -123,8 +123,8 @@ function applyVideoImageStyle() {
       border-radius: 6px;
       cursor: pointer;
       position: relative;
-      min-width: 200px;
-      max-width: 80%;
+      min-width: 150px;
+      max-width: 60%;
       z-index: 11;
     }
     
