@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Topic</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/imageDisplay.css">
     <style>
       body { 
         padding: 24px; 
@@ -16,6 +17,7 @@
         text-decoration: underline; 
         text-underline-offset: 4px; 
         margin-bottom: 20px;
+        display: none; /* Hide title by default */
       }
       .back { 
         position: fixed;
@@ -37,7 +39,7 @@
         line-height: 1.6;
       }
       
-      /* Video sizing - adjust these variables to change size */
+      /* Video container */
       :root {
         --video-width: 720px;
         --video-height: 405px;
@@ -55,6 +57,7 @@
         border-radius: 8px;
       }
       
+      /* Project grid */
       .project-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -90,6 +93,7 @@
         text-decoration: underline;
       }
       
+      /* Grid style (for backwards compatibility) */
       .image-gallery {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -114,67 +118,6 @@
         color: var(--muted);
         margin: 0;
       }
-      
-      /* Installation-style gallery */
-      .gallery-container {
-        position: relative;
-        width: 100%;
-        height: 650px;
-        background: #f8f8f8;
-        cursor: ew-resize;
-        max-width: 1100px;
-        margin: 20px auto;
-      }
-      
-      .gallery-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transform: none;
-        transition: none;
-      }
-      
-      .gallery-image.active {
-        opacity: 1;
-      }
-      
-      .gallery-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        color: white;
-        border: none;
-        width: 48px;
-        height: 48px;
-        cursor: pointer;
-        font-size: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        opacity: 0.8;
-        padding: 0;
-      }
-      .gallery-nav:hover { opacity: 1; }
-      .gallery-nav:focus { outline: none; }
-      .gallery-nav::before {
-        content: "";
-        display: block;
-        width: 20px;
-        height: 20px;
-        border-left: 2px solid #fff;
-        border-bottom: 2px solid #fff;
-        opacity: 0.9;
-      }
-      .gallery-nav.prev { left: 12px; }
-      .gallery-nav.prev::before { transform: rotate(45deg); }
-      .gallery-nav.next { right: 12px; }
-      .gallery-nav.next::before { transform: rotate(-135deg); }
     </style>
 </head>
 <body>
@@ -182,11 +125,14 @@
     <h1 class="topic-title" id="title">Topic</h1>
     <div class="content" id="content">Loading…</div>
 
+    <script src="js/imageDisplay.js"></script>
     <script>
-      // Topic content configuration
+      // ============================================
+      // TOPIC CONTENT CONFIGURATION
+      // ============================================
+      
       const topicContent = {
         'interaction': {
-        
           content: `
             <div class="video-container">
               <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
@@ -196,13 +142,10 @@
                       allowfullscreen>
               </iframe>
             </div>
-            
           `
         },
         'events': {
-          content: `
-          None  
-          `
+          content: `None`
         },
         'conservation': {
           content: `None`
@@ -217,75 +160,50 @@
           content: `None`
         },
         'installation': {
-          content: `
-            None
-          `
+          content: `None`
         },
         'architecture': {
-          
-          content: `
-            None
-          `
+          content: `None`
         },
         'web': {
-
-          content: `
-            None
-          `
+          content: `None`
         },
         'illustration': {
-          content: `
-            None
-          `
+          content: `None`
         },
         'motion': {
-          content: `
-            None
-          `
+          content: `None`
         },
         '2024-machine': {
-          content: `
-            None
-          `
+          content: `None`
         },
         '2023-machine': {
-          content: `
-            <div class="gallery-container" id="whale-gallery">
-              <img src="images/Sustainably-Honoring-Beached-Whales--2-dragged.png" class="gallery-image active" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 2" />
-              <img src="images/Sustainably-Honoring-Beached-Whales--3-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 3" />
-              <img src="images/Sustainably-Honoring-Beached-Whales--4-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 4" />
-              <img src="images/Sustainably-Honoring-Beached-Whales--5-dragged.png" class="gallery-image" onerror="this.style.display='none';" alt="Sustainably Honoring Beached Whales 5" />
-              
-              <button class="gallery-nav prev" onclick="changeWhaleImage(-1)">‹</button>
-              <button class="gallery-nav next" onclick="changeWhaleImage(1)">›</button>
-            </div>
-          `
+          title: 'Machine (2023)',
+          content: createImageDisplay('gallery', [
+            { src: 'images/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
+          ], { id: 'whale-gallery' })
         },
         '2024-conservation': {
-          content: `
-            None
-          `
+          content: `None`
         },
         '2023-conservation': {
-          content: `
-            None
-          `
+          content: `None`
         },
         '2024-chemistry': {
-          content: `
-            None
-          `
+          content: `None`
         },
         '2022-chemistry': {
-          content: `
-            <p>Efficient energy storage systems and innovative material production processes are major challenges that require contributions from chemists towards achieving a sustainable society. The Noonan Lab works on the development of new conjugated materials and polymers that incorporate main group elements.</p>
-            <p>My work focues on sythesising tunable systems for fluorescence and electronic applications.</p>
-            <p>Great appreciation to my mentor Dhruv Sharma and the Noonan Lab!</p>
-          `
+          content: `None`
         }
       };
 
-      // Initialize page
+      // ============================================
+      // PAGE INITIALIZATION
+      // ============================================
+      
       (function(){
         const params = new URLSearchParams(location.search);
         const topic = (params.get('t') || '').trim();
@@ -294,7 +212,7 @@
         const content = document.getElementById('content');
         
         if (!topic) {
-          title.textContent = 'Unknown Topic';
+          title.style.display = 'none';
           content.textContent = 'No topic specified.';
           return;
         }
@@ -303,156 +221,23 @@
         const uniqueKey = year ? `${year}-${topic}` : topic;
         
         // Get topic data or use default
-        const foundData = topicContent[uniqueKey] || topicContent[topic];
-        const topicData = foundData || {
+        const topicData = topicContent[uniqueKey] || topicContent[topic] || {
           title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
           content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
         };
         
-        // Debug logging (remove in production if desired)
-        console.log('Topic:', topic, 'Year:', year, 'Key:', uniqueKey);
-        console.log('Found data:', foundData);
-        console.log('Topic data:', topicData);
-        
-        // Handle title: hide if not provided in the entry, otherwise use it or generate one
-        if (foundData && (foundData.title === undefined || foundData.title === '' || foundData.title === null)) {
-          // Entry exists but has no title - hide the title element
-          console.log('Hiding title - no title property found');
-          title.style.display = 'none';
-          document.title = 'Portfolio';
-        } else {
-          // Use title from topicData or generate one
-          const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
-          console.log('Setting title:', pageTitle);
-          title.textContent = pageTitle;
-          document.title = `${pageTitle} — Portfolio`;
-        }
+        // Set title - use topicData.title if available, otherwise generate one
+        const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+        // Hide the title element
+        title.style.display = 'none';
         content.innerHTML = topicData.content || '<p>No content available.</p>';
+        document.title = `${pageTitle} — Portfolio`;
         
-        // Initialize whale gallery if it exists
+        // Initialize image displays after content is loaded
         setTimeout(() => {
-          const whaleGallery = document.getElementById('whale-gallery');
-          if (whaleGallery) {
-            console.log('Whale gallery found, initializing...');
-            initWhaleGallery();
-          } else {
-            console.log('Whale gallery not found in DOM');
-          }
-        }, 200);
+          initImageDisplays();
+        }, 100);
       })();
-      
-      // Whale gallery functionality
-      let whaleGalleryState = {
-        images: [],
-        currentImageIndex: 0
-      };
-      
-      function initWhaleGallery() {
-        console.log('Initializing whale gallery...');
-        const gallery = document.getElementById('whale-gallery');
-        if (!gallery) {
-          console.error('Whale gallery container not found');
-          return;
-        }
-        
-        const allImages = gallery.querySelectorAll('.gallery-image');
-        console.log('Found images:', allImages.length);
-        
-        // Wait for images to load, then filter
-        const checkImages = () => {
-          whaleGalleryState.images = Array.from(allImages).filter(img => {
-            // Check if image is hidden due to error
-            if (img.style.display === 'none') {
-              return false;
-            }
-            // For images that haven't loaded yet, wait a bit
-            if (!img.complete) {
-              return true; // Include it, will check on load
-            }
-            // If image loaded but has 0 height, it's broken
-            if (img.naturalHeight === 0) {
-              console.warn('Image failed to load:', img.src);
-              img.style.display = 'none';
-              return false;
-            }
-            return true;
-          });
-          
-          console.log('Valid images:', whaleGalleryState.images.length);
-          
-          if (whaleGalleryState.images.length === 0) {
-            console.error('No valid images found in gallery');
-            return;
-          }
-          
-          whaleGalleryState.currentImageIndex = 0;
-          
-          if (whaleGalleryState.images.length <= 1) {
-            console.log('Only one image, hiding navigation');
-            gallery.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
-          }
-          
-          updateGallery();
-        };
-        
-        // Check immediately
-        checkImages();
-        
-        // Also check after images load
-        allImages.forEach(img => {
-          if (!img.complete) {
-            img.addEventListener('load', checkImages, { once: true });
-            img.addEventListener('error', function() {
-              console.error('Image load error:', this.src);
-              this.style.display = 'none';
-              checkImages();
-            });
-          }
-        });
-        
-        function updateGallery(direction = 0) {
-          if (whaleGalleryState.images.length === 0) {
-            console.warn('No images to display');
-            return;
-          }
-          
-          // Remove active class from all images
-          whaleGalleryState.images.forEach(img => {
-            img.classList.remove('active', 'prev');
-          });
-          
-          // Add active class to current image
-          if (whaleGalleryState.images[whaleGalleryState.currentImageIndex]) {
-            whaleGalleryState.images[whaleGalleryState.currentImageIndex].classList.add('active');
-            console.log('Showing image', whaleGalleryState.currentImageIndex + 1, 'of', whaleGalleryState.images.length);
-          }
-        }
-        
-        window.changeWhaleImage = function(direction) {
-          if (whaleGalleryState.images.length === 0) {
-            console.warn('Cannot change image: no images available');
-            return;
-          }
-          
-          let newIndex = whaleGalleryState.currentImageIndex + direction;
-          if (newIndex >= whaleGalleryState.images.length) {
-            newIndex = 0;
-          } else if (newIndex < 0) {
-            newIndex = whaleGalleryState.images.length - 1;
-          }
-          
-          whaleGalleryState.currentImageIndex = newIndex;
-          updateGallery(direction);
-        };
-        
-        // Click handler for gallery container
-        gallery.addEventListener('click', (e) => {
-          if (e.target.classList.contains('gallery-nav')) return;
-          changeWhaleImage(1);
-        });
-        
-        console.log('Whale gallery initialized successfully');
-      }
     </script>
 </body>
 </html>
