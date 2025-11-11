@@ -44,9 +44,8 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
     if (topic === 'installation') {
       if (year === '2023') {
         link.href = `installations/2023/`;
-      } else if (year === '2021') {
-        link.href = `installations/2021/`;
       } else {
+        // Route all installation topics (including 2021) to topic.html
         link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
       }
     } else {
