@@ -51,11 +51,16 @@
         margin: 20px 0;
       }
       
+      .video-container {
+        pointer-events: none;
+      }
+      
       .video-container iframe {
         width: var(--video-width);
         height: var(--video-height);
         max-width: 100%;
         border-radius: 8px;
+        pointer-events: auto;
       }
       
       @media (max-width: 768px) {
@@ -157,7 +162,7 @@
         'interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -169,7 +174,7 @@
         '2025-interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -203,7 +208,7 @@
           title: 'Installation (2021)',
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/FYSDYXtnJGo?autoplay=1&mute=1" 
+              <iframe src="https://www.youtube.com/embed/FYSDYXtnJGo?autoplay=1&mute=1&loop=1&playlist=FYSDYXtnJGo&controls=0&modestbranding=1&rel=0" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
