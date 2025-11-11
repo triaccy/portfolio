@@ -143,16 +143,6 @@
           None  
           `
         },
-        'machine': {
-          content: `
-            <div class="image-gallery">
-              <div class="image-item">
-                <img src="images/Sustainably-Honoring-Beached-Whales--2-dragged.png" alt="Sustainably Honoring Beached Whales">
-                <p>Caption for image</p>
-              </div>
-            </div>
-          `
-        },
         'conservation': {
           content: `None`
         },
@@ -198,8 +188,14 @@
           `
         },
         '2023-machine': {
+          title: 'Machine (2023)',
           content: `
-            None
+            <div class="image-gallery">
+              <div class="image-item">
+                <img src="images/Sustainably-Honoring-Beached-Whales--2-dragged.png" alt="Sustainably Honoring Beached Whales">
+                <p>Caption for image</p>
+              </div>
+            </div>
           `
         },
         '2024-conservation': {
@@ -247,9 +243,11 @@
           content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
         };
         
-        title.textContent = topicData.title;
-        content.innerHTML = topicData.content;
-        document.title = `${topicData.title} — Portfolio`;
+        // Use title from topicData or generate one
+        const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+        title.textContent = pageTitle;
+        content.innerHTML = topicData.content || '<p>No content available.</p>';
+        document.title = `${pageTitle} — Portfolio`;
       })();
     </script>
 </body>
