@@ -188,7 +188,7 @@
           `
         },
         '2023-machine': {
-          title: 'Machine (2023)',
+
           content: `
             <div class="image-gallery">
               <div class="image-item">
@@ -238,16 +238,24 @@
         const uniqueKey = year ? `${year}-${topic}` : topic;
         
         // Get topic data or use default
-        const topicData = topicContent[uniqueKey] || topicContent[topic] || {
+        const foundData = topicContent[uniqueKey] || topicContent[topic];
+        const topicData = foundData || {
           title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
           content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
         };
         
-        // Use title from topicData or generate one
-        const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
-        title.textContent = pageTitle;
+        // Handle title: hide if not provided in the entry, otherwise use it or generate one
+        if (foundData && (!foundData.hasOwnProperty('title') || foundData.title === '' || foundData.title === null)) {
+          // Entry exists but has no title - hide the title element
+          title.style.display = 'none';
+          document.title = 'Portfolio';
+        } else {
+          // Use title from topicData or generate one
+          const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+          title.textContent = pageTitle;
+          document.title = `${pageTitle} — Portfolio`;
+        }
         content.innerHTML = topicData.content || '<p>No content available.</p>';
-        document.title = `${pageTitle} — Portfolio`;
       })();
     </script>
 </body>
