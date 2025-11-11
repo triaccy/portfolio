@@ -263,6 +263,9 @@ function getVideoId(url, type) {
 
 // Function to initialize video controls
 function initVideoControls() {
+  console.log('Initializing video controls...');
+  let controlsAdded = 0;
+  
   // Initialize controls for video containers
   document.querySelectorAll('.video-container iframe').forEach(iframe => {
     const container = iframe.closest('.video-container');
@@ -282,6 +285,8 @@ function initVideoControls() {
       if (videoId) {
         container.style.position = 'relative';
         container.insertAdjacentHTML('beforeend', createVideoControls(videoId, videoType));
+        controlsAdded++;
+        console.log(`Added video controls to container: ${videoType} ${videoId}`);
       }
     }
   });
@@ -305,12 +310,17 @@ function initVideoControls() {
       if (videoId) {
         container.style.position = 'relative';
         container.insertAdjacentHTML('beforeend', createVideoControls(videoId, videoType));
+        console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
+      } else {
+        console.warn('Could not extract video ID from:', src);
       }
     }
   });
   
   // Set up control event listeners
   setupVideoControlListeners();
+  
+  console.log(`Video controls initialization complete. Added controls to ${controlsAdded} video containers and ${document.querySelectorAll('.display-video').length} gallery videos.`);
 }
 
 // Function to setup video control event listeners
