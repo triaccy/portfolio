@@ -255,7 +255,8 @@ function getVideoId(url, type) {
     const match = url.match(/(?:youtube\.com\/embed\/|youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
     return match ? match[1] : null;
   } else if (type === 'vimeo') {
-    const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    // Match both player.vimeo.com/video/ID and vimeo.com/video/ID
+    const match = url.match(/(?:player\.)?vimeo\.com\/(?:video\/)?(\d+)/);
     return match ? match[1] : null;
   }
   return null;
