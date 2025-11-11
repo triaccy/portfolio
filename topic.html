@@ -244,14 +244,21 @@
           content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
         };
         
+        // Debug logging (remove in production if desired)
+        console.log('Topic:', topic, 'Year:', year, 'Key:', uniqueKey);
+        console.log('Found data:', foundData);
+        console.log('Topic data:', topicData);
+        
         // Handle title: hide if not provided in the entry, otherwise use it or generate one
-        if (foundData && (!foundData.hasOwnProperty('title') || foundData.title === '' || foundData.title === null)) {
+        if (foundData && (foundData.title === undefined || foundData.title === '' || foundData.title === null)) {
           // Entry exists but has no title - hide the title element
+          console.log('Hiding title - no title property found');
           title.style.display = 'none';
           document.title = 'Portfolio';
         } else {
           // Use title from topicData or generate one
           const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+          console.log('Setting title:', pageTitle);
           title.textContent = pageTitle;
           document.title = `${pageTitle} — Portfolio`;
         }
