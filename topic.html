@@ -293,12 +293,20 @@
         // Debug logging
         console.log('Topic:', topic, 'Year:', year, 'UniqueKey:', uniqueKey);
         console.log('Available keys:', Object.keys(topicContent));
+        console.log('Looking for key:', uniqueKey, 'Found:', uniqueKey in topicContent);
+        console.log('Fallback to topic:', topic, 'Found:', topic in topicContent);
         
         // Get topic data or use default
-        const topicData = topicContent[uniqueKey] || topicContent[topic] || {
-          title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
-          content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
-        };
+        let topicData = topicContent[uniqueKey];
+        if (!topicData) {
+          topicData = topicContent[topic];
+        }
+        if (!topicData) {
+          topicData = {
+            title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
+            content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
+          };
+        }
         
         // Set title - use topicData.title if available, otherwise generate one
         const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
