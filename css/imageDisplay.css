@@ -52,9 +52,9 @@
   opacity: 1;
 }
 
-/* Prevent hover interactions on video galleries */
+/* Allow clicking on video galleries to navigate */
 .image-display.gallery .display-container:has(.display-video) {
-  cursor: default;
+  cursor: pointer;
 }
 
 .image-display.gallery .display-container:has(.display-video):hover .display-video {

@@ -200,9 +200,12 @@ function initializeGallery(container, images, allImages) {
     nextBtn.addEventListener('click', () => changeImage(1));
   }
   
-  // Click on container to go to next
+  // Click on container to go to next (but not on video controls)
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('display-nav')) return;
+    if (e.target.closest('.video-controls-overlay')) return;
+    if (e.target.closest('.video-controls')) return;
+    if (e.target.closest('.video-control-btn')) return;
     changeImage(1);
   });
   

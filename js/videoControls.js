@@ -77,15 +77,17 @@ function applyVideoImageStyle() {
     /* Custom video controls overlay */
     .video-controls-overlay {
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-      padding: 20px;
+      bottom: 0;
       opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
       z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     
     .video-container:hover .video-controls-overlay,
@@ -94,31 +96,24 @@ function applyVideoImageStyle() {
       pointer-events: auto;
     }
     
-    .video-controls {
+    /* Playback bar in the middle */
+    .video-progress-overlay {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      padding: 0 20px;
+      pointer-events: auto;
+    }
+    
+    .video-progress-wrapper {
       display: flex;
       align-items: center;
       gap: 12px;
-      max-width: 100%;
-    }
-    
-    .video-control-btn {
-      background: rgba(255, 255, 255, 0.9);
-      border: none;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 12px 16px;
       border-radius: 4px;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 16px;
-      color: #333;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-    
-    .video-control-btn:hover {
-      background: rgba(255, 255, 255, 1);
     }
     
     .video-progress-container {
@@ -128,12 +123,12 @@ function applyVideoImageStyle() {
       border-radius: 2px;
       cursor: pointer;
       position: relative;
-      min-width: 100px;
+      min-width: 200px;
     }
     
     .video-progress-bar {
       height: 100%;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(139, 69, 19, 0.9);
       border-radius: 2px;
       width: 0%;
       transition: width 0.1s linear;
@@ -141,11 +136,54 @@ function applyVideoImageStyle() {
     
     .video-time {
       color: white;
-      font-size: 12px;
+      font-size: 14px;
       white-space: nowrap;
       flex-shrink: 0;
-      min-width: 80px;
-      text-align: right;
+      min-width: 100px;
+      text-align: left;
+      font-family: monospace;
+    }
+    
+    /* Controls at the bottom */
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(240, 240, 240, 0.95);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      pointer-events: auto;
+    }
+    
+    .video-control-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .video-control-btn:hover {
+      opacity: 0.7;
+    }
+    
+    .video-control-btn .play-icon,
+    .video-control-btn .pause-icon {
+      font-size: 12px;
+    }
+    
+    .video-control-btn .mute-icon,
+    .video-control-btn .unmute-icon {
+      font-size: 12px;
     }
     
     /* Prevent hover interactions on video containers */
@@ -175,19 +213,31 @@ function applyVideoImageStyle() {
 function createVideoControls(videoId, videoType) {
   return `
     <div class="video-controls-overlay" data-video-id="${videoId}" data-video-type="${videoType}">
+      <!-- Playback bar in the middle -->
+      <div class="video-progress-overlay">
+        <div class="video-progress-wrapper">
+          <div class="video-time" data-video-id="${videoId}" style="min-width: 70px;">00:00</div>
+          <div class="video-progress-container" data-video-id="${videoId}">
+            <div class="video-progress-bar" data-video-id="${videoId}"></div>
+          </div>
+          <div class="video-time" data-video-id="${videoId}" style="min-width: 70px; text-align: right;">00:00</div>
+        </div>
+      </div>
+      <!-- Controls at the bottom -->
       <div class="video-controls">
         <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
           <span class="play-icon">▶</span>
           <span class="pause-icon" style="display: none;">⏸</span>
+          <span>Play</span>
         </button>
         <button class="video-control-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
           <span class="mute-icon">🔊</span>
           <span class="unmute-icon" style="display: none;">🔇</span>
+          <span>Sound</span>
         </button>
-        <div class="video-progress-container" data-video-id="${videoId}">
-          <div class="video-progress-bar" data-video-id="${videoId}"></div>
-        </div>
-        <div class="video-time" data-video-id="${videoId}">0:00 / 0:00</div>
+        <button class="video-control-btn turn-off-btn" data-video-id="${videoId}" title="Turn off">
+          <span>Turn off</span>
+        </button>
       </div>
     </div>
   `;
@@ -298,6 +348,30 @@ function setupVideoControlListeners() {
               newBtn.querySelector('.pause-icon').style.display = 'none';
             }
           });
+        }
+      }
+    });
+  });
+  
+  // Turn off button
+  document.querySelectorAll('.turn-off-btn').forEach(btn => {
+    // Remove existing listeners to avoid duplicates
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const videoId = newBtn.dataset.videoId;
+      const overlay = newBtn.closest('.video-controls-overlay');
+      const videoType = overlay.dataset.videoType;
+      
+      if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
+        const player = window.ytPlayers[videoId];
+        player.pauseVideo();
+      } else if (videoType === 'vimeo' && window.Vimeo) {
+        const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
+        if (player) {
+          player.pause();
         }
       }
     });
@@ -539,8 +613,12 @@ function updateVideoProgress(videoId, videoType) {
       // YouTube postMessage API doesn't easily support getting current time/duration
       // So we'll show a placeholder or skip updating for YouTube
       // Progress will still work via clicking the bar
-      if (progressBar.style.width === '0%' || !progressBar.style.width) {
-        timeDisplay.textContent = '0:00 / --:--';
+      const timeDisplays = overlay.querySelectorAll('.video-time');
+      if (timeDisplays.length >= 2) {
+        if (progressBar.style.width === '0%' || !progressBar.style.width) {
+          timeDisplays[0].textContent = '00:00';
+          timeDisplays[1].textContent = '00:00';
+        }
       }
     } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
       const player = window.vimeoPlayers[videoId];
@@ -548,7 +626,14 @@ function updateVideoProgress(videoId, videoType) {
         if (duration && !isNaN(current) && !isNaN(duration)) {
           const percent = (current / duration) * 100;
           progressBar.style.width = percent + '%';
-          timeDisplay.textContent = formatTime(current) + ' / ' + formatTime(duration);
+          const timeDisplays = overlay.querySelectorAll('.video-time');
+          if (timeDisplays.length >= 2) {
+            timeDisplays[0].textContent = formatTime(current);
+            timeDisplays[1].textContent = formatTime(duration);
+          } else if (timeDisplays.length === 1) {
+            // Fallback: show combined format if only one time display
+            timeDisplays[0].textContent = formatTime(current) + ' / ' + formatTime(duration);
+          }
         }
       }).catch(() => {
         // Player not ready
@@ -564,12 +649,12 @@ function updateVideoProgress(videoId, videoType) {
   window.videoProgressIntervals[videoId] = interval;
 }
 
-// Format time in MM:SS format
+// Format time in MM:SS format (00:00 style)
 function formatTime(seconds) {
-  if (isNaN(seconds)) return '0:00';
+  if (isNaN(seconds)) return '00:00';
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-  return mins + ':' + (secs < 10 ? '0' : '') + secs;
+  return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
 }
 
 // Create video gallery function
