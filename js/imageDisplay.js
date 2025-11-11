@@ -29,11 +29,23 @@ function createImageDisplay(type, images, options = {}) {
  * Creates gallery-style display (full-width with navigation)
  */
 function createGalleryDisplay(images, displayId, options) {
-  const imageElements = images.map((img, index) => 
-    `<img src="${img.src}" class="display-image ${index === 0 ? 'active' : ''}" 
+  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
+  const escapeAttr = (str) => {
+    if (!str) return '';
+    // Only escape characters that break HTML attributes
+    return String(str).replace(/&/g, '&amp;')
+                      .replace(/"/g, '&quot;');
+  };
+  
+  const imageElements = images.map((img, index) => {
+    // For src, preserve URL as-is (browser will URL-encode when making request)
+    // Only escape HTML-breaking characters
+    const src = escapeAttr(img.src);
+    const alt = escapeAttr(img.alt || '');
+    return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}" 
           onerror="this.style.display='none';" 
-          alt="${img.alt || ''}" />`
-  ).join('\n');
+          alt="${alt}" />`;
+  }).join('\n');
   
   return `
     <div class="image-display gallery" data-display-id="${displayId}">
@@ -50,11 +62,23 @@ function createGalleryDisplay(images, displayId, options) {
  * Creates vertical scroll display
  */
 function createVerticalScrollDisplay(images, displayId, options) {
-  const imageElements = images.map(img => 
-    `<img src="${img.src}" class="display-image" 
+  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
+  const escapeAttr = (str) => {
+    if (!str) return '';
+    // Only escape characters that break HTML attributes
+    return String(str).replace(/&/g, '&amp;')
+                      .replace(/"/g, '&quot;');
+  };
+  
+  const imageElements = images.map(img => {
+    // For src, preserve URL as-is (browser will URL-encode when making request)
+    // Only escape HTML-breaking characters
+    const src = escapeAttr(img.src);
+    const alt = escapeAttr(img.alt || '');
+    return `<img src="${src}" class="display-image" 
           onerror="this.style.display='none';" 
-          alt="${img.alt || ''}" />`
-  ).join('\n');
+          alt="${alt}" />`;
+  }).join('\n');
   
   return `
     <div class="image-display vertical" data-display-id="${displayId}">
