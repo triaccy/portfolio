@@ -268,7 +268,10 @@
           content: `None`
         },
         '2022-chemistry': {
-          content: `None`
+          content: `<p>Efficient energy storage systems and innovative material production processes are major challenges that require contributions from chemists towards achieving a sustainable society. The Noonan Lab works on the development of new conjugated materials and polymers that incorporate main group elements. 
+My work focues on sythesising tunable systems for fluorescence and electronic applications. 
+ </p>
+<p>Great appreciation to my mentor Dhruv Sharma and the Noonan Lab!</p>`
         },
         '2022-architecture': {
           content: `None`
@@ -298,12 +301,6 @@
         // Create unique key for year-topic combination
         const uniqueKey = year ? `${year}-${topic}` : topic;
         
-        // Debug logging
-        console.log('Topic:', topic, 'Year:', year, 'UniqueKey:', uniqueKey);
-        console.log('Available keys:', Object.keys(topicContent));
-        console.log('Looking for key:', uniqueKey, 'Found:', uniqueKey in topicContent);
-        console.log('Fallback to topic:', topic, 'Found:', topic in topicContent);
-        
         // Get topic data or use default
         let topicData = topicContent[uniqueKey];
         if (!topicData) {
@@ -325,6 +322,10 @@
         let contentHTML = topicData.content;
         if (typeof contentHTML === 'function') {
           contentHTML = contentHTML();
+        }
+        // Treat "None" string as empty content
+        if (contentHTML === 'None' || contentHTML === 'none') {
+          contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
         }
         content.innerHTML = contentHTML || '<p>No content available.</p>';
         document.title = `${pageTitle} — Portfolio`;
