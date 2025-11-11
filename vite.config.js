@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite'
 import { copyFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
+import { execSync } from 'child_process'
 
 export default defineConfig({
+  base: '/portfolio/',
   build: {
     rollupOptions: {
       external: ['fsevents']
@@ -27,8 +29,17 @@ export default defineConfig({
           if (existsSync(src)) {
             if (file === 'installations' || file === 'images') {
               // Copy directory recursively
-              const { execSync } = require('child_process')
-              execSync(`cp -r ${src} ${dest}`)
+              // Create destination directory if it doesn't exist
+              if (!existsSync(dest)) {
+                mkdirSync(dest, { recursive: true })
+              }
+              // Use cross-platform copy command
+              const isWindows = process.platform === 'win32'
+              if (isWindows) {
+                execSync(`xcopy /E /I /Y "${src}" "${dest}"`, { stdio: 'inherit' })
+              } else {
+                execSync(`cp -r "${src}" "${dest}"`, { stdio: 'inherit' })
+              }
             } else {
               copyFileSync(src, dest)
             }
