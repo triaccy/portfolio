@@ -209,17 +209,13 @@
         'graphics': {
           content: `None`
         },
-        'biochem': {
-          content: `None`
-        },
+        
         'textile': {
           content: `None`
         },
-        'conservation': {
+        '2023 conservation': {
           content: `None`
-        },
-        'machine': {
-          content: `None`
+        
         },
         '2021-installation': {
           title: 'Installation (2021)',
@@ -310,18 +306,23 @@ My work focused on pioneering the optimization of a green chemical extraction me
         },
         '2024-conservation': {
           title: 'Conservation (2024)',
-          content: createVideoGallery([
-            { 
-              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 1',
-              allow: 'autoplay; fullscreen; picture-in-picture'
-            },
-            { 
-              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 2',
-              allow: 'autoplay; fullscreen; picture-in-picture'
+          content: function() {
+            if (typeof createVideoGallery === 'function') {
+              return createVideoGallery([
+                { 
+                  src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+                  title: 'Conservation Video 1',
+                  allow: 'autoplay; fullscreen; picture-in-picture'
+                },
+                { 
+                  src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+                  title: 'Conservation Video 2',
+                  allow: 'autoplay; fullscreen; picture-in-picture'
+                }
+              ], { id: 'conservation-video-gallery' });
             }
-          ], { id: 'conservation-video-gallery' })
+            return '<p>Video gallery loading...</p>';
+          }
         },
         '2023-conservation': {
           content: `None`
