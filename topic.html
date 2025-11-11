@@ -6,6 +6,7 @@
     <title>Topic</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="css/imageDisplay.css">
+    <script src="js/videoControls.js"></script>
     <style>
       body { 
         padding: 24px; 
@@ -153,6 +154,7 @@
     <div class="content" id="content">Loading…</div>
 
     <script src="js/imageDisplay.js"></script>
+    <script src="js/videoControls.js"></script>
     <script>
       // ============================================
       // TOPIC CONTENT CONFIGURATION
@@ -165,13 +167,18 @@
         window.createImageDisplay = function() { return ''; };
       }
       
-      // Function to ensure video URLs have all parameters to hide interfaces
-      function ensureVideoNoInterface(url) {
-        if (!url) return url;
-        
-        // Check if it's a YouTube URL
-        if (url.includes('youtube.com/embed') || url.includes('youtu.be')) {
-          const urlObj = new URL(url);
+      // Ensure videoControls functions are available
+      if (typeof createVideoGallery === 'undefined') {
+        console.error('videoControls.js failed to load');
+        // Fallback function
+        window.createVideoGallery = function() { return ''; };
+      }
+      
+      // Video-related functions are now in js/videoControls.js
+      
+      const topicContent = {
+        'interaction': {
+          content: `
           // Ensure all interface-hiding parameters are present
           urlObj.searchParams.set('controls', '0');
           urlObj.searchParams.set('modestbranding', '1');
@@ -772,10 +779,8 @@
             </div>
           </div>
         `;
-      }
-      
-      const topicContent = {
-        'interaction': {
+      },
+      'interaction': {
           content: `
             <div class="video-container">
               <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
