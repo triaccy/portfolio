@@ -150,8 +150,8 @@
     
       <div class="image-gallery">
         <div class="gallery-container">
-          <img src="../../images/installation-1.jpg" class="gallery-image active" />
-          <img src="../../images/installation-3.jpg" class="gallery-image" />
+          <img src="../../images/installation-1.jpg" class="gallery-image active" onerror="this.style.display='none';" />
+          <img src="../../images/installation-3.jpg" class="gallery-image" onerror="this.style.display='none';" />
           
           <button class="gallery-nav prev" onclick="changeImage(-1)">‹</button>
           <button class="gallery-nav next" onclick="changeImage(1)">›</button>
@@ -161,10 +161,27 @@
     
     
     <script>
-      const images = document.querySelectorAll('.gallery-image');
+      // Filter out images that fail to load
+      const allImages = document.querySelectorAll('.gallery-image');
+      const images = Array.from(allImages).filter(img => {
+        // Check if image loaded successfully
+        if (!img.complete || img.naturalHeight === 0) {
+          img.style.display = 'none';
+          return false;
+        }
+        return true;
+      });
+      
       let currentImageIndex = 0;
       
+      // Hide navigation if only one or no images
+      if (images.length <= 1) {
+        document.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
+      }
+      
       function updateGallery(direction = 0) {
+        if (images.length === 0) return;
+        
         // Remove all classes first
         images.forEach(img => {
           img.classList.remove('active', 'prev');
@@ -184,6 +201,8 @@
       }
       
       function changeImage(direction) {
+        if (images.length === 0) return;
+        
         // Calculate new index with looping
         let newIndex = currentImageIndex + direction;
         if (newIndex >= images.length) {
@@ -200,11 +219,27 @@
       }
       
       // Click anywhere on image to go to next
-      document.querySelector('.gallery-container').addEventListener('click', (e) => {
-        // Don't trigger if clicking on navigation buttons
-        if (e.target.classList.contains('gallery-nav')) return;
-        changeImage(1);
+      const container = document.querySelector('.gallery-container');
+      if (container) {
+        container.addEventListener('click', (e) => {
+          // Don't trigger if clicking on navigation buttons
+          if (e.target.classList.contains('gallery-nav')) return;
+          changeImage(1);
+        });
+      }
+      
+      // Handle image load errors
+      allImages.forEach(img => {
+        img.addEventListener('error', function() {
+          this.style.display = 'none';
+          // Re-filter images after error
+          const newImages = Array.from(allImages).filter(i => i.style.display !== 'none' && (i.complete && i.naturalHeight > 0));
+          if (newImages.length <= 1) {
+            document.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
+          }
+        });
       });
+      
       // Initialize gallery
       updateGallery();
     </script>
