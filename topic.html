@@ -253,6 +253,10 @@
         // Create unique key for year-topic combination
         const uniqueKey = year ? `${year}-${topic}` : topic;
         
+        // Debug logging
+        console.log('Topic:', topic, 'Year:', year, 'UniqueKey:', uniqueKey);
+        console.log('Available keys:', Object.keys(topicContent));
+        
         // Get topic data or use default
         const topicData = topicContent[uniqueKey] || topicContent[topic] || {
           title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
@@ -263,7 +267,13 @@
         const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
         // Hide the title element
         title.style.display = 'none';
-        content.innerHTML = topicData.content || '<p>No content available.</p>';
+        
+        // Get content - if it's a function, call it; otherwise use it directly
+        let contentHTML = topicData.content;
+        if (typeof contentHTML === 'function') {
+          contentHTML = contentHTML();
+        }
+        content.innerHTML = contentHTML || '<p>No content available.</p>';
         document.title = `${pageTitle} — Portfolio`;
         
         // Initialize image displays after content is loaded
