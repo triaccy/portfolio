@@ -25,7 +25,16 @@ function ensureVideoNoInterface(url) {
   
   // Check if it's a Vimeo URL
   if (url.includes('vimeo.com')) {
-    const urlObj = new URL(url);
+    // Handle both player.vimeo.com and vimeo.com URLs
+    let urlStr = url;
+    if (url.includes('vimeo.com/video/') && !url.includes('player.vimeo.com')) {
+      // Convert vimeo.com/video/ID to player.vimeo.com/video/ID
+      const videoIdMatch = url.match(/vimeo\.com\/video\/(\d+)/);
+      if (videoIdMatch) {
+        urlStr = `https://player.vimeo.com/video/${videoIdMatch[1]}`;
+      }
+    }
+    const urlObj = new URL(urlStr);
     // Ensure all interface-hiding parameters are present
     urlObj.searchParams.set('controls', '0');
     urlObj.searchParams.set('title', '0');
@@ -47,7 +56,7 @@ function applyVideoImageStyle() {
     /* Hide all video interfaces and make videos look like images */
     .display-video,
     .video-container iframe {
-      pointer-events: none !important;
+      pointer-events: auto !important;
       object-fit: cover;
     }
     
@@ -144,9 +153,9 @@ function applyVideoImageStyle() {
       cursor: default;
     }
     
-    /* Make videos in gallery look exactly like images */
+    /* Make videos in gallery look exactly like images but still playable */
     .image-display.gallery .display-video {
-      pointer-events: none !important;
+      pointer-events: auto !important;
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -609,8 +618,7 @@ function createVideoGallery(videos, options = {}) {
             title="${title}" 
             frameborder="0" 
             allow="${allow}" 
-            allowfullscreen
-            style="pointer-events: none;">
+            allowfullscreen>
             </iframe>`;
   }).join('\n');
   

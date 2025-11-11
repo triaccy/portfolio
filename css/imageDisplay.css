@@ -40,7 +40,7 @@
   border: none;
   opacity: 0;
   transition: none;
-  pointer-events: none !important;
+  pointer-events: auto !important;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -58,7 +58,7 @@
 }
 
 .image-display.gallery .display-container:has(.display-video):hover .display-video {
-  pointer-events: none !important;
+  pointer-events: auto !important;
 }
 
 .image-display.gallery .display-nav {

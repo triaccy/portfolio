@@ -58,7 +58,7 @@
         height: var(--video-height);
         max-width: 100%;
         border-radius: 8px;
-        pointer-events: none !important;
+        pointer-events: auto !important;
         user-select: none;
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -179,12 +179,11 @@
         'interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen
-                      style="pointer-events: none;">
+                      allowfullscreen>
               </iframe>
             </div>
           `
@@ -192,12 +191,11 @@
         '2025-interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen
-                      style="pointer-events: none;">
+                      allowfullscreen>
               </iframe>
             </div>
           `
@@ -227,12 +225,11 @@
           title: 'Installation (2021)',
           content: `
             <div class="video-container">
-              <iframe src="https://vimeo.com/1135686954?fl=ip&fe=ec" 
-                      title="vimeo video player" 
+              <iframe src="https://player.vimeo.com/video/1135686954?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
+                      title="Vimeo video player" 
                       frameborder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen
-                      style="pointer-events: none;">
+                      allow="autoplay; fullscreen; picture-in-picture" 
+                      allowfullscreen>
               </iframe>
             </div>
           `
