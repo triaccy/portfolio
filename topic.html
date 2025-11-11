@@ -49,9 +49,6 @@
         display: flex;
         justify-content: center;
         margin: 20px 0;
-      }
-      
-      .video-container {
         pointer-events: none;
       }
       
@@ -60,7 +57,11 @@
         height: var(--video-height);
         max-width: 100%;
         border-radius: 8px;
-        pointer-events: auto;
+        pointer-events: none !important;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
       }
       
       /* Vimeo video styling */
@@ -164,10 +165,99 @@
         window.createImageDisplay = function() { return ''; };
       }
       
+      // Function to ensure video URLs have all parameters to hide interfaces
+      function ensureVideoNoInterface(url) {
+        if (!url) return url;
+        
+        // Check if it's a YouTube URL
+        if (url.includes('youtube.com/embed') || url.includes('youtu.be')) {
+          const urlObj = new URL(url);
+          // Ensure all interface-hiding parameters are present
+          urlObj.searchParams.set('controls', '0');
+          urlObj.searchParams.set('modestbranding', '1');
+          urlObj.searchParams.set('rel', '0');
+          urlObj.searchParams.set('showinfo', '0');
+          urlObj.searchParams.set('iv_load_policy', '3');
+          urlObj.searchParams.set('fs', '0'); // Disable fullscreen button
+          urlObj.searchParams.set('disablekb', '1'); // Disable keyboard controls
+          urlObj.searchParams.set('playsinline', '1');
+          return urlObj.toString();
+        }
+        
+        // Check if it's a Vimeo URL
+        if (url.includes('vimeo.com')) {
+          const urlObj = new URL(url);
+          // Ensure all interface-hiding parameters are present
+          urlObj.searchParams.set('controls', '0');
+          urlObj.searchParams.set('title', '0');
+          urlObj.searchParams.set('byline', '0');
+          urlObj.searchParams.set('portrait', '0');
+          urlObj.searchParams.set('badge', '0');
+          urlObj.searchParams.set('autopause', '0');
+          return urlObj.toString();
+        }
+        
+        return url;
+      }
+      
+      // Function to apply video styling that makes videos look like images
+      function applyVideoImageStyle() {
+        // Add CSS to hide all video controls and interfaces
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Hide all video interfaces and make videos look like images */
+          .display-video,
+          .video-container iframe {
+            pointer-events: none !important;
+            object-fit: cover;
+          }
+          
+          /* Hide YouTube controls overlay */
+          .display-video[src*="youtube"]::after,
+          .video-container iframe[src*="youtube"]::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+            z-index: 1;
+          }
+          
+          /* Prevent hover interactions on video containers */
+          .image-display.gallery .display-container:has(.display-video) {
+            cursor: default;
+          }
+          
+          /* Make videos in gallery look exactly like images */
+          .image-display.gallery .display-video {
+            pointer-events: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+          }
+          
+          /* Hide any controls that might appear on hover */
+          .image-display.gallery .display-container:hover .display-video {
+            pointer-events: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
       // Create video gallery function
       function createVideoGallery(videos, options = {}) {
         if (!videos || videos.length === 0) return '';
         const displayId = options.id || `video-gallery-${Date.now()}`;
+        
+        // Apply video styling on first call
+        if (!window.videoImageStyleApplied) {
+          applyVideoImageStyle();
+          window.videoImageStyleApplied = true;
+        }
         
         const escapeAttr = (str) => {
           if (!str) return '';
@@ -176,7 +266,9 @@
         };
         
         const videoElements = videos.map((video, index) => {
-          const src = escapeAttr(video.src);
+          // Ensure video URL has all parameters to hide interfaces
+          let src = ensureVideoNoInterface(video.src);
+          src = escapeAttr(src);
           const title = escapeAttr(video.title || 'Video');
           const allow = escapeAttr(video.allow || 'autoplay; fullscreen; picture-in-picture');
           return `<iframe src="${src}" 
@@ -184,7 +276,8 @@
                   title="${title}" 
                   frameborder="0" 
                   allow="${allow}" 
-                  allowfullscreen>
+                  allowfullscreen
+                  style="pointer-events: none;">
                   </iframe>`;
         }).join('\n');
         
@@ -203,11 +296,12 @@
         'interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen>
+                      allowfullscreen
+                      style="pointer-events: none;">
               </iframe>
             </div>
           `
@@ -215,11 +309,12 @@
         '2025-interaction': {
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen>
+                      allowfullscreen
+                      style="pointer-events: none;">
               </iframe>
             </div>
           `
@@ -249,11 +344,12 @@
           title: 'Installation (2021)',
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/FYSDYXtnJGo?autoplay=1&mute=1&loop=1&playlist=FYSDYXtnJGo&controls=0&modestbranding=1&rel=0" 
+              <iframe src="https://www.youtube.com/embed/FYSDYXtnJGo?autoplay=1&mute=1&loop=1&playlist=FYSDYXtnJGo&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1" 
                       title="YouTube video player" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      allowfullscreen>
+                      allowfullscreen
+                      style="pointer-events: none;">
               </iframe>
             </div>
           `
@@ -426,6 +522,12 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
             setTimeout(initDisplays, 100);
           }
         };
+        
+        // Apply video styling to make all videos look like images
+        if (typeof applyVideoImageStyle === 'function' && !window.videoImageStyleApplied) {
+          applyVideoImageStyle();
+          window.videoImageStyleApplied = true;
+        }
         
         // Try immediately, then after a short delay, and again after content renders
         setTimeout(initDisplays, 50);

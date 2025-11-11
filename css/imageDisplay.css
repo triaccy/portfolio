@@ -40,10 +40,25 @@
   border: none;
   opacity: 0;
   transition: none;
+  pointer-events: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  object-fit: cover;
 }
 
 .image-display.gallery .display-video.active {
   opacity: 1;
+}
+
+/* Prevent hover interactions on video galleries */
+.image-display.gallery .display-container:has(.display-video) {
+  cursor: default;
+}
+
+.image-display.gallery .display-container:has(.display-video):hover .display-video {
+  pointer-events: none !important;
 }
 
 .image-display.gallery .display-nav {
