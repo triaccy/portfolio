@@ -94,11 +94,18 @@ function initImageDisplays() {
   // Initialize gallery displays
   const galleryContainers = document.querySelectorAll('.image-display.gallery .display-container');
   
+  if (galleryContainers.length === 0) {
+    console.log('No gallery containers found');
+    return;
+  }
+  
   galleryContainers.forEach(container => {
     // Get both images and videos
     const allImages = container.querySelectorAll('.display-image');
     const allVideos = container.querySelectorAll('.display-video');
     const allMedia = Array.from(allImages).concat(Array.from(allVideos));
+    
+    console.log(`Gallery container found: ${allImages.length} images, ${allVideos.length} videos`);
     
     // Filter out media that fail to load
     // For dynamically inserted media, we need to wait for them to load
@@ -149,13 +156,23 @@ function initImageDisplays() {
       return;
     }
     
-    if (media.length === 0) return;
+    if (media.length === 0) {
+      console.log('No valid media found in gallery container');
+      return;
+    }
     
+    console.log(`Initializing gallery with ${media.length} media items`);
     initializeGallery(container, media, allMedia);
   });
 }
 
 function initializeGallery(container, images, allImages) {
+  // Skip if already initialized (check for existing data attribute)
+  if (container.dataset.galleryInitialized === 'true') {
+    return;
+  }
+  container.dataset.galleryInitialized = 'true';
+  
   // Each gallery has its own state
   const galleryState = {
     currentImageIndex: 0,

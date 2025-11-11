@@ -380,7 +380,10 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         // Use multiple attempts to ensure galleries/videos are initialized
         const initDisplays = () => {
           if (typeof initImageDisplays === 'function') {
-            initImageDisplays();
+            // Wait a bit for DOM to update after innerHTML
+            setTimeout(() => {
+              initImageDisplays();
+            }, 10);
           } else {
             console.warn('initImageDisplays function not available yet, retrying...');
             setTimeout(initDisplays, 100);
