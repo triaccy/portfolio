@@ -125,6 +125,11 @@ function applyVideoImageStyle() {
       position: relative;
       min-width: 200px;
       max-width: 80%;
+      z-index: 11;
+    }
+    
+    .video-progress-container:hover {
+      height: 5px;
     }
     
     .video-progress-bar {
@@ -430,23 +435,32 @@ function setupVideoControlListeners() {
     
     newContainer.addEventListener('click', (e) => {
       e.stopPropagation();
+      e.preventDefault();
       const rect = newContainer.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
+      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const videoId = newContainer.dataset.videoId;
       const overlay = newContainer.closest('.video-controls-overlay');
+      if (!overlay) return;
       const videoType = overlay.dataset.videoType;
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
         // For YouTube, we need to estimate duration or use a default
         // Since we can't get duration via postMessage, we'll use a reasonable estimate
-        const estimatedDuration = 60; // Default to 60 seconds, will be updated if available
-        player.seekTo(estimatedDuration * percent);
+        // Try to get actual duration if available, otherwise use estimate
+        const estimatedDuration = 60; // Default to 60 seconds
+        const seekTime = estimatedDuration * percent;
+        player.seekTo(seekTime, true); // true = allowSeekAhead
+        console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}%)`);
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
         if (player) {
           player.getDuration().then(duration => {
-            player.setCurrentTime(duration * percent);
+            const seekTime = duration * percent;
+            player.setCurrentTime(seekTime);
+            console.log(`Seeking Vimeo video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}%)`);
+          }).catch(err => {
+            console.warn('Failed to seek Vimeo video:', err);
           });
         }
       }
