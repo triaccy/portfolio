@@ -333,9 +333,12 @@
         setTimeout(() => {
           const whaleGallery = document.getElementById('whale-gallery');
           if (whaleGallery) {
+            console.log('Whale gallery found, initializing...');
             initWhaleGallery();
+          } else {
+            console.log('Whale gallery not found in DOM');
           }
-        }, 100);
+        }, 200);
       })();
       
       // Whale gallery functionality
@@ -345,33 +348,91 @@
       };
       
       function initWhaleGallery() {
-        const allImages = document.querySelectorAll('#whale-gallery .gallery-image');
-        whaleGalleryState.images = Array.from(allImages).filter(img => {
-          if (!img.complete || img.naturalHeight === 0) {
-            img.style.display = 'none';
-            return false;
-          }
-          return true;
-        });
-        
-        whaleGalleryState.currentImageIndex = 0;
-        
-        if (whaleGalleryState.images.length <= 1) {
-          document.querySelectorAll('#whale-gallery .gallery-nav').forEach(btn => btn.style.display = 'none');
+        console.log('Initializing whale gallery...');
+        const gallery = document.getElementById('whale-gallery');
+        if (!gallery) {
+          console.error('Whale gallery container not found');
+          return;
         }
         
-        function updateGallery(direction = 0) {
-          if (whaleGalleryState.images.length === 0) return;
+        const allImages = gallery.querySelectorAll('.gallery-image');
+        console.log('Found images:', allImages.length);
+        
+        // Wait for images to load, then filter
+        const checkImages = () => {
+          whaleGalleryState.images = Array.from(allImages).filter(img => {
+            // Check if image is hidden due to error
+            if (img.style.display === 'none') {
+              return false;
+            }
+            // For images that haven't loaded yet, wait a bit
+            if (!img.complete) {
+              return true; // Include it, will check on load
+            }
+            // If image loaded but has 0 height, it's broken
+            if (img.naturalHeight === 0) {
+              console.warn('Image failed to load:', img.src);
+              img.style.display = 'none';
+              return false;
+            }
+            return true;
+          });
           
+          console.log('Valid images:', whaleGalleryState.images.length);
+          
+          if (whaleGalleryState.images.length === 0) {
+            console.error('No valid images found in gallery');
+            return;
+          }
+          
+          whaleGalleryState.currentImageIndex = 0;
+          
+          if (whaleGalleryState.images.length <= 1) {
+            console.log('Only one image, hiding navigation');
+            gallery.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
+          }
+          
+          updateGallery();
+        };
+        
+        // Check immediately
+        checkImages();
+        
+        // Also check after images load
+        allImages.forEach(img => {
+          if (!img.complete) {
+            img.addEventListener('load', checkImages, { once: true });
+            img.addEventListener('error', function() {
+              console.error('Image load error:', this.src);
+              this.style.display = 'none';
+              checkImages();
+            });
+          }
+        });
+        
+        function updateGallery(direction = 0) {
+          if (whaleGalleryState.images.length === 0) {
+            console.warn('No images to display');
+            return;
+          }
+          
+          // Remove active class from all images
           whaleGalleryState.images.forEach(img => {
             img.classList.remove('active', 'prev');
           });
           
-          whaleGalleryState.images[whaleGalleryState.currentImageIndex].classList.add('active');
+          // Add active class to current image
+          if (whaleGalleryState.images[whaleGalleryState.currentImageIndex]) {
+            whaleGalleryState.images[whaleGalleryState.currentImageIndex].classList.add('active');
+            console.log('Showing image', whaleGalleryState.currentImageIndex + 1, 'of', whaleGalleryState.images.length);
+          }
         }
         
         window.changeWhaleImage = function(direction) {
-          if (whaleGalleryState.images.length === 0) return;
+          if (whaleGalleryState.images.length === 0) {
+            console.warn('Cannot change image: no images available');
+            return;
+          }
           
           let newIndex = whaleGalleryState.currentImageIndex + direction;
           if (newIndex >= whaleGalleryState.images.length) {
@@ -384,25 +445,13 @@
           updateGallery(direction);
         };
         
-        const container = document.getElementById('whale-gallery');
-        if (container) {
-          container.addEventListener('click', (e) => {
-            if (e.target.classList.contains('gallery-nav')) return;
-            changeWhaleImage(1);
-          });
-        }
-        
-        allImages.forEach(img => {
-          img.addEventListener('error', function() {
-            this.style.display = 'none';
-            const newImages = Array.from(allImages).filter(i => i.style.display !== 'none' && (i.complete && i.naturalHeight > 0));
-            if (newImages.length <= 1) {
-              document.querySelectorAll('#whale-gallery .gallery-nav').forEach(btn => btn.style.display = 'none');
-            }
-          });
+        // Click handler for gallery container
+        gallery.addEventListener('click', (e) => {
+          if (e.target.classList.contains('gallery-nav')) return;
+          changeWhaleImage(1);
         });
         
-        updateGallery();
+        console.log('Whale gallery initialized successfully');
       }
     </script>
 </body>
