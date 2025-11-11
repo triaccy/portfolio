@@ -118,18 +118,19 @@ function applyVideoImageStyle() {
     
     .video-progress-container {
       flex: 1;
-      height: 4px;
+      height: 3px;
       background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
+      border-radius: 6px;
       cursor: pointer;
       position: relative;
       min-width: 200px;
+      max-width: 80%;
     }
     
     .video-progress-bar {
       height: 100%;
       background: rgba(139, 69, 19, 0.9);
-      border-radius: 2px;
+      border-radius: 6px;
       width: 0%;
       transition: width 0.1s linear;
     }
