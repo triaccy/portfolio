@@ -74,80 +74,121 @@ function initImageDisplays() {
     const allImages = container.querySelectorAll('.display-image');
     
     // Filter out images that fail to load
-    const images = Array.from(allImages).filter(img => {
-      if (!img.complete || img.naturalHeight === 0 || img.style.display === 'none') {
-        return false;
-      }
-      return true;
-    });
-    
-    if (images.length === 0) return;
-    
-    // Each gallery has its own state
-    const galleryState = {
-      currentImageIndex: 0,
-      images: images
+    // For dynamically inserted images, we need to wait for them to load
+    const checkImages = () => {
+      const images = Array.from(allImages).filter(img => {
+        // Skip if already hidden
+        if (img.style.display === 'none') {
+          return false;
+        }
+        // For images that haven't loaded yet, include them (they'll be checked on load)
+        if (!img.complete) {
+          return true;
+        }
+        // If image loaded but has 0 height, it's broken
+        if (img.naturalHeight === 0) {
+          img.style.display = 'none';
+          return false;
+        }
+        return true;
+      });
+      
+      return images;
     };
     
-    // Hide navigation if only one image
-    const navButtons = container.querySelectorAll('.display-nav');
-    if (images.length <= 1) {
-      navButtons.forEach(btn => btn.style.display = 'none');
+    let images = checkImages();
+    
+    // If no images are ready yet, wait for them to load
+    if (images.length === 0 && allImages.length > 0) {
+      // Wait for images to load
+      const imagePromises = Array.from(allImages).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', reject, { once: true });
+        });
+      });
+      
+      Promise.allSettled(imagePromises).then(() => {
+        images = checkImages();
+        if (images.length > 0) {
+          initializeGallery(container, images, allImages);
+        }
+      });
       return;
     }
     
-    function updateGallery(direction = 0) {
-      galleryState.images.forEach(img => {
-        img.classList.remove('active', 'prev');
-      });
-      if (galleryState.images[galleryState.currentImageIndex]) {
-        galleryState.images[galleryState.currentImageIndex].classList.add('active');
-      }
-    }
+    if (images.length === 0) return;
     
-    function changeImage(direction) {
-      let newIndex = galleryState.currentImageIndex + direction;
-      if (newIndex >= galleryState.images.length) {
-        newIndex = 0;
-      } else if (newIndex < 0) {
-        newIndex = galleryState.images.length - 1;
-      }
-      galleryState.currentImageIndex = newIndex;
-      updateGallery(direction);
-    }
-    
-    // Set up navigation buttons
-    const prevBtn = container.querySelector('.display-nav.prev');
-    const nextBtn = container.querySelector('.display-nav.next');
-    
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => changeImage(-1));
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => changeImage(1));
-    }
-    
-    // Click on container to go to next
-    container.addEventListener('click', (e) => {
-      if (e.target.classList.contains('display-nav')) return;
-      changeImage(1);
-    });
-    
-    // Handle image load errors
-    allImages.forEach(img => {
-      img.addEventListener('error', function() {
-        this.style.display = 'none';
-        const validImages = Array.from(allImages).filter(i => 
-          i.style.display !== 'none' && (i.complete && i.naturalHeight > 0)
-        );
-        if (validImages.length <= 1) {
-          navButtons.forEach(btn => btn.style.display = 'none');
-        }
-      });
-    });
-    
-    // Initialize gallery
-    updateGallery();
+    initializeGallery(container, images, allImages);
   });
+}
+
+function initializeGallery(container, images, allImages) {
+  // Each gallery has its own state
+  const galleryState = {
+    currentImageIndex: 0,
+    images: images
+  };
+  
+  // Hide navigation if only one image
+  const navButtons = container.querySelectorAll('.display-nav');
+  if (images.length <= 1) {
+    navButtons.forEach(btn => btn.style.display = 'none');
+    return;
+  }
+  
+  function updateGallery(direction = 0) {
+    galleryState.images.forEach(img => {
+      img.classList.remove('active', 'prev');
+    });
+    if (galleryState.images[galleryState.currentImageIndex]) {
+      galleryState.images[galleryState.currentImageIndex].classList.add('active');
+    }
+  }
+  
+  function changeImage(direction) {
+    let newIndex = galleryState.currentImageIndex + direction;
+    if (newIndex >= galleryState.images.length) {
+      newIndex = 0;
+    } else if (newIndex < 0) {
+      newIndex = galleryState.images.length - 1;
+    }
+    galleryState.currentImageIndex = newIndex;
+    updateGallery(direction);
+  }
+  
+  // Set up navigation buttons
+  const prevBtn = container.querySelector('.display-nav.prev');
+  const nextBtn = container.querySelector('.display-nav.next');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => changeImage(-1));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => changeImage(1));
+  }
+  
+  // Click on container to go to next
+  container.addEventListener('click', (e) => {
+    if (e.target.classList.contains('display-nav')) return;
+    changeImage(1);
+  });
+  
+  // Handle image load errors
+  allImages.forEach(img => {
+    img.addEventListener('error', function() {
+      this.style.display = 'none';
+      const validImages = Array.from(allImages).filter(i => 
+        i.style.display !== 'none' && (i.complete && i.naturalHeight > 0)
+      );
+      if (validImages.length <= 1) {
+        navButtons.forEach(btn => btn.style.display = 'none');
+      }
+    });
+  });
+  
+  // Initialize gallery
+  updateGallery();
 }
 

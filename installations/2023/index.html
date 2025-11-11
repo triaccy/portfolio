@@ -5,17 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Installation 2023</title>
     <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../css/imageDisplay.css">
     <style>
       body { 
         padding: 24px; 
         max-width: 1200px; 
         margin: 0 auto; 
-      }
-      .topic-title { 
-        font-size: 24px; 
-        text-decoration: underline; 
-        text-underline-offset: 4px; 
-        margin-bottom: 20px;
       }
       .back { 
         position: fixed;
@@ -36,212 +31,43 @@
         color: var(--fg); 
         line-height: 1.6;
       }
-      
-      .image-gallery {
-        position: relative;
-        max-width: 1100px;
-        margin: 20px auto;
-        overflow: hidden;
-        --nav-pad: 24px; /* equal distance from image edge for nav triggers */
-      }
-      
-      .gallery-container {
-        position: relative;
-        width: 100%;
-        height: 650px;
-        background: #f8f8f8;
-        cursor: ew-resize; /* look like <--> when hover over image */
-      }
-      
-      .gallery-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transform: none;
-        transition: none; /* clean, no dynamic animation */
-      }
-      
-      .gallery-image.active {
-        opacity: 1;
-      }
-      
-      .gallery-image.prev {
-        transform: none;
-      }
-      
-      .gallery-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        color: white;
-        border: none;
-        width: 48px;
-        height: 48px;
-        cursor: pointer;
-        font-size: 0; /* hide text, we draw chevron with CSS */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        opacity: 0.8;
-        padding: 0;
-      }
-      .gallery-nav:hover { opacity: 1; }
-      .gallery-nav:focus { outline: none; }
-      .gallery-nav::before {
-        content: "";
-        display: block;
-        width: 20px;
-        height: 20px;
-        border-left: 2px solid #fff;
-        border-bottom: 2px solid #fff;
-        opacity: 0.9;
-      }
-      .gallery-nav.prev { left: 12px; }
-      .gallery-nav.prev::before { transform: rotate(45deg); }
-      .gallery-nav.next { right: 12px; }
-      .gallery-nav.next::before { transform: rotate(-135deg); }
-      
-      .project-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
-      }
-      
-      .project-card {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 16px;
-        background: #fafafa;
-      }
-      
-      .project-title {
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      
-      .project-description {
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 12px;
-      }
-      
-      .project-link {
-        font-size: 12px;
-        color: var(--accent);
-        text-decoration: none;
-      }
-      
-      .project-link:hover {
-        text-decoration: underline;
-      }
     </style>
 </head>
 <body>
     <a class="back" href="../../">← back</a>
     
     <div class="content">
+      <div id="installation-gallery"></div>
+    </div>
     
-      <div class="image-gallery">
-        <div class="gallery-container">
-          <img src="../../images/installation-1.jpg" class="gallery-image active" onerror="this.style.display='none';" />
-          <img src="../../images/installation-3.jpg" class="gallery-image" onerror="this.style.display='none';" />
-          
-          <button class="gallery-nav prev" onclick="changeImage(-1)">‹</button>
-          <button class="gallery-nav next" onclick="changeImage(1)">›</button>
-        </div>
-      </div>
-      
-    
-    
+    <script src="../../js/imageDisplay.js"></script>
     <script>
-      // Filter out images that fail to load
-      const allImages = document.querySelectorAll('.gallery-image');
-      const images = Array.from(allImages).filter(img => {
-        // Check if image loaded successfully
-        if (!img.complete || img.naturalHeight === 0) {
-          img.style.display = 'none';
-          return false;
+      // Wait for DOM and script to be ready
+      document.addEventListener('DOMContentLoaded', function() {
+        // Check if imageDisplay functions are available
+        if (typeof createImageDisplay === 'undefined') {
+          console.error('imageDisplay.js not loaded');
+          document.getElementById('installation-gallery').innerHTML = '<p>Error loading gallery. Please refresh the page.</p>';
+          return;
         }
-        return true;
+        
+        // Create gallery using the modular imageDisplay.js
+        const galleryHTML = createImageDisplay('gallery', [
+          { src: '../../images/installation-1.jpg', alt: 'Installation 1' },
+          { src: '../../images/installation-3.jpg', alt: 'Installation 3' }
+        ], { id: 'installation-2023-gallery' });
+        
+        if (galleryHTML) {
+          document.getElementById('installation-gallery').innerHTML = galleryHTML;
+          
+          // Initialize the gallery after images have a chance to load
+          setTimeout(() => {
+            if (typeof initImageDisplays === 'function') {
+              initImageDisplays();
+            }
+          }, 200);
+        }
       });
-      
-      let currentImageIndex = 0;
-      
-      // Hide navigation if only one or no images
-      if (images.length <= 1) {
-        document.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
-      }
-      
-      function updateGallery(direction = 0) {
-        if (images.length === 0) return;
-        
-        // Remove all classes first
-        images.forEach(img => {
-          img.classList.remove('active', 'prev');
-        });
-        
-        // Set up sliding animation
-        if (direction === 1) {
-          // Moving right: new image slides in from right
-          images[currentImageIndex].classList.add('active');
-        } else if (direction === -1) {
-          // Moving left: new image slides in from left
-          images[currentImageIndex].classList.add('active');
-        } else {
-          // Initial load: just show current image
-          images[currentImageIndex].classList.add('active');
-        }
-      }
-      
-      function changeImage(direction) {
-        if (images.length === 0) return;
-        
-        // Calculate new index with looping
-        let newIndex = currentImageIndex + direction;
-        if (newIndex >= images.length) {
-          newIndex = 0;
-        } else if (newIndex < 0) {
-          newIndex = images.length - 1;
-        }
-        
-        // Update index
-        currentImageIndex = newIndex;
-        
-        // Update gallery instantly
-        updateGallery(direction);
-      }
-      
-      // Click anywhere on image to go to next
-      const container = document.querySelector('.gallery-container');
-      if (container) {
-        container.addEventListener('click', (e) => {
-          // Don't trigger if clicking on navigation buttons
-          if (e.target.classList.contains('gallery-nav')) return;
-          changeImage(1);
-        });
-      }
-      
-      // Handle image load errors
-      allImages.forEach(img => {
-        img.addEventListener('error', function() {
-          this.style.display = 'none';
-          // Re-filter images after error
-          const newImages = Array.from(allImages).filter(i => i.style.display !== 'none' && (i.complete && i.naturalHeight > 0));
-          if (newImages.length <= 1) {
-            document.querySelectorAll('.gallery-nav').forEach(btn => btn.style.display = 'none');
-          }
-        });
-      });
-      
-      // Initialize gallery
-      updateGallery();
     </script>
 </body>
 </html>
