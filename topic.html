@@ -63,6 +63,12 @@
         pointer-events: auto;
       }
       
+      /* Vimeo video styling */
+      .video-container iframe[src*="vimeo.com"] {
+        width: var(--video-width);
+        height: var(--video-height);
+      }
+      
       @media (max-width: 768px) {
         .video-container iframe {
           width: 100%;
@@ -262,7 +268,12 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
           ], { id: 'paper-gallery' })
         },
         '2024-machine': {
-          content: `None`
+          title: 'Knitting Machine (2024)',
+          content: createImageDisplay('gallery', [
+            { src: 'images/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
+            { src: 'images/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
+            { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
+          ], { id: 'machine-gallery' })
         },
         '2024-biochem': {
           title: 'Biochemistry (2024)',
@@ -287,7 +298,33 @@ My work focused on pioneering the optimization of a green chemical extraction me
           ], { id: 'whale-gallery' })
         },
         '2024-conservation': {
-          content: `None`
+          title: 'Conservation (2024)',
+          content: `
+            <div class="video-container">
+              <iframe src="https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
+                      title="Vimeo video player" 
+                      frameborder="0" 
+                      allow="autoplay; fullscreen; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+            <div class="video-container">
+              <iframe src="https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
+                      title="Vimeo video player" 
+                      frameborder="0" 
+                      allow="autoplay; fullscreen; picture-in-picture" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+            <div class="video-container">
+              <iframe src="https://www.youtube.com/embed/jKCMreZw1CQ?autoplay=1&mute=1&loop=1&playlist=jKCMreZw1CQ&controls=0&modestbranding=1&rel=0" 
+                      title="YouTube video player" 
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      allowfullscreen>
+              </iframe>
+            </div>
+          `
         },
         '2023-conservation': {
           content: `None`
