@@ -291,16 +291,17 @@ My work focused on pioneering the optimization of a green chemical extraction me
           content: function() {
             if (typeof createVideoGallery === 'function') {
               return createVideoGallery([
+              { 
+                  src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+                  title: 'Conservation Video 2',
+                  allow: 'autoplay; fullscreen; picture-in-picture'
+                },
                 { 
                   src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
                   title: 'Conservation Video 1',
                   allow: 'autoplay; fullscreen; picture-in-picture'
                 },
-                { 
-                  src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-                  title: 'Conservation Video 2',
-                  allow: 'autoplay; fullscreen; picture-in-picture'
-                }
+                
               ], { id: 'conservation-video-gallery' });
             }
             return '<p>Video gallery loading...</p>';
