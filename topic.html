@@ -57,6 +57,12 @@
         border-radius: 8px;
       }
       
+      .video-container media-item {
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+      }
+      
       /* Project grid */
       .project-grid {
         display: grid;
@@ -167,10 +173,20 @@
           content: `None`
         },
         '2021 installation': {
-          content: `None`
+          title: 'Installation (2021)',
+          content: `
+            <p>Early spatial design and environmental interaction installations from 2021.</p>
+            <div class="video-container">
+              <media-item autoplay="true" class="zoomable" disable-scroll-animation="true" hash="G1986167848255995259289520559702" limit-by="width" loop="true" muted="true" scale="100%"></media-item>
+            </div>
+          `
         },
         '2023 installation': {
-          content: `None` 
+          title: 'Installation (2023)',
+          content: createImageDisplay('gallery', [
+            { src: 'images/installation-1.jpg', alt: 'Installation 1' },
+            { src: 'images/installation-3.jpg', alt: 'Installation 3' }
+          ], { id: 'installation-2023-gallery' })
         },
         'architecture': {
           content: `None`
