@@ -265,7 +265,7 @@ function getVideoId(url, type) {
 
 // Function to initialize video controls
 function initVideoControls() {
-  console.log('Initializing video controls...');
+  console.log('Initializing video controls...', new Date().toISOString());
   let controlsAdded = 0;
   
   // Initialize controls for video containers
