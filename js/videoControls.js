@@ -97,10 +97,9 @@ function applyVideoImageStyle() {
     .video-progress-overlay {
       position: absolute;
       top: 50%;
-      left: 0;
-      right: 0;
+      left: 20px;
+      right: 20px;
       transform: translateY(-50%);
-      padding: 0 20px;
       pointer-events: auto;
     }
     
@@ -113,6 +112,7 @@ function applyVideoImageStyle() {
       border-radius: 4px;
       width: 100%;
       max-width: 100%;
+      box-sizing: border-box;
     }
     
     .video-progress-container {
@@ -149,11 +149,9 @@ function applyVideoImageStyle() {
     
     /* Controls at the bottom - always visible below video */
     .video-controls {
-      background: rgba(60, 60, 60, 0.85);
-      padding: 12px 20px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
       pointer-events: auto;
       margin-top: 0;
     }
@@ -165,31 +163,76 @@ function applyVideoImageStyle() {
     }
     
     .video-control-btn {
-      background: transparent;
+      background: #e0e0e0;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
-      color: white;
-      padding: 8px 12px;
+      color: #333;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: opacity 0.2s;
+      transition: background-color 0.2s;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      white-space: nowrap;
     }
     
     .video-control-btn:hover {
-      opacity: 0.7;
+      background: #d0d0d0;
     }
     
     .video-control-btn .play-icon,
     .video-control-btn .pause-icon {
-      font-size: 12px;
+      font-size: 14px;
+      color: #333;
     }
     
     .video-control-btn .mute-icon,
     .video-control-btn .unmute-icon {
-      font-size: 12px;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    /* Combined button for Sound and Turn off */
+    .video-controls-combined {
+      background: #e0e0e0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      transition: background-color 0.2s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      flex: 1;
+    }
+    
+    .video-controls-combined:hover {
+      background: #d0d0d0;
+    }
+    
+    .video-controls-combined .sound-btn,
+    .video-controls-combined .turn-off-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .video-controls-combined .sound-btn:hover,
+    .video-controls-combined .turn-off-btn:hover {
+      opacity: 0.7;
     }
     
     /* Prevent hover interactions on video containers */
@@ -233,19 +276,21 @@ function createVideoControls(videoId, videoType) {
     <!-- Controls at the bottom - always visible -->
     <div class="video-controls" data-video-id="${videoId}" data-video-type="${videoType}">
       <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
-        <span class="play-icon">▶</span>
-        <span class="pause-icon" style="display: none;">⏸</span>
-        <span class="play-text">Play</span>
-        <span class="pause-text" style="display: none;">Pause</span>
+        <span class="play-text" style="display: none;">Play</span>
+        <span class="pause-text">Pause</span>
+        <span class="play-icon" style="display: none;">▶</span>
+        <span class="pause-icon">⏸</span>
       </button>
-      <button class="video-control-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
-        <span class="mute-icon">🔊</span>
-        <span class="unmute-icon" style="display: none;">🔇</span>
-        <span>Sound</span>
-      </button>
-      <button class="video-control-btn turn-off-btn" data-video-id="${videoId}" title="Turn off">
-        <span>Turn off</span>
-      </button>
+      <div class="video-controls-combined">
+        <button class="sound-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
+          <span class="mute-icon">🔊</span>
+          <span class="unmute-icon" style="display: none;">🔇</span>
+          <span>Sound</span>
+        </button>
+        <button class="turn-off-btn" data-video-id="${videoId}" title="Turn off">
+          <span>Turn off</span>
+        </button>
+      </div>
     </div>
   `;
 }
@@ -399,31 +444,7 @@ function setupVideoControlListeners() {
     });
   });
   
-  // Turn off button
-  document.querySelectorAll('.turn-off-btn').forEach(btn => {
-    // Remove existing listeners to avoid duplicates
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const videoId = newBtn.dataset.videoId;
-      const controlsDiv = newBtn.closest('.video-controls');
-      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
-      
-      if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-        const player = window.ytPlayers[videoId];
-        player.pauseVideo();
-      } else if (videoType === 'vimeo' && window.Vimeo) {
-        const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
-        if (player) {
-          player.pause();
-        }
-      }
-    });
-  });
-  
-  // Mute button
+  // Mute button (now inside combined container)
   document.querySelectorAll('.mute-btn').forEach(btn => {
     // Remove existing listeners to avoid duplicates
     const newBtn = btn.cloneNode(true);
@@ -431,6 +452,7 @@ function setupVideoControlListeners() {
     
     newBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      e.stopImmediatePropagation();
       const videoId = newBtn.dataset.videoId;
       const controlsDiv = newBtn.closest('.video-controls');
       const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
@@ -465,6 +487,34 @@ function setupVideoControlListeners() {
         }
       }
     });
+  });
+  
+  // Turn off button (now inside combined container)
+  document.querySelectorAll('.turn-off-btn').forEach(btn => {
+    // Skip if already processed as part of mute button handler
+    if (btn.closest('.video-controls-combined')) {
+      // Remove existing listeners to avoid duplicates
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      
+      newBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const videoId = newBtn.dataset.videoId;
+        const controlsDiv = newBtn.closest('.video-controls');
+        const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
+        
+        if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
+          const player = window.ytPlayers[videoId];
+          player.pauseVideo();
+        } else if (videoType === 'vimeo' && window.Vimeo) {
+          const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
+          if (player) {
+            player.pause();
+          }
+        }
+      });
+    }
   });
   
   // Progress bar - make it clickable to seek to specific time
@@ -597,6 +647,8 @@ function initYouTubePlayers() {
                   window.ytDurations[videoId] = duration;
                   console.log(`YouTube video ${videoId} duration: ${duration}s`);
                 }
+                // Start updating progress
+                updateVideoProgress(videoId, 'youtube');
               } catch (e) {
                 console.warn('Could not get YouTube video duration:', e);
               }
