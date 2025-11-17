@@ -105,8 +105,6 @@ function applyVideoImageStyle() {
       transform: translateY(-50%);
       padding: 0 20px;
       pointer-events: auto;
-      display: flex;
-      justify-content: center;
     }
     
     .video-progress-wrapper {
@@ -116,6 +114,8 @@ function applyVideoImageStyle() {
       background: rgba(60, 60, 60, 0.85);
       padding: 12px 16px;
       border-radius: 4px;
+      width: 100%;
+      max-width: 100%;
     }
     
     .video-progress-container {
@@ -125,8 +125,6 @@ function applyVideoImageStyle() {
       border-radius: 6px;
       cursor: pointer;
       position: relative;
-      min-width: 150px;
-      max-width: 400px;
       z-index: 11;
     }
     
@@ -466,6 +464,7 @@ function setupVideoControlListeners() {
     newContainer.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
+      e.stopImmediatePropagation();
       const rect = newContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const percent = Math.max(0, Math.min(1, clickX / rect.width));

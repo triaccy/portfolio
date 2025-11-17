@@ -223,6 +223,9 @@ function initializeGallery(container, images, allImages) {
     if (e.target.closest('.video-controls-overlay')) return;
     if (e.target.closest('.video-controls')) return;
     if (e.target.closest('.video-control-btn')) return;
+    if (e.target.closest('.video-progress-container')) return;
+    if (e.target.closest('.video-progress-wrapper')) return;
+    if (e.target.closest('.video-progress-overlay')) return;
     changeImage(1);
   });
   
