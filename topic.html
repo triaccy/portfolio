@@ -289,8 +289,9 @@ My work focused on pioneering the optimization of a green chemical extraction me
         '2024-conservation': {
           title: 'Conservation (2024)',
           content: function() {
-            if (typeof createVideoGallery === 'function') {
-              const galleryHTML = createVideoGallery([
+            if (typeof window.createVideoGallery === 'function' || typeof createVideoGallery === 'function') {
+              const createGallery = window.createVideoGallery || createVideoGallery;
+              const galleryHTML = createGallery([
                 { 
                   src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
                   title: 'Conservation Video 2',
@@ -303,10 +304,13 @@ My work focused on pioneering the optimization of a green chemical extraction me
                 },
               ], { id: 'conservation-video-gallery' });
               console.log('Created video gallery HTML:', galleryHTML);
-              return galleryHTML;
+              if (galleryHTML && galleryHTML.trim()) {
+                return galleryHTML;
+              }
             }
             console.error('createVideoGallery function not available');
-            return '<p>Video gallery loading...</p>';
+            // Return a placeholder that will be replaced when the function is available
+            return '<div id="conservation-video-placeholder"><p>Loading video gallery...</p></div>';
           }
         },
         '2023-conservation': {
@@ -373,13 +377,22 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         // Get content - if it's a function, call it; otherwise use it directly
         let contentHTML = topicData.content;
         if (typeof contentHTML === 'function') {
-          contentHTML = contentHTML();
+          try {
+            contentHTML = contentHTML();
+          } catch (e) {
+            console.error('Error executing content function:', e);
+            contentHTML = '<p>Error loading content. Please refresh the page.</p>';
+          }
         }
         // Treat "None" string as empty content
         if (contentHTML === 'None' || contentHTML === 'none') {
           contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
         }
-        content.innerHTML = contentHTML || '<p>No content available.</p>';
+        // Check if contentHTML is empty or just whitespace
+        if (!contentHTML || (typeof contentHTML === 'string' && !contentHTML.trim())) {
+          contentHTML = '<p>No content available.</p>';
+        }
+        content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
         
         // Initialize image displays after content is loaded

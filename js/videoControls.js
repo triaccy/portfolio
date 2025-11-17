@@ -83,19 +83,20 @@ function applyVideoImageStyle() {
       left: 0;
       right: 0;
       bottom: 0;
-      opacity: 0;
+      opacity: 1;
       transition: opacity 0.3s ease;
       pointer-events: none;
       z-index: 10;
     }
     
-    .video-container:hover .video-controls-overlay,
-    .image-display.gallery .display-container:hover .video-controls-overlay {
+    /* Keep overlay visible - can still use hover for enhanced visibility if needed */
+    .video-container .video-controls-overlay,
+    .image-display.gallery .display-container .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
     }
     
-    /* Playback bar in the middle - appears on hover */
+    /* Playback bar in the middle - always visible */
     .video-progress-overlay {
       position: absolute;
       top: 50%;
@@ -105,6 +106,9 @@ function applyVideoImageStyle() {
       width: calc(100% - 80px);
       max-width: 600px;
       min-width: 250px;
+      visibility: visible !important;
+      opacity: 1 !important;
+      display: block !important;
     }
     
     /* Make duration bar responsive to video container size */
@@ -120,7 +124,7 @@ function applyVideoImageStyle() {
     }
     
     .video-progress-wrapper {
-      display: flex;
+      display: flex !important;
       align-items: center;
       gap: 12px;
       background: rgba(60, 60, 60, 0.85);
@@ -128,6 +132,8 @@ function applyVideoImageStyle() {
       border-radius: 4px;
       width: 100%;
       box-sizing: border-box;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     .video-progress-container {
@@ -164,13 +170,15 @@ function applyVideoImageStyle() {
     
     /* Controls at the bottom - always visible below video */
     .video-controls {
-      display: flex;
+      display: flex !important;
       align-items: center;
       gap: 12px;
       pointer-events: auto;
       margin-top: 8px;
       justify-content: center;
       flex-wrap: wrap;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     /* Ensure controls are positioned relative to video container */
@@ -179,6 +187,9 @@ function applyVideoImageStyle() {
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     /* Video wrapper to contain video and controls */
@@ -357,6 +368,7 @@ function initVideoControls() {
         container.style.position = 'relative';
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
+        console.log('Created controls HTML for', videoId, ':', controlsHTML.substring(0, 200));
         const splitMarker = '<!-- Controls at the bottom';
         const parts = controlsHTML.split(splitMarker);
         if (parts.length >= 2) {
@@ -365,7 +377,18 @@ function initVideoControls() {
           // Insert controls (second part) after container
           const controlsPart = splitMarker + parts[1];
           container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted controls after container');
+          console.log('Inserted controls after container for', videoId);
+          
+          // Verify controls were inserted
+          const insertedControls = container.nextElementSibling;
+          if (insertedControls && insertedControls.classList.contains('video-controls')) {
+            console.log('Controls successfully inserted and found in DOM');
+            insertedControls.style.display = 'flex';
+            insertedControls.style.visibility = 'visible';
+            insertedControls.style.opacity = '1';
+          } else {
+            console.warn('Controls not found after insertion');
+          }
         } else {
           // Fallback: insert everything inside if split fails
           console.warn('Split failed, inserting all controls inside container');
@@ -373,6 +396,8 @@ function initVideoControls() {
         }
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
+      } else {
+        console.warn('No video ID found for iframe:', src);
       }
     }
   });
@@ -397,6 +422,7 @@ function initVideoControls() {
         container.style.position = 'relative';
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
+        console.log('Created gallery controls HTML for', videoId);
         const splitMarker = '<!-- Controls at the bottom';
         const parts = controlsHTML.split(splitMarker);
         if (parts.length >= 2) {
@@ -405,7 +431,18 @@ function initVideoControls() {
           // Insert controls (second part) after container
           const controlsPart = splitMarker + parts[1];
           container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted gallery controls after container');
+          console.log('Inserted gallery controls after container for', videoId);
+          
+          // Verify controls were inserted
+          const insertedControls = container.nextElementSibling;
+          if (insertedControls && insertedControls.classList.contains('video-controls')) {
+            console.log('Gallery controls successfully inserted and found in DOM');
+            insertedControls.style.display = 'flex';
+            insertedControls.style.visibility = 'visible';
+            insertedControls.style.opacity = '1';
+          } else {
+            console.warn('Gallery controls not found after insertion');
+          }
         } else {
           // Fallback: insert everything inside if split fails
           console.warn('Split failed, inserting all controls inside container');
