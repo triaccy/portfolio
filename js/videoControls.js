@@ -3,7 +3,7 @@
  * Provides functions for creating video galleries, managing video controls, and handling YouTube/Vimeo APIs
  * Version: 4 - Updated button styling and structure
  */
-console.log('videoControls.js loaded - Version 4');
+console.log('videoControls.js loaded - Version 5');
 
 // Function to ensure video URLs have all parameters to hide interfaces
 function ensureVideoNoInterface(url) {
@@ -99,10 +99,24 @@ function applyVideoImageStyle() {
     .video-progress-overlay {
       position: absolute;
       top: 50%;
-      left: 20px;
-      right: 20px;
-      transform: translateY(-50%);
+      left: 50%;
+      transform: translate(-50%, -50%);
       pointer-events: auto;
+      width: calc(100% - 80px);
+      max-width: 600px;
+      min-width: 250px;
+    }
+    
+    /* Make duration bar responsive to video container size */
+    .video-container .video-progress-overlay {
+      max-width: calc(var(--video-width, 720px) - 80px);
+    }
+    
+    @media (max-width: 768px) {
+      .video-progress-overlay {
+        width: calc(100% - 40px);
+        min-width: 200px;
+      }
     }
     
     .video-progress-wrapper {
@@ -113,7 +127,6 @@ function applyVideoImageStyle() {
       padding: 12px 16px;
       border-radius: 4px;
       width: 100%;
-      max-width: 100%;
       box-sizing: border-box;
     }
     
@@ -155,7 +168,17 @@ function applyVideoImageStyle() {
       align-items: center;
       gap: 12px;
       pointer-events: auto;
-      margin-top: 0;
+      margin-top: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* Ensure controls are positioned relative to video container */
+    .video-container + .video-controls,
+    .display-container + .video-controls {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     
     /* Video wrapper to contain video and controls */
@@ -165,12 +188,12 @@ function applyVideoImageStyle() {
     }
     
     .video-control-btn {
-      background: #e0e0e0;
+      background: rgba(60, 60, 60, 0.85);
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
-      color: #333;
+      color: white;
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -181,29 +204,29 @@ function applyVideoImageStyle() {
     }
     
     .video-control-btn:hover {
-      background: #d0d0d0;
+      background: rgba(80, 80, 80, 0.85);
     }
     
     .video-control-btn .play-icon,
     .video-control-btn .pause-icon {
       font-size: 14px;
-      color: #333;
+      color: white;
     }
     
     .video-control-btn .mute-icon,
     .video-control-btn .unmute-icon {
       font-size: 14px;
-      color: #333;
+      color: white;
     }
     
     /* Combined button for Sound and Turn off */
     .video-controls-combined {
-      background: #e0e0e0;
+      background: rgba(60, 60, 60, 0.85);
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
-      color: #333;
+      color: white;
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -211,11 +234,10 @@ function applyVideoImageStyle() {
       gap: 24px;
       transition: background-color 0.2s;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      flex: 1;
     }
     
     .video-controls-combined:hover {
-      background: #d0d0d0;
+      background: rgba(80, 80, 80, 0.85);
     }
     
     .video-controls-combined .sound-btn,
@@ -224,7 +246,7 @@ function applyVideoImageStyle() {
       border: none;
       cursor: pointer;
       font-size: 14px;
-      color: #333;
+      color: white;
       padding: 0;
       display: flex;
       align-items: center;
@@ -335,11 +357,19 @@ function initVideoControls() {
         container.style.position = 'relative';
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
-        const parts = controlsHTML.split('<!-- Controls at the bottom');
-        container.insertAdjacentHTML('beforeend', parts[0]); // Only overlay part
-        if (parts[1]) {
-          container.insertAdjacentHTML('afterend', '<!-- Controls at the bottom' + parts[1]); // Controls part with comment
-          console.log('Inserted controls HTML:', '<!-- Controls at the bottom' + parts[1].substring(0, 100));
+        const splitMarker = '<!-- Controls at the bottom';
+        const parts = controlsHTML.split(splitMarker);
+        if (parts.length >= 2) {
+          // Insert overlay (first part) inside container
+          container.insertAdjacentHTML('beforeend', parts[0].trim());
+          // Insert controls (second part) after container
+          const controlsPart = splitMarker + parts[1];
+          container.insertAdjacentHTML('afterend', controlsPart);
+          console.log('Inserted controls after container');
+        } else {
+          // Fallback: insert everything inside if split fails
+          console.warn('Split failed, inserting all controls inside container');
+          container.insertAdjacentHTML('beforeend', controlsHTML);
         }
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
@@ -367,10 +397,19 @@ function initVideoControls() {
         container.style.position = 'relative';
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
-        const parts = controlsHTML.split('<!-- Controls at the bottom');
-        container.insertAdjacentHTML('beforeend', parts[0]); // Only overlay part
-        if (parts[1]) {
-          container.insertAdjacentHTML('afterend', '<!-- Controls at the bottom' + parts[1]); // Controls part with comment
+        const splitMarker = '<!-- Controls at the bottom';
+        const parts = controlsHTML.split(splitMarker);
+        if (parts.length >= 2) {
+          // Insert overlay (first part) inside container
+          container.insertAdjacentHTML('beforeend', parts[0].trim());
+          // Insert controls (second part) after container
+          const controlsPart = splitMarker + parts[1];
+          container.insertAdjacentHTML('afterend', controlsPart);
+          console.log('Inserted gallery controls after container');
+        } else {
+          // Fallback: insert everything inside if split fails
+          console.warn('Split failed, inserting all controls inside container');
+          container.insertAdjacentHTML('beforeend', controlsHTML);
         }
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
       } else {
@@ -413,6 +452,18 @@ function setupVideoControlListeners() {
           if (pauseText) pauseText.style.display = 'none';
         } else {
           player.playVideo();
+          // Track start time for time estimation
+          if (!window.ytStartTimes) window.ytStartTimes = {};
+          // Get current time if available, otherwise start from 0
+          let startTime = 0;
+          if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
+            try {
+              startTime = player.getCurrentTime() || 0;
+            } catch (e) {
+              startTime = 0;
+            }
+          }
+          window.ytStartTimes[videoId] = Date.now() - (startTime * 1000);
           newBtn.querySelector('.play-icon').style.display = 'none';
           newBtn.querySelector('.pause-icon').style.display = 'inline';
           const playText = newBtn.querySelector('.play-text');
@@ -560,10 +611,20 @@ function setupVideoControlListeners() {
           player.seekTo(seekTime, true); // true = allowSeekAhead
           console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}% of ${duration.toFixed(2)}s)`);
           
+          // Reset start time tracking to the seek position
+          if (!window.ytStartTimes) window.ytStartTimes = {};
+          window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
+          
           // Update progress bar immediately
           const progressBar = overlay.querySelector('.video-progress-bar');
           if (progressBar) {
             progressBar.style.width = (percent * 100) + '%';
+          }
+          
+          // Update time display immediately
+          const timeDisplays = overlay.querySelectorAll('.video-time');
+          if (timeDisplays.length >= 2) {
+            timeDisplays[0].textContent = formatTime(seekTime);
           }
         } else {
           // Fallback: try to seek with estimated duration
@@ -573,10 +634,20 @@ function setupVideoControlListeners() {
           player.seekTo(seekTime, true);
           console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (estimated, ${(percent * 100).toFixed(1)}%)`);
           
+          // Reset start time tracking to the seek position
+          if (!window.ytStartTimes) window.ytStartTimes = {};
+          window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
+          
           // Update progress bar immediately
           const progressBar = overlay.querySelector('.video-progress-bar');
           if (progressBar) {
             progressBar.style.width = (percent * 100) + '%';
+          }
+          
+          // Update time display immediately
+          const timeDisplays = overlay.querySelectorAll('.video-time');
+          if (timeDisplays.length >= 2) {
+            timeDisplays[0].textContent = formatTime(seekTime);
           }
         }
       } else if (videoType === 'vimeo' && window.Vimeo) {
@@ -591,7 +662,7 @@ function setupVideoControlListeners() {
               // Update progress bar immediately
               const progressBar = overlay.querySelector('.video-progress-bar');
               if (progressBar) {
-                progressBar.style.width = (percent * 100) + '%';
+                progressBar.style.width = Math.max(0, Math.min(100, (percent * 100))) + '%';
               }
               
               // Update time display
@@ -657,6 +728,13 @@ function initYouTubePlayers() {
               }
             },
             onStateChange: function(event) {
+              // Track start time when video starts playing
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                if (!window.ytStartTimes) window.ytStartTimes = {};
+                const currentTime = event.target.getCurrentTime ? event.target.getCurrentTime() : 0;
+                window.ytStartTimes[videoId] = Date.now() - (currentTime * 1000);
+              }
+              
               // Update play/pause button state
               const container = iframe.closest('.video-container, .display-container');
               if (container) {
@@ -790,6 +868,11 @@ function initVimeoPlayers() {
         const player = new Vimeo.Player(iframe);
         window.vimeoPlayers[videoId] = player;
         
+        // Check if autoplay is enabled in the URL
+        const urlParams = new URL(src).searchParams;
+        const autoplay = urlParams.get('autoplay') === '1' || urlParams.get('autoplay') === 'true';
+        const muted = urlParams.get('muted') === '1' || urlParams.get('muted') === 'true';
+        
         player.on('play', () => {
           const container = iframe.closest('.video-container, .display-container');
           if (container) {
@@ -824,6 +907,26 @@ function initVimeoPlayers() {
           }
         });
         
+        // Try to autoplay if enabled in URL
+        if (autoplay) {
+          // Wait for player to be ready, then try to play
+          player.ready().then(() => {
+            // Set volume to 0 if muted, otherwise keep default
+            if (muted) {
+              player.setVolume(0).catch(() => {
+                // Volume setting might fail, that's okay
+              });
+            }
+            // Try to play the video
+            player.play().catch(error => {
+              // Autoplay might be blocked by browser policy
+              console.log(`Vimeo autoplay blocked for video ${videoId}:`, error);
+            });
+          }).catch(error => {
+            console.warn('Vimeo player not ready:', error);
+          });
+        }
+        
         updateVideoProgress(videoId, 'vimeo');
       } catch (e) {
         console.warn('Failed to initialize Vimeo player:', e);
@@ -838,8 +941,14 @@ function updateVideoProgress(videoId, videoType) {
   if (!overlay) return;
   
   const progressBar = overlay.querySelector('.video-progress-bar');
-  const timeDisplay = overlay.querySelector('.video-time');
-  if (!progressBar || !timeDisplay) return;
+  const timeDisplays = overlay.querySelectorAll('.video-time');
+  if (!progressBar || timeDisplays.length < 2) return;
+  
+  // Initialize start time tracking for YouTube fallback
+  if (!window.ytStartTimes) window.ytStartTimes = {};
+  if (!window.ytStartTimes[videoId]) {
+    window.ytStartTimes[videoId] = null;
+  }
   
   const update = () => {
     if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
@@ -848,15 +957,33 @@ function updateVideoProgress(videoId, videoType) {
       // Try to get current time and duration if available
       let currentTime = 0;
       let duration = 0;
+      let hasValidTime = false;
       
+      // Try to get current time from player
       if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
         try {
-          currentTime = player.getCurrentTime();
+          const time = player.getCurrentTime();
+          if (time && !isNaN(time) && time >= 0) {
+            currentTime = time;
+            hasValidTime = true;
+            // Reset start time tracking when we get valid time
+            if (window.ytStartTimes[videoId] === null) {
+              window.ytStartTimes[videoId] = Date.now() - (currentTime * 1000);
+            }
+          }
         } catch (e) {
-          // Can't get current time
+          // Can't get current time from API
         }
       }
       
+      // Fallback: estimate time based on when video started
+      if (!hasValidTime && window.ytStartTimes[videoId] !== null) {
+        const elapsed = (Date.now() - window.ytStartTimes[videoId]) / 1000;
+        currentTime = Math.max(0, elapsed);
+        hasValidTime = true;
+      }
+      
+      // Get duration
       if (player.getDuration && typeof player.getDuration === 'function') {
         try {
           duration = player.getDuration();
@@ -876,15 +1003,14 @@ function updateVideoProgress(videoId, videoType) {
       }
       
       // Update progress bar and time displays
-      const timeDisplays = overlay.querySelectorAll('.video-time');
-      if (duration && duration > 0 && currentTime >= 0) {
+      if (duration && duration > 0) {
+        // Clamp current time to duration
+        currentTime = Math.min(currentTime, duration);
         const percent = (currentTime / duration) * 100;
-        progressBar.style.width = percent + '%';
-        if (timeDisplays.length >= 2) {
-          timeDisplays[0].textContent = formatTime(currentTime);
-          timeDisplays[1].textContent = formatTime(duration);
-        }
-      } else if (timeDisplays.length >= 2) {
+        progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
+        timeDisplays[0].textContent = formatTime(currentTime);
+        timeDisplays[1].textContent = formatTime(duration);
+      } else {
         // Show placeholder if duration not available yet
         if (progressBar.style.width === '0%' || !progressBar.style.width) {
           timeDisplays[0].textContent = '00:00';
@@ -894,10 +1020,9 @@ function updateVideoProgress(videoId, videoType) {
     } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
       const player = window.vimeoPlayers[videoId];
       Promise.all([player.getCurrentTime(), player.getDuration()]).then(([current, duration]) => {
-        if (duration && !isNaN(current) && !isNaN(duration)) {
+        if (duration && !isNaN(current) && !isNaN(duration) && current >= 0) {
           const percent = (current / duration) * 100;
-          progressBar.style.width = percent + '%';
-          const timeDisplays = overlay.querySelectorAll('.video-time');
+          progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
           if (timeDisplays.length >= 2) {
             timeDisplays[0].textContent = formatTime(current);
             timeDisplays[1].textContent = formatTime(duration);
@@ -988,4 +1113,5 @@ function createVideoGallery(videos, options = {}) {
     </div>
   `;
 }
+
 

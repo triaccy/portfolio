@@ -6,7 +6,7 @@
     <title>Topic</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="css/imageDisplay.css">
-    <script src="js/videoControls.js?v=4"></script>
+    <script src="js/videoControls.js?v=5"></script>
     <style>
       body { 
         padding: 24px; 
@@ -290,8 +290,8 @@ My work focused on pioneering the optimization of a green chemical extraction me
           title: 'Conservation (2024)',
           content: function() {
             if (typeof createVideoGallery === 'function') {
-              return createVideoGallery([
-              { 
+              const galleryHTML = createVideoGallery([
+                { 
                   src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
                   title: 'Conservation Video 2',
                   allow: 'autoplay; fullscreen; picture-in-picture'
@@ -301,9 +301,11 @@ My work focused on pioneering the optimization of a green chemical extraction me
                   title: 'Conservation Video 1',
                   allow: 'autoplay; fullscreen; picture-in-picture'
                 },
-              
               ], { id: 'conservation-video-gallery' });
+              console.log('Created video gallery HTML:', galleryHTML);
+              return galleryHTML;
             }
+            console.error('createVideoGallery function not available');
             return '<p>Video gallery loading...</p>';
           }
         },
@@ -404,13 +406,25 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         if (typeof loadYouTubeAPI === 'function') loadYouTubeAPI();
         if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
         
-        // Initialize video controls
+        // Initialize video controls and players
         const initVideoControlsDelayed = () => {
           if (typeof initVideoControls === 'function') {
             initVideoControls();
             // Re-initialize after APIs load
             setTimeout(initVideoControls, 1000);
             setTimeout(initVideoControls, 2000);
+          }
+          // Also initialize Vimeo players after content is inserted
+          if (typeof initVimeoPlayers === 'function') {
+            setTimeout(() => {
+              initVimeoPlayers();
+            }, 500);
+            setTimeout(() => {
+              initVimeoPlayers();
+            }, 1500);
+            setTimeout(() => {
+              initVimeoPlayers();
+            }, 2500);
           }
         };
         
