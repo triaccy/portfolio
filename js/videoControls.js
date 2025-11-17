@@ -1,7 +1,9 @@
 /**
  * Video Controls Module
  * Provides functions for creating video galleries, managing video controls, and handling YouTube/Vimeo APIs
+ * Version: 4 - Updated button styling and structure
  */
+console.log('videoControls.js loaded - Version 4');
 
 // Function to ensure video URLs have all parameters to hide interfaces
 function ensureVideoNoInterface(url) {
@@ -337,9 +339,10 @@ function initVideoControls() {
         container.insertAdjacentHTML('beforeend', parts[0]); // Only overlay part
         if (parts[1]) {
           container.insertAdjacentHTML('afterend', '<!-- Controls at the bottom' + parts[1]); // Controls part with comment
+          console.log('Inserted controls HTML:', '<!-- Controls at the bottom' + parts[1].substring(0, 100));
         }
         controlsAdded++;
-        console.log(`Added video controls to container: ${videoType} ${videoId}`);
+        console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
       }
     }
   });
