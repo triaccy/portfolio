@@ -74,7 +74,7 @@ function applyVideoImageStyle() {
       z-index: 1;
     }
     
-    /* Custom video controls overlay */
+    /* Custom video controls overlay - for duration bar only */
     .video-controls-overlay {
       position: absolute;
       top: 0;
@@ -85,9 +85,6 @@ function applyVideoImageStyle() {
       transition: opacity 0.3s ease;
       pointer-events: none;
       z-index: 10;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
     
     .video-container:hover .video-controls-overlay,
@@ -96,7 +93,7 @@ function applyVideoImageStyle() {
       pointer-events: auto;
     }
     
-    /* Playback bar in the middle */
+    /* Playback bar in the middle - appears on hover */
     .video-progress-overlay {
       position: absolute;
       top: 50%;
@@ -150,18 +147,21 @@ function applyVideoImageStyle() {
       font-family: monospace;
     }
     
-    /* Controls at the bottom */
+    /* Controls at the bottom - always visible below video */
     .video-controls {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
       background: rgba(60, 60, 60, 0.85);
       padding: 12px 20px;
       display: flex;
       align-items: center;
       gap: 20px;
       pointer-events: auto;
+      margin-top: 0;
+    }
+    
+    /* Video wrapper to contain video and controls */
+    .video-wrapper {
+      display: flex;
+      flex-direction: column;
     }
     
     .video-control-btn {
@@ -219,7 +219,7 @@ function applyVideoImageStyle() {
 function createVideoControls(videoId, videoType) {
   return `
     <div class="video-controls-overlay" data-video-id="${videoId}" data-video-type="${videoType}">
-      <!-- Playback bar in the middle -->
+      <!-- Playback bar in the middle - appears on hover -->
       <div class="video-progress-overlay">
         <div class="video-progress-wrapper">
           <div class="video-time" data-video-id="${videoId}" style="min-width: 70px;">00:00</div>
@@ -229,23 +229,23 @@ function createVideoControls(videoId, videoType) {
           <div class="video-time" data-video-id="${videoId}" style="min-width: 70px; text-align: right;">00:00</div>
         </div>
       </div>
-      <!-- Controls at the bottom -->
-      <div class="video-controls">
-        <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
-          <span class="play-icon">▶</span>
-          <span class="pause-icon" style="display: none;">⏸</span>
-          <span class="play-text">Play</span>
-          <span class="pause-text" style="display: none;">Pause</span>
-        </button>
-        <button class="video-control-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
-          <span class="mute-icon">🔊</span>
-          <span class="unmute-icon" style="display: none;">🔇</span>
-          <span>Sound</span>
-        </button>
-        <button class="video-control-btn turn-off-btn" data-video-id="${videoId}" title="Turn off">
-          <span>Turn off</span>
-        </button>
-      </div>
+    </div>
+    <!-- Controls at the bottom - always visible -->
+    <div class="video-controls" data-video-id="${videoId}" data-video-type="${videoType}">
+      <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
+        <span class="play-icon">▶</span>
+        <span class="pause-icon" style="display: none;">⏸</span>
+        <span class="play-text">Play</span>
+        <span class="pause-text" style="display: none;">Pause</span>
+      </button>
+      <button class="video-control-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
+        <span class="mute-icon">🔊</span>
+        <span class="unmute-icon" style="display: none;">🔇</span>
+        <span>Sound</span>
+      </button>
+      <button class="video-control-btn turn-off-btn" data-video-id="${videoId}" title="Turn off">
+        <span>Turn off</span>
+      </button>
     </div>
   `;
 }
@@ -286,7 +286,13 @@ function initVideoControls() {
       
       if (videoId) {
         container.style.position = 'relative';
-        container.insertAdjacentHTML('beforeend', createVideoControls(videoId, videoType));
+        // Insert overlay inside container, controls after container
+        const controlsHTML = createVideoControls(videoId, videoType);
+        const parts = controlsHTML.split('<!-- Controls at the bottom');
+        container.insertAdjacentHTML('beforeend', parts[0]); // Only overlay part
+        if (parts[1]) {
+          container.insertAdjacentHTML('afterend', '<!-- Controls at the bottom' + parts[1]); // Controls part with comment
+        }
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`);
       }
@@ -311,7 +317,13 @@ function initVideoControls() {
       
       if (videoId) {
         container.style.position = 'relative';
-        container.insertAdjacentHTML('beforeend', createVideoControls(videoId, videoType));
+        // Insert overlay inside container, controls after container
+        const controlsHTML = createVideoControls(videoId, videoType);
+        const parts = controlsHTML.split('<!-- Controls at the bottom');
+        container.insertAdjacentHTML('beforeend', parts[0]); // Only overlay part
+        if (parts[1]) {
+          container.insertAdjacentHTML('afterend', '<!-- Controls at the bottom' + parts[1]); // Controls part with comment
+        }
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
       } else {
         console.warn('Could not extract video ID from:', src);
@@ -336,8 +348,8 @@ function setupVideoControlListeners() {
     newBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const videoId = newBtn.dataset.videoId;
-      const overlay = newBtn.closest('.video-controls-overlay');
-      const videoType = overlay.dataset.videoType;
+      const controlsDiv = newBtn.closest('.video-controls');
+      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
@@ -396,8 +408,8 @@ function setupVideoControlListeners() {
     newBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const videoId = newBtn.dataset.videoId;
-      const overlay = newBtn.closest('.video-controls-overlay');
-      const videoType = overlay.dataset.videoType;
+      const controlsDiv = newBtn.closest('.video-controls');
+      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
@@ -420,8 +432,8 @@ function setupVideoControlListeners() {
     newBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const videoId = newBtn.dataset.videoId;
-      const overlay = newBtn.closest('.video-controls-overlay');
-      const videoType = overlay.dataset.videoType;
+      const controlsDiv = newBtn.closest('.video-controls');
+      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
@@ -471,7 +483,7 @@ function setupVideoControlListeners() {
       const videoId = newContainer.dataset.videoId;
       const overlay = newContainer.closest('.video-controls-overlay');
       if (!overlay) return;
-      const videoType = overlay.dataset.videoType;
+      const videoType = overlay.dataset.videoType || 'youtube';
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
@@ -591,9 +603,11 @@ function initYouTubePlayers() {
             },
             onStateChange: function(event) {
               // Update play/pause button state
-              const overlay = iframe.closest('.video-container, .display-container');
-              if (overlay) {
-                const playBtn = overlay.querySelector('.play-pause-btn');
+              const container = iframe.closest('.video-container, .display-container');
+              if (container) {
+                // Controls are now siblings, not children
+                const controls = container.nextElementSibling;
+                const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
                 if (playBtn) {
                   if (event.data === window.YT.PlayerState.PLAYING) {
                     playBtn.querySelector('.play-icon').style.display = 'none';
@@ -722,9 +736,11 @@ function initVimeoPlayers() {
         window.vimeoPlayers[videoId] = player;
         
         player.on('play', () => {
-          const overlay = iframe.closest('.video-container, .display-container');
-          if (overlay) {
-            const playBtn = overlay.querySelector('.play-pause-btn');
+          const container = iframe.closest('.video-container, .display-container');
+          if (container) {
+            // Controls are now siblings, not children
+            const controls = container.nextElementSibling;
+            const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
             if (playBtn) {
               playBtn.querySelector('.play-icon').style.display = 'none';
               playBtn.querySelector('.pause-icon').style.display = 'inline';
@@ -737,9 +753,11 @@ function initVimeoPlayers() {
         });
         
         player.on('pause', () => {
-          const overlay = iframe.closest('.video-container, .display-container');
-          if (overlay) {
-            const playBtn = overlay.querySelector('.play-pause-btn');
+          const container = iframe.closest('.video-container, .display-container');
+          if (container) {
+            // Controls are now siblings, not children
+            const controls = container.nextElementSibling;
+            const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
             if (playBtn) {
               playBtn.querySelector('.play-icon').style.display = 'inline';
               playBtn.querySelector('.pause-icon').style.display = 'none';
