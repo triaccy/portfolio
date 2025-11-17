@@ -226,8 +226,99 @@ function initializeGallery(container, images, allImages) {
     if (e.target.closest('.video-progress-container')) return;
     if (e.target.closest('.video-progress-wrapper')) return;
     if (e.target.closest('.video-progress-overlay')) return;
+    // Don't navigate if clicking directly on a video iframe (handled separately)
+    if (e.target.classList.contains('display-video')) return;
     changeImage(1);
   });
+  
+  // Add click handlers for video navigation
+  // Videos need special handling because iframes from other domains capture clicks
+  // We'll add a transparent navigation overlay that allows clicks through to controls
+  const videos = container.querySelectorAll('.display-video');
+  
+  if (videos.length > 0) {
+    // Create a single navigation overlay for the container
+    let navOverlay = container.querySelector('.video-nav-overlay');
+    if (!navOverlay) {
+      navOverlay = document.createElement('div');
+      navOverlay.className = 'video-nav-overlay';
+      navOverlay.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        cursor: pointer;
+        z-index: 4;
+        pointer-events: auto;
+      `;
+      container.appendChild(navOverlay);
+    }
+    
+    // Update overlay visibility based on active video
+    const updateNavOverlay = () => {
+      const activeVideo = container.querySelector('.display-video.active');
+      if (activeVideo && navOverlay) {
+        // Show overlay only when there's an active video
+        navOverlay.style.display = 'block';
+        navOverlay.style.pointerEvents = 'auto';
+      } else if (navOverlay) {
+        navOverlay.style.display = 'none';
+        navOverlay.style.pointerEvents = 'none';
+      }
+    };
+    
+    // Initial update
+    updateNavOverlay();
+    
+    // Watch for active class changes on videos
+    videos.forEach((video) => {
+      const observer = new MutationObserver(updateNavOverlay);
+      observer.observe(video, { attributes: true, attributeFilter: ['class'] });
+    });
+    
+    // Add click handler to navigation overlay
+    navOverlay.addEventListener('click', (e) => {
+      // Check what element is actually at the click point
+      // Controls overlay has z-index 10, so it should be on top
+      const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
+      
+      if (clickTarget) {
+        // Don't navigate if click is on controls or navigation buttons
+        if (clickTarget.closest('.video-controls-overlay') ||
+            clickTarget.closest('.video-controls') ||
+            clickTarget.closest('.video-control-btn') ||
+            clickTarget.closest('.video-progress-container') ||
+            clickTarget.closest('.video-progress-wrapper') ||
+            clickTarget.closest('.video-progress-overlay') ||
+            clickTarget.closest('.display-nav') ||
+            clickTarget.classList.contains('display-nav')) {
+          return;
+        }
+      }
+      
+      // Navigate to next video/image
+      e.stopPropagation();
+      e.preventDefault();
+      changeImage(1);
+    });
+    
+    // Also handle mousedown to ensure we catch the event
+    navOverlay.addEventListener('mousedown', (e) => {
+      const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
+      if (clickTarget && (
+        clickTarget.closest('.video-controls-overlay') ||
+        clickTarget.closest('.video-controls') ||
+        clickTarget.closest('.video-control-btn') ||
+        clickTarget.closest('.video-progress-container') ||
+        clickTarget.closest('.display-nav')
+      )) {
+        return; // Let controls handle it
+      }
+      // Don't prevent default here, just mark for navigation on click
+    });
+  }
   
   // Handle image load errors
   allImages.forEach(img => {

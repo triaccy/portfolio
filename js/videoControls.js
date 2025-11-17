@@ -220,14 +220,107 @@ function applyVideoImageStyle() {
     
     .video-control-btn .play-icon,
     .video-control-btn .pause-icon {
-      font-size: 14px;
-      color: white;
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      position: relative;
+      margin-left: 4px;
+    }
+    
+    /* Play icon - triangle pointing right */
+    .video-control-btn .play-icon::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid white;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+    
+    /* Pause icon - two vertical lines */
+    .video-control-btn .pause-icon::before,
+    .video-control-btn .pause-icon::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 12px;
+      background: white;
+    }
+    
+    .video-control-btn .pause-icon::before {
+      left: 2px;
+    }
+    
+    .video-control-btn .pause-icon::after {
+      right: 2px;
     }
     
     .video-control-btn .mute-icon,
     .video-control-btn .unmute-icon {
-      font-size: 14px;
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      position: relative;
+      margin-right: 4px;
+    }
+    
+    /* Mute icon - speaker with sound waves */
+    .video-control-btn .mute-icon::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      border: 2px solid white;
+      border-right: none;
+      border-radius: 2px 0 0 2px;
+    }
+    
+    .video-control-btn .mute-icon::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid white;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    
+    /* Unmute icon - speaker with X */
+    .video-control-btn .unmute-icon::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      border: 2px solid white;
+      border-right: none;
+      border-radius: 2px 0 0 2px;
+    }
+    
+    .video-control-btn .unmute-icon::after {
+      content: '×';
+      position: absolute;
+      right: -4px;
+      top: 50%;
+      transform: translateY(-50%);
       color: white;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: bold;
     }
     
     /* Combined button for Sound and Turn off */
@@ -289,6 +382,24 @@ function applyVideoImageStyle() {
       opacity: 1;
       pointer-events: auto;
     }
+    
+    /* Navigation overlay for video galleries - allows clicking to navigate */
+    .video-nav-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      cursor: pointer;
+      z-index: 4;
+      pointer-events: auto;
+    }
+    
+    /* Make sure video controls are above navigation overlay */
+    .video-controls-overlay {
+      z-index: 10 !important;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -313,13 +424,13 @@ function createVideoControls(videoId, videoType) {
       <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
         <span class="play-text" style="display: none;">Play</span>
         <span class="pause-text">Pause</span>
-        <span class="play-icon" style="display: none;">▶</span>
-        <span class="pause-icon">⏸</span>
+        <span class="play-icon" style="display: none;"></span>
+        <span class="pause-icon"></span>
       </button>
       <div class="video-controls-combined">
         <button class="sound-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
-          <span class="mute-icon">🔊</span>
-          <span class="unmute-icon" style="display: none;">🔇</span>
+          <span class="mute-icon"></span>
+          <span class="unmute-icon" style="display: none;"></span>
           <span>Sound</span>
         </button>
         <button class="turn-off-btn" data-video-id="${videoId}" title="Turn off">
@@ -479,35 +590,35 @@ function setupVideoControlListeners() {
         const player = window.ytPlayers[videoId];
         // Toggle play/pause - we'll track state manually since postMessage doesn't return state
         const isPlaying = newBtn.querySelector('.pause-icon').style.display !== 'none';
-        if (isPlaying) {
-          player.pauseVideo();
-          newBtn.querySelector('.play-icon').style.display = 'inline';
-          newBtn.querySelector('.pause-icon').style.display = 'none';
-          const playText = newBtn.querySelector('.play-text');
-          const pauseText = newBtn.querySelector('.pause-text');
-          if (playText) playText.style.display = 'inline';
-          if (pauseText) pauseText.style.display = 'none';
-        } else {
-          player.playVideo();
-          // Track start time for time estimation
-          if (!window.ytStartTimes) window.ytStartTimes = {};
-          // Get current time if available, otherwise start from 0
-          let startTime = 0;
-          if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
-            try {
-              startTime = player.getCurrentTime() || 0;
-            } catch (e) {
-              startTime = 0;
+            if (isPlaying) {
+              player.pauseVideo();
+              newBtn.querySelector('.play-icon').style.display = 'inline-block';
+              newBtn.querySelector('.pause-icon').style.display = 'none';
+              const playText = newBtn.querySelector('.play-text');
+              const pauseText = newBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'inline';
+              if (pauseText) pauseText.style.display = 'none';
+            } else {
+              player.playVideo();
+              // Track start time for time estimation
+              if (!window.ytStartTimes) window.ytStartTimes = {};
+              // Get current time if available, otherwise start from 0
+              let startTime = 0;
+              if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
+                try {
+                  startTime = player.getCurrentTime() || 0;
+                } catch (e) {
+                  startTime = 0;
+                }
+              }
+              window.ytStartTimes[videoId] = Date.now() - (startTime * 1000);
+              newBtn.querySelector('.play-icon').style.display = 'none';
+              newBtn.querySelector('.pause-icon').style.display = 'inline-block';
+              const playText = newBtn.querySelector('.play-text');
+              const pauseText = newBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'none';
+              if (pauseText) pauseText.style.display = 'inline';
             }
-          }
-          window.ytStartTimes[videoId] = Date.now() - (startTime * 1000);
-          newBtn.querySelector('.play-icon').style.display = 'none';
-          newBtn.querySelector('.pause-icon').style.display = 'inline';
-          const playText = newBtn.querySelector('.play-text');
-          const pauseText = newBtn.querySelector('.pause-text');
-          if (playText) playText.style.display = 'none';
-          if (pauseText) pauseText.style.display = 'inline';
-        }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
         if (player) {
@@ -515,14 +626,14 @@ function setupVideoControlListeners() {
             if (paused) {
               player.play();
               newBtn.querySelector('.play-icon').style.display = 'none';
-              newBtn.querySelector('.pause-icon').style.display = 'inline';
+              newBtn.querySelector('.pause-icon').style.display = 'inline-block';
               const playText = newBtn.querySelector('.play-text');
               const pauseText = newBtn.querySelector('.pause-text');
               if (playText) playText.style.display = 'none';
               if (pauseText) pauseText.style.display = 'inline';
             } else {
               player.pause();
-              newBtn.querySelector('.play-icon').style.display = 'inline';
+              newBtn.querySelector('.play-icon').style.display = 'inline-block';
               newBtn.querySelector('.pause-icon').style.display = 'none';
               const playText = newBtn.querySelector('.play-text');
               const pauseText = newBtn.querySelector('.pause-text');
@@ -554,12 +665,12 @@ function setupVideoControlListeners() {
         const isMuted = newBtn.querySelector('.unmute-icon').style.display !== 'none';
         if (isMuted) {
           player.unMute();
-          newBtn.querySelector('.mute-icon').style.display = 'inline';
+          newBtn.querySelector('.mute-icon').style.display = 'inline-block';
           newBtn.querySelector('.unmute-icon').style.display = 'none';
         } else {
           player.mute();
           newBtn.querySelector('.mute-icon').style.display = 'none';
-          newBtn.querySelector('.unmute-icon').style.display = 'inline';
+          newBtn.querySelector('.unmute-icon').style.display = 'inline-block';
         }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
@@ -567,12 +678,12 @@ function setupVideoControlListeners() {
           player.getVolume().then(volume => {
             if (volume === 0) {
               player.setVolume(1);
-              newBtn.querySelector('.mute-icon').style.display = 'inline';
+              newBtn.querySelector('.mute-icon').style.display = 'inline-block';
               newBtn.querySelector('.unmute-icon').style.display = 'none';
             } else {
               player.setVolume(0);
               newBtn.querySelector('.mute-icon').style.display = 'none';
-              newBtn.querySelector('.unmute-icon').style.display = 'inline';
+              newBtn.querySelector('.unmute-icon').style.display = 'inline-block';
             }
           });
         }
@@ -626,6 +737,38 @@ function setupVideoControlListeners() {
       if (!overlay) return;
       const videoType = overlay.dataset.videoType || 'youtube';
       
+      // Set seeking flag to prevent progress updates from interfering
+      if (!window.videoSeeking) window.videoSeeking = {};
+      window.videoSeeking[videoId] = true;
+      
+      // Get progress bar and time displays for smooth update
+      const progressBar = overlay.querySelector('.video-progress-bar');
+      const timeDisplays = overlay.querySelectorAll('.video-time');
+      
+      // Update UI immediately for smooth visual feedback
+      const updateUI = (seekTime, duration) => {
+        if (progressBar) {
+          // Use requestAnimationFrame for smooth update
+          requestAnimationFrame(() => {
+            progressBar.style.transition = 'none'; // Disable transition during seek
+            progressBar.style.width = (percent * 100) + '%';
+            // Re-enable transition after a brief delay
+            setTimeout(() => {
+              progressBar.style.transition = 'width 0.1s linear';
+            }, 50);
+          });
+        }
+        
+        if (timeDisplays.length >= 2) {
+          requestAnimationFrame(() => {
+            timeDisplays[0].textContent = formatTime(seekTime);
+            if (duration) {
+              timeDisplays[1].textContent = formatTime(duration);
+            }
+          });
+        }
+      };
+      
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
         
@@ -645,47 +788,40 @@ function setupVideoControlListeners() {
         // If we have duration, use it; otherwise use a reasonable estimate
         if (duration && duration > 0) {
           const seekTime = duration * percent;
+          
+          // Update UI immediately for smooth feedback
+          updateUI(seekTime, duration);
+          
+          // Perform seek
           player.seekTo(seekTime, true); // true = allowSeekAhead
-          console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}% of ${duration.toFixed(2)}s)`);
           
           // Reset start time tracking to the seek position
           if (!window.ytStartTimes) window.ytStartTimes = {};
           window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
           
-          // Update progress bar immediately
-          const progressBar = overlay.querySelector('.video-progress-bar');
-          if (progressBar) {
-            progressBar.style.width = (percent * 100) + '%';
-          }
-          
-          // Update time display immediately
-          const timeDisplays = overlay.querySelectorAll('.video-time');
-          if (timeDisplays.length >= 2) {
-            timeDisplays[0].textContent = formatTime(seekTime);
-          }
+          // Clear seeking flag after a short delay to allow player to catch up
+          setTimeout(() => {
+            window.videoSeeking[videoId] = false;
+          }, 300);
         } else {
           // Fallback: try to seek with estimated duration
-          // We'll use a longer estimate to be safe
           const estimatedDuration = 300; // 5 minutes default
           const seekTime = estimatedDuration * percent;
-          player.seekTo(seekTime, true);
-          console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (estimated, ${(percent * 100).toFixed(1)}%)`);
           
-          // Reset start time tracking to the seek position
+          // Update UI immediately
+          updateUI(seekTime, estimatedDuration);
+          
+          // Perform seek
+          player.seekTo(seekTime, true);
+          
+          // Reset start time tracking
           if (!window.ytStartTimes) window.ytStartTimes = {};
           window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
           
-          // Update progress bar immediately
-          const progressBar = overlay.querySelector('.video-progress-bar');
-          if (progressBar) {
-            progressBar.style.width = (percent * 100) + '%';
-          }
-          
-          // Update time display immediately
-          const timeDisplays = overlay.querySelectorAll('.video-time');
-          if (timeDisplays.length >= 2) {
-            timeDisplays[0].textContent = formatTime(seekTime);
-          }
+          // Clear seeking flag
+          setTimeout(() => {
+            window.videoSeeking[videoId] = false;
+          }, 300);
         }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
@@ -693,23 +829,21 @@ function setupVideoControlListeners() {
           player.getDuration().then(duration => {
             if (duration && duration > 0) {
               const seekTime = duration * percent;
+              
+              // Update UI immediately
+              updateUI(seekTime, duration);
+              
+              // Perform seek
               player.setCurrentTime(seekTime);
-              console.log(`Seeking Vimeo video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}% of ${duration.toFixed(2)}s)`);
               
-              // Update progress bar immediately
-              const progressBar = overlay.querySelector('.video-progress-bar');
-              if (progressBar) {
-                progressBar.style.width = Math.max(0, Math.min(100, (percent * 100))) + '%';
-              }
-              
-              // Update time display
-              const timeDisplays = overlay.querySelectorAll('.video-time');
-              if (timeDisplays.length >= 2) {
-                timeDisplays[0].textContent = formatTime(seekTime);
-              }
+              // Clear seeking flag
+              setTimeout(() => {
+                window.videoSeeking[videoId] = false;
+              }, 300);
             }
           }).catch(err => {
             console.warn('Failed to seek Vimeo video:', err);
+            window.videoSeeking[videoId] = false;
           });
         }
       }
@@ -781,13 +915,13 @@ function initYouTubePlayers() {
                 if (playBtn) {
                   if (event.data === window.YT.PlayerState.PLAYING) {
                     playBtn.querySelector('.play-icon').style.display = 'none';
-                    playBtn.querySelector('.pause-icon').style.display = 'inline';
+                    playBtn.querySelector('.pause-icon').style.display = 'inline-block';
                     const playText = playBtn.querySelector('.play-text');
                     const pauseText = playBtn.querySelector('.pause-text');
                     if (playText) playText.style.display = 'none';
                     if (pauseText) pauseText.style.display = 'inline';
                   } else {
-                    playBtn.querySelector('.play-icon').style.display = 'inline';
+                    playBtn.querySelector('.play-icon').style.display = 'inline-block';
                     playBtn.querySelector('.pause-icon').style.display = 'none';
                     const playText = playBtn.querySelector('.play-text');
                     const pauseText = playBtn.querySelector('.pause-text');
@@ -918,7 +1052,7 @@ function initVimeoPlayers() {
             const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
             if (playBtn) {
               playBtn.querySelector('.play-icon').style.display = 'none';
-              playBtn.querySelector('.pause-icon').style.display = 'inline';
+              playBtn.querySelector('.pause-icon').style.display = 'inline-block';
               const playText = playBtn.querySelector('.play-text');
               const pauseText = playBtn.querySelector('.pause-text');
               if (playText) playText.style.display = 'none';
@@ -934,7 +1068,7 @@ function initVimeoPlayers() {
             const controls = container.nextElementSibling;
             const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
             if (playBtn) {
-              playBtn.querySelector('.play-icon').style.display = 'inline';
+              playBtn.querySelector('.play-icon').style.display = 'inline-block';
               playBtn.querySelector('.pause-icon').style.display = 'none';
               const playText = playBtn.querySelector('.play-text');
               const pauseText = playBtn.querySelector('.pause-text');
@@ -988,6 +1122,11 @@ function updateVideoProgress(videoId, videoType) {
   }
   
   const update = () => {
+    // Skip update if currently seeking to prevent glitches
+    if (window.videoSeeking && window.videoSeeking[videoId]) {
+      return;
+    }
+    
     if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
       const player = window.ytPlayers[videoId];
       
@@ -1044,9 +1183,17 @@ function updateVideoProgress(videoId, videoType) {
         // Clamp current time to duration
         currentTime = Math.min(currentTime, duration);
         const percent = (currentTime / duration) * 100;
-        progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
-        timeDisplays[0].textContent = formatTime(currentTime);
-        timeDisplays[1].textContent = formatTime(duration);
+        
+        // Use requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+          // Double-check we're not seeking
+          if (window.videoSeeking && window.videoSeeking[videoId]) {
+            return;
+          }
+          progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
+          timeDisplays[0].textContent = formatTime(currentTime);
+          timeDisplays[1].textContent = formatTime(duration);
+        });
       } else {
         // Show placeholder if duration not available yet
         if (progressBar.style.width === '0%' || !progressBar.style.width) {
@@ -1057,16 +1204,29 @@ function updateVideoProgress(videoId, videoType) {
     } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
       const player = window.vimeoPlayers[videoId];
       Promise.all([player.getCurrentTime(), player.getDuration()]).then(([current, duration]) => {
+        // Skip update if currently seeking
+        if (window.videoSeeking && window.videoSeeking[videoId]) {
+          return;
+        }
+        
         if (duration && !isNaN(current) && !isNaN(duration) && current >= 0) {
           const percent = (current / duration) * 100;
-          progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
-          if (timeDisplays.length >= 2) {
-            timeDisplays[0].textContent = formatTime(current);
-            timeDisplays[1].textContent = formatTime(duration);
-          } else if (timeDisplays.length === 1) {
-            // Fallback: show combined format if only one time display
-            timeDisplays[0].textContent = formatTime(current) + ' / ' + formatTime(duration);
-          }
+          
+          // Use requestAnimationFrame for smooth updates
+          requestAnimationFrame(() => {
+            // Double-check we're not seeking
+            if (window.videoSeeking && window.videoSeeking[videoId]) {
+              return;
+            }
+            progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
+            if (timeDisplays.length >= 2) {
+              timeDisplays[0].textContent = formatTime(current);
+              timeDisplays[1].textContent = formatTime(duration);
+            } else if (timeDisplays.length === 1) {
+              // Fallback: show combined format if only one time display
+              timeDisplays[0].textContent = formatTime(current) + ' / ' + formatTime(duration);
+            }
+          });
         }
       }).catch(() => {
         // Player not ready
