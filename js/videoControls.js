@@ -83,20 +83,20 @@ function applyVideoImageStyle() {
       left: 0;
       right: 0;
       bottom: 0;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
       z-index: 10;
     }
     
-    /* Keep overlay visible - can still use hover for enhanced visibility if needed */
-    .video-container .video-controls-overlay,
-    .image-display.gallery .display-container .video-controls-overlay {
+    /* Show duration bar on hover */
+    .video-container:hover .video-controls-overlay,
+    .image-display.gallery .display-container:hover .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
     }
     
-    /* Playback bar in the middle - always visible */
+    /* Playback bar in the middle - shows on hover */
     .video-progress-overlay {
       position: absolute;
       top: 50%;
@@ -106,9 +106,7 @@ function applyVideoImageStyle() {
       width: calc(100% - 80px);
       max-width: 600px;
       min-width: 250px;
-      visibility: visible !important;
-      opacity: 1 !important;
-      display: block !important;
+      display: block;
     }
     
     /* Make duration bar responsive to video container size */
@@ -312,7 +310,7 @@ function applyVideoImageStyle() {
     }
     
     .video-control-btn .unmute-icon::after {
-      content: '×';
+      content: 'X';
       position: absolute;
       right: -4px;
       top: 50%;
@@ -741,6 +739,16 @@ function setupVideoControlListeners() {
       if (!window.videoSeeking) window.videoSeeking = {};
       window.videoSeeking[videoId] = true;
       
+      // Store current play/pause state to preserve it during seek
+      const container = overlay.closest('.video-container, .display-container');
+      const controls = container ? container.nextElementSibling : null;
+      const playBtn = controls?.querySelector('.play-pause-btn') || container?.querySelector('.play-pause-btn');
+      let wasPlaying = false;
+      if (playBtn) {
+        // Check if pause icon is visible (meaning video is playing)
+        wasPlaying = playBtn.querySelector('.pause-icon').style.display !== 'none';
+      }
+      
       // Get progress bar and time displays for smooth update
       const progressBar = overlay.querySelector('.video-progress-bar');
       const timeDisplays = overlay.querySelectorAll('.video-time');
@@ -764,6 +772,29 @@ function setupVideoControlListeners() {
             timeDisplays[0].textContent = formatTime(seekTime);
             if (duration) {
               timeDisplays[1].textContent = formatTime(duration);
+            }
+          });
+        }
+      };
+      
+      // Function to restore play/pause button state
+      const restorePlayPauseState = () => {
+        if (playBtn) {
+          requestAnimationFrame(() => {
+            if (wasPlaying) {
+              playBtn.querySelector('.play-icon').style.display = 'none';
+              playBtn.querySelector('.pause-icon').style.display = 'inline-block';
+              const playText = playBtn.querySelector('.play-text');
+              const pauseText = playBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'none';
+              if (pauseText) pauseText.style.display = 'inline';
+            } else {
+              playBtn.querySelector('.play-icon').style.display = 'inline-block';
+              playBtn.querySelector('.pause-icon').style.display = 'none';
+              const playText = playBtn.querySelector('.play-text');
+              const pauseText = playBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'inline';
+              if (pauseText) pauseText.style.display = 'none';
             }
           });
         }
@@ -799,6 +830,11 @@ function setupVideoControlListeners() {
           if (!window.ytStartTimes) window.ytStartTimes = {};
           window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
           
+          // Restore play/pause button state after a brief delay
+          setTimeout(() => {
+            restorePlayPauseState();
+          }, 100);
+          
           // Clear seeking flag after a short delay to allow player to catch up
           setTimeout(() => {
             window.videoSeeking[videoId] = false;
@@ -818,6 +854,11 @@ function setupVideoControlListeners() {
           if (!window.ytStartTimes) window.ytStartTimes = {};
           window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
           
+          // Restore play/pause button state after a brief delay
+          setTimeout(() => {
+            restorePlayPauseState();
+          }, 100);
+          
           // Clear seeking flag
           setTimeout(() => {
             window.videoSeeking[videoId] = false;
@@ -835,6 +876,11 @@ function setupVideoControlListeners() {
               
               // Perform seek
               player.setCurrentTime(seekTime);
+              
+              // Restore play/pause button state after a brief delay
+              setTimeout(() => {
+                restorePlayPauseState();
+              }, 100);
               
               // Clear seeking flag
               setTimeout(() => {
@@ -899,6 +945,11 @@ function initYouTubePlayers() {
               }
             },
             onStateChange: function(event) {
+              // Skip state change updates if currently seeking to prevent button state changes
+              if (window.videoSeeking && window.videoSeeking[videoId]) {
+                return;
+              }
+              
               // Track start time when video starts playing
               if (event.data === window.YT.PlayerState.PLAYING) {
                 if (!window.ytStartTimes) window.ytStartTimes = {};
@@ -1045,6 +1096,11 @@ function initVimeoPlayers() {
         const muted = urlParams.get('muted') === '1' || urlParams.get('muted') === 'true';
         
         player.on('play', () => {
+          // Skip state change updates if currently seeking
+          if (window.videoSeeking && window.videoSeeking[videoId]) {
+            return;
+          }
+          
           const container = iframe.closest('.video-container, .display-container');
           if (container) {
             // Controls are now siblings, not children
@@ -1062,6 +1118,11 @@ function initVimeoPlayers() {
         });
         
         player.on('pause', () => {
+          // Skip state change updates if currently seeking
+          if (window.videoSeeking && window.videoSeeking[videoId]) {
+            return;
+          }
+          
           const container = iframe.closest('.video-container, .display-container');
           if (container) {
             // Controls are now siblings, not children
@@ -1304,8 +1365,8 @@ function createVideoGallery(videos, options = {}) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${videoElements}
-        <button class="display-nav prev" data-display-id="${displayId}">‹</button>
-        <button class="display-nav next" data-display-id="${displayId}">›</button>
+        <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
+        <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
       </div>
     </div>
   `;

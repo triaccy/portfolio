@@ -51,8 +51,8 @@ function createGalleryDisplay(images, displayId, options) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${imageElements}
-        <button class="display-nav prev" data-display-id="${displayId}">‹</button>
-        <button class="display-nav next" data-display-id="${displayId}">›</button>
+        <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
+        <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
       </div>
     </div>
   `;
