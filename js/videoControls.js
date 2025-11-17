@@ -105,13 +105,15 @@ function applyVideoImageStyle() {
       transform: translateY(-50%);
       padding: 0 20px;
       pointer-events: auto;
+      display: flex;
+      justify-content: center;
     }
     
     .video-progress-wrapper {
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(60, 60, 60, 0.85);
       padding: 12px 16px;
       border-radius: 4px;
     }
@@ -119,22 +121,22 @@ function applyVideoImageStyle() {
     .video-progress-container {
       flex: 1;
       height: 3px;
-      background: rgba(255, 255, 255, 0.3);
+      background: white;
       border-radius: 6px;
       cursor: pointer;
       position: relative;
       min-width: 150px;
-      max-width: 60%;
+      max-width: 400px;
       z-index: 11;
     }
     
     .video-progress-container:hover {
-      height: 5px;
+      height: 4px;
     }
     
     .video-progress-bar {
       height: 100%;
-      background: rgba(139, 69, 19, 0.9);
+      background: #000;
       border-radius: 6px;
       width: 0%;
       transition: width 0.1s linear;
@@ -145,7 +147,7 @@ function applyVideoImageStyle() {
       font-size: 14px;
       white-space: nowrap;
       flex-shrink: 0;
-      min-width: 100px;
+      min-width: 50px;
       text-align: left;
       font-family: monospace;
     }
@@ -156,7 +158,7 @@ function applyVideoImageStyle() {
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(240, 240, 240, 0.95);
+      background: rgba(60, 60, 60, 0.85);
       padding: 12px 20px;
       display: flex;
       align-items: center;
@@ -169,7 +171,7 @@ function applyVideoImageStyle() {
       border: none;
       cursor: pointer;
       font-size: 14px;
-      color: #333;
+      color: white;
       padding: 8px 12px;
       display: flex;
       align-items: center;
@@ -234,7 +236,8 @@ function createVideoControls(videoId, videoType) {
         <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
           <span class="play-icon">▶</span>
           <span class="pause-icon" style="display: none;">⏸</span>
-          <span>Play</span>
+          <span class="play-text">Play</span>
+          <span class="pause-text" style="display: none;">Pause</span>
         </button>
         <button class="video-control-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
           <span class="mute-icon">🔊</span>
@@ -346,10 +349,18 @@ function setupVideoControlListeners() {
           player.pauseVideo();
           newBtn.querySelector('.play-icon').style.display = 'inline';
           newBtn.querySelector('.pause-icon').style.display = 'none';
+          const playText = newBtn.querySelector('.play-text');
+          const pauseText = newBtn.querySelector('.pause-text');
+          if (playText) playText.style.display = 'inline';
+          if (pauseText) pauseText.style.display = 'none';
         } else {
           player.playVideo();
           newBtn.querySelector('.play-icon').style.display = 'none';
           newBtn.querySelector('.pause-icon').style.display = 'inline';
+          const playText = newBtn.querySelector('.play-text');
+          const pauseText = newBtn.querySelector('.pause-text');
+          if (playText) playText.style.display = 'none';
+          if (pauseText) pauseText.style.display = 'inline';
         }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
@@ -359,10 +370,18 @@ function setupVideoControlListeners() {
               player.play();
               newBtn.querySelector('.play-icon').style.display = 'none';
               newBtn.querySelector('.pause-icon').style.display = 'inline';
+              const playText = newBtn.querySelector('.play-text');
+              const pauseText = newBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'none';
+              if (pauseText) pauseText.style.display = 'inline';
             } else {
               player.pause();
               newBtn.querySelector('.play-icon').style.display = 'inline';
               newBtn.querySelector('.pause-icon').style.display = 'none';
+              const playText = newBtn.querySelector('.play-text');
+              const pauseText = newBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'inline';
+              if (pauseText) pauseText.style.display = 'none';
             }
           });
         }
@@ -580,9 +599,17 @@ function initYouTubePlayers() {
                   if (event.data === window.YT.PlayerState.PLAYING) {
                     playBtn.querySelector('.play-icon').style.display = 'none';
                     playBtn.querySelector('.pause-icon').style.display = 'inline';
+                    const playText = playBtn.querySelector('.play-text');
+                    const pauseText = playBtn.querySelector('.pause-text');
+                    if (playText) playText.style.display = 'none';
+                    if (pauseText) pauseText.style.display = 'inline';
                   } else {
                     playBtn.querySelector('.play-icon').style.display = 'inline';
                     playBtn.querySelector('.pause-icon').style.display = 'none';
+                    const playText = playBtn.querySelector('.play-text');
+                    const pauseText = playBtn.querySelector('.pause-text');
+                    if (playText) playText.style.display = 'inline';
+                    if (pauseText) pauseText.style.display = 'none';
                   }
                 }
               }
@@ -702,6 +729,10 @@ function initVimeoPlayers() {
             if (playBtn) {
               playBtn.querySelector('.play-icon').style.display = 'none';
               playBtn.querySelector('.pause-icon').style.display = 'inline';
+              const playText = playBtn.querySelector('.play-text');
+              const pauseText = playBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'none';
+              if (pauseText) pauseText.style.display = 'inline';
             }
           }
         });
@@ -713,6 +744,10 @@ function initVimeoPlayers() {
             if (playBtn) {
               playBtn.querySelector('.play-icon').style.display = 'inline';
               playBtn.querySelector('.pause-icon').style.display = 'none';
+              const playText = playBtn.querySelector('.play-text');
+              const pauseText = playBtn.querySelector('.pause-text');
+              if (playText) playText.style.display = 'inline';
+              if (pauseText) pauseText.style.display = 'none';
             }
           }
         });
