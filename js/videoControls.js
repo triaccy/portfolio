@@ -438,7 +438,7 @@ function setupVideoControlListeners() {
     });
   });
   
-  // Progress bar
+  // Progress bar - make it clickable to seek to specific time
   document.querySelectorAll('.video-progress-container').forEach(container => {
     // Remove existing listeners to avoid duplicates
     const newContainer = container.cloneNode(true);
@@ -448,7 +448,8 @@ function setupVideoControlListeners() {
       e.stopPropagation();
       e.preventDefault();
       const rect = newContainer.getBoundingClientRect();
-      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const clickX = e.clientX - rect.left;
+      const percent = Math.max(0, Math.min(1, clickX / rect.width));
       const videoId = newContainer.dataset.videoId;
       const overlay = newContainer.closest('.video-controls-overlay');
       if (!overlay) return;
@@ -456,20 +457,66 @@ function setupVideoControlListeners() {
       
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
-        // For YouTube, we need to estimate duration or use a default
-        // Since we can't get duration via postMessage, we'll use a reasonable estimate
-        // Try to get actual duration if available, otherwise use estimate
-        const estimatedDuration = 60; // Default to 60 seconds
-        const seekTime = estimatedDuration * percent;
-        player.seekTo(seekTime, true); // true = allowSeekAhead
-        console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}%)`);
+        
+        // Try to get actual duration
+        let duration = 0;
+        if (player.getDuration && typeof player.getDuration === 'function') {
+          try {
+            duration = player.getDuration();
+          } catch (e) {
+            // Fallback to stored duration
+            duration = (window.ytDurations && window.ytDurations[videoId]) || 0;
+          }
+        } else if (window.ytDurations && window.ytDurations[videoId]) {
+          duration = window.ytDurations[videoId];
+        }
+        
+        // If we have duration, use it; otherwise use a reasonable estimate
+        if (duration && duration > 0) {
+          const seekTime = duration * percent;
+          player.seekTo(seekTime, true); // true = allowSeekAhead
+          console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}% of ${duration.toFixed(2)}s)`);
+          
+          // Update progress bar immediately
+          const progressBar = overlay.querySelector('.video-progress-bar');
+          if (progressBar) {
+            progressBar.style.width = (percent * 100) + '%';
+          }
+        } else {
+          // Fallback: try to seek with estimated duration
+          // We'll use a longer estimate to be safe
+          const estimatedDuration = 300; // 5 minutes default
+          const seekTime = estimatedDuration * percent;
+          player.seekTo(seekTime, true);
+          console.log(`Seeking YouTube video to ${seekTime.toFixed(2)}s (estimated, ${(percent * 100).toFixed(1)}%)`);
+          
+          // Update progress bar immediately
+          const progressBar = overlay.querySelector('.video-progress-bar');
+          if (progressBar) {
+            progressBar.style.width = (percent * 100) + '%';
+          }
+        }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
         if (player) {
           player.getDuration().then(duration => {
-            const seekTime = duration * percent;
-            player.setCurrentTime(seekTime);
-            console.log(`Seeking Vimeo video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}%)`);
+            if (duration && duration > 0) {
+              const seekTime = duration * percent;
+              player.setCurrentTime(seekTime);
+              console.log(`Seeking Vimeo video to ${seekTime.toFixed(2)}s (${(percent * 100).toFixed(1)}% of ${duration.toFixed(2)}s)`);
+              
+              // Update progress bar immediately
+              const progressBar = overlay.querySelector('.video-progress-bar');
+              if (progressBar) {
+                progressBar.style.width = (percent * 100) + '%';
+              }
+              
+              // Update time display
+              const timeDisplays = overlay.querySelectorAll('.video-time');
+              if (timeDisplays.length >= 2) {
+                timeDisplays[0].textContent = formatTime(seekTime);
+              }
+            }
           }).catch(err => {
             console.warn('Failed to seek Vimeo video:', err);
           });
@@ -502,35 +549,74 @@ function initYouTubePlayers() {
   }
   
   window.ytPlayers = window.ytPlayers || {};
+  window.ytDurations = window.ytDurations || {}; // Store durations
   
   document.querySelectorAll('iframe[src*="youtube"]').forEach(iframe => {
     const src = iframe.src;
     const videoId = getVideoId(src, 'youtube');
     if (videoId && !window.ytPlayers[videoId]) {
-      // For existing iframes, we'll use postMessage API
-      // Store reference to iframe for postMessage communication
-      window.ytPlayers[videoId] = {
-        iframe: iframe,
-        videoId: videoId,
-        postMessage: function(action, value) {
-          if (this.iframe && this.iframe.contentWindow) {
-            this.iframe.contentWindow.postMessage(JSON.stringify({
-              event: 'command',
-              func: action,
-              args: value !== undefined ? [value] : []
-            }), '*');
+      // Try to create a proper YouTube Player instance
+      try {
+        const player = new window.YT.Player(iframe, {
+          events: {
+            onReady: function(event) {
+              // Get duration when player is ready
+              try {
+                const duration = event.target.getDuration();
+                if (duration && duration > 0) {
+                  window.ytDurations[videoId] = duration;
+                  console.log(`YouTube video ${videoId} duration: ${duration}s`);
+                }
+              } catch (e) {
+                console.warn('Could not get YouTube video duration:', e);
+              }
+            },
+            onStateChange: function(event) {
+              // Update play/pause button state
+              const overlay = iframe.closest('.video-container, .display-container');
+              if (overlay) {
+                const playBtn = overlay.querySelector('.play-pause-btn');
+                if (playBtn) {
+                  if (event.data === window.YT.PlayerState.PLAYING) {
+                    playBtn.querySelector('.play-icon').style.display = 'none';
+                    playBtn.querySelector('.pause-icon').style.display = 'inline';
+                  } else {
+                    playBtn.querySelector('.play-icon').style.display = 'inline';
+                    playBtn.querySelector('.pause-icon').style.display = 'none';
+                  }
+                }
+              }
+            }
           }
-        },
-        playVideo: function() { this.postMessage('playVideo'); },
-        pauseVideo: function() { this.postMessage('pauseVideo'); },
-        mute: function() { this.postMessage('mute'); },
-        unMute: function() { this.postMessage('unMute'); },
-        seekTo: function(seconds) { this.postMessage('seekTo', seconds); },
-        getCurrentTime: function() { return 0; }, // Can't get this via postMessage easily
-        getDuration: function() { return 0; }, // Can't get this via postMessage easily
-        getPlayerState: function() { return -1; }, // Can't get this via postMessage easily
-        isMuted: function() { return false; } // Can't get this via postMessage easily
-      };
+        });
+        window.ytPlayers[videoId] = player;
+        console.log(`Initialized YouTube Player for ${videoId}`);
+      } catch (e) {
+        console.warn('Failed to create YouTube Player, using postMessage fallback:', e);
+        // Fallback to postMessage API
+        window.ytPlayers[videoId] = {
+          iframe: iframe,
+          videoId: videoId,
+          postMessage: function(action, value) {
+            if (this.iframe && this.iframe.contentWindow) {
+              this.iframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: action,
+                args: value !== undefined ? [value] : []
+              }), '*');
+            }
+          },
+          playVideo: function() { this.postMessage('playVideo'); },
+          pauseVideo: function() { this.postMessage('pauseVideo'); },
+          mute: function() { this.postMessage('mute'); },
+          unMute: function() { this.postMessage('unMute'); },
+          seekTo: function(seconds) { this.postMessage('seekTo', seconds); },
+          getCurrentTime: function() { return 0; },
+          getDuration: function() { return window.ytDurations[videoId] || 0; },
+          getPlayerState: function() { return -1; },
+          isMuted: function() { return false; }
+        };
+      }
     }
   });
 }
@@ -538,6 +624,7 @@ function initYouTubePlayers() {
 // Fallback postMessage initialization
 function initYouTubePlayersPostMessage() {
   window.ytPlayers = window.ytPlayers || {};
+  window.ytDurations = window.ytDurations || {}; // Store durations
   
   document.querySelectorAll('iframe[src*="youtube"]').forEach(iframe => {
     const src = iframe.src;
@@ -561,10 +648,23 @@ function initYouTubePlayersPostMessage() {
         unMute: function() { this.postMessage('unMute'); },
         seekTo: function(seconds) { this.postMessage('seekTo', seconds); },
         getCurrentTime: function() { return 0; },
-        getDuration: function() { return 0; },
+        getDuration: function() { return window.ytDurations[videoId] || 0; },
         getPlayerState: function() { return -1; },
         isMuted: function() { return false; }
       };
+      
+      // Try to get duration via YouTube Data API or estimate
+      // For now, we'll try to get it from the iframe after it loads
+      iframe.addEventListener('load', () => {
+        // Try to request duration via postMessage (limited support)
+        // Most reliable: use YouTube Data API or wait for YT.Player
+        // For now, we'll use a reasonable default and update when available
+        if (!window.ytDurations[videoId]) {
+          // Try to get from YouTube Data API if available
+          // Otherwise, we'll estimate or wait for YT.Player to load
+          window.ytDurations[videoId] = null; // Will be set when available
+        }
+      });
     }
   });
 }
@@ -636,11 +736,49 @@ function updateVideoProgress(videoId, videoType) {
   
   const update = () => {
     if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-      // YouTube postMessage API doesn't easily support getting current time/duration
-      // So we'll show a placeholder or skip updating for YouTube
-      // Progress will still work via clicking the bar
+      const player = window.ytPlayers[videoId];
+      
+      // Try to get current time and duration if available
+      let currentTime = 0;
+      let duration = 0;
+      
+      if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
+        try {
+          currentTime = player.getCurrentTime();
+        } catch (e) {
+          // Can't get current time
+        }
+      }
+      
+      if (player.getDuration && typeof player.getDuration === 'function') {
+        try {
+          duration = player.getDuration();
+          // Store duration for seeking
+          if (duration && duration > 0) {
+            if (!window.ytDurations) window.ytDurations = {};
+            window.ytDurations[videoId] = duration;
+          }
+        } catch (e) {
+          // Try stored duration
+          if (window.ytDurations && window.ytDurations[videoId]) {
+            duration = window.ytDurations[videoId];
+          }
+        }
+      } else if (window.ytDurations && window.ytDurations[videoId]) {
+        duration = window.ytDurations[videoId];
+      }
+      
+      // Update progress bar and time displays
       const timeDisplays = overlay.querySelectorAll('.video-time');
-      if (timeDisplays.length >= 2) {
+      if (duration && duration > 0 && currentTime >= 0) {
+        const percent = (currentTime / duration) * 100;
+        progressBar.style.width = percent + '%';
+        if (timeDisplays.length >= 2) {
+          timeDisplays[0].textContent = formatTime(currentTime);
+          timeDisplays[1].textContent = formatTime(duration);
+        }
+      } else if (timeDisplays.length >= 2) {
+        // Show placeholder if duration not available yet
         if (progressBar.style.width === '0%' || !progressBar.style.width) {
           timeDisplays[0].textContent = '00:00';
           timeDisplays[1].textContent = '00:00';
