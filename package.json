@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "serve": "http-server dist -p 3000",
     "lint": "eslint . --ext .js,.html --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "npm run build && (git diff --quiet && git diff --cached --quiet || (git add . && git commit -m 'Update website')) && git push"
   },
   "keywords": [
     "portfolio",

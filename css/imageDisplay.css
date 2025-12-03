@@ -3,17 +3,23 @@
 /* Gallery style (full-width with navigation) */
 .image-display.gallery {
   position: relative;
-  max-width: 1100px;
-  margin: 20px auto;
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
   overflow: hidden;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
 }
 
 .image-display.gallery .display-container {
   position: relative;
   width: 100%;
-  height: 650px;
+  height: 100vh;
+  min-height: 100vh;
   background: #f8f8f8;
-  cursor: ew-resize;
+  cursor: pointer;
 }
 
 .image-display.gallery .display-image {
@@ -22,7 +28,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   opacity: 0;
   transition: none;
 }
@@ -45,7 +51,7 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .image-display.gallery .display-video.active {
@@ -61,57 +67,47 @@
   pointer-events: auto !important;
 }
 
-.image-display.gallery .display-nav {
+/* Arrow navigation removed - using click navigation only */
+
+/* Bottom bar with title and count */
+.gallery-bottom-bar {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  color: white;
-  border: none;
-  width: 48px;
-  height: 48px;
-  cursor: pointer;
-  font-size: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: rgba(128, 128, 128, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 5;
+  pointer-events: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.gallery-info-left {
+  flex: 1;
+}
+
+.gallery-info-center {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  opacity: 0.8;
-  padding: 0;
+  gap: 8px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
 }
 
-.image-display.gallery .display-nav:hover { 
-  opacity: 1; 
+.gallery-count {
+  font-weight: 500;
 }
 
-.image-display.gallery .display-nav:focus { 
-  outline: none; 
-}
-
-.image-display.gallery .display-nav::before {
-  content: "";
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-left: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  opacity: 0.9;
-}
-
-.image-display.gallery .display-nav.prev { 
-  left: 12px; 
-}
-
-.image-display.gallery .display-nav.prev::before { 
-  transform: rotate(45deg); 
-}
-
-.image-display.gallery .display-nav.next { 
-  right: 12px; 
-}
-
-.image-display.gallery .display-nav.next::before { 
-  transform: rotate(-135deg); 
+.gallery-title {
+  font-weight: 400;
 }
 
 /* Vertical scroll style */
