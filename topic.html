@@ -165,18 +165,42 @@
       // TOPIC CONTENT CONFIGURATION
       // ============================================
       
-      // Ensure imageDisplay functions are available
-      if (typeof createImageDisplay === 'undefined') {
-        console.error('imageDisplay.js failed to load');
-        // Fallback function
-        window.createImageDisplay = function() { return ''; };
+      // Helper function to safely create image displays
+      function safeCreateImageDisplay(type, images, options) {
+        if (typeof createImageDisplay === 'undefined') {
+          console.error('createImageDisplay is not available');
+          return '<p style="color: red;">Error: Image display function not loaded. Please refresh the page.</p>';
+        }
+        try {
+          const result = createImageDisplay(type, images, options);
+          if (!result || result.trim() === '') {
+            console.warn('createImageDisplay returned empty result', { type, images, options });
+            return '<p>No images to display.</p>';
+          }
+          return result;
+        } catch (e) {
+          console.error('Error calling createImageDisplay:', e);
+          return '<p style="color: red;">Error creating image display. Check console for details.</p>';
+        }
       }
       
-      // Ensure videoControls functions are available
-      if (typeof createVideoGallery === 'undefined') {
-        console.error('videoControls.js failed to load');
-        // Fallback function
-        window.createVideoGallery = function() { return ''; };
+      // Helper function to safely create video galleries
+      function safeCreateVideoGallery(videos, options) {
+        if (typeof createVideoGallery === 'undefined') {
+          console.error('createVideoGallery is not available');
+          return '<p style="color: red;">Error: Video gallery function not loaded. Please refresh the page.</p>';
+        }
+        try {
+          const result = createVideoGallery(videos, options);
+          if (!result || result.trim() === '') {
+            console.warn('createVideoGallery returned empty result', { videos, options });
+            return '<p>No videos to display.</p>';
+          }
+          return result;
+        } catch (e) {
+          console.error('Error calling createVideoGallery:', e);
+          return '<p style="color: red;">Error creating video gallery. Check console for details.</p>';
+        }
       }
       
       // Video-related functions are now in js/videoControls.js
@@ -198,17 +222,17 @@
 
         '3dxpaper': {
           title: '3DxPaper',
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
             { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
             { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
             { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
             { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
-          ], { id: 'paper-gallery' }) 
+          ], { id: 'paper-gallery' })
         },
         '2025-3dxpaper': {
           title: '3DxPaper (2025)',
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
             { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
             { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
@@ -236,7 +260,7 @@
         },
         '2024-machine': {
           title: 'Knitting Machine (2024)',
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
             { src: 'images/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
             { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
@@ -271,7 +295,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
         
         '2023-installation': {
           title: 'Installation (2023)',
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/installation-1.jpg', alt: 'Installation 1' },
             { src: 'images/installation-3.jpg', alt: 'Installation 3' }
           ], { id: 'installation-2023-gallery' })
@@ -281,7 +305,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
         
         '2023-speculation': {
           title: 'Speculation (2023)',
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
             { src: 'images/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
             { src: 'images/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
@@ -290,33 +314,21 @@ My work focused on pioneering the optimization of a green chemical extraction me
         },
         '2024-conservation': {
           title: 'Conservation (2024)',
-          content: function() {
-            if (typeof window.createVideoGallery === 'function' || typeof createVideoGallery === 'function') {
-              const createGallery = window.createVideoGallery || createVideoGallery;
-              const galleryHTML = createGallery([
-                { 
-                  src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-                  title: 'Conservation Video 2',
-                  allow: 'autoplay; fullscreen; picture-in-picture'
-                },
-                { 
-                  src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-                  title: 'Conservation Video 1',
-                  allow: 'autoplay; fullscreen; picture-in-picture'
-                }
-              ], { id: 'conservation-video-gallery' });
-              console.log('Created video gallery HTML:', galleryHTML);
-              if (galleryHTML && galleryHTML.trim()) {
-                return galleryHTML;
-              }
+          content: safeCreateVideoGallery([
+            { 
+              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 2',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            },
+            { 
+              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 1',
+              allow: 'autoplay; fullscreen; picture-in-picture'
             }
-            console.error('createVideoGallery function not available');
-            // Return a placeholder that will be replaced when the function is available
-            return '<div id="conservation-video-placeholder"><p>Loading video gallery...</p></div>';
-          }
+          ], { id: 'conservation-video-gallery' })
         },
         '2023-conservation': {
-          content: createImageDisplay('gallery', [
+          content: safeCreateImageDisplay('gallery', [
             { src: 'images/conservation/Untitled-1.png', alt: 'Conservation Image 1' },
             // add a video here of the conservation video: https://www.youtube.com/watch?v=jKCMreZw1CQ, all should still be gallery
             { src: 'images/conservation/c-02-1.png', alt: 'Conservation Image 2' },
@@ -392,8 +404,17 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         }
         // Check if contentHTML is empty or just whitespace
         if (!contentHTML || (typeof contentHTML === 'string' && !contentHTML.trim())) {
-          contentHTML = '<p>No content available.</p>';
+          // If we have a topic but no content, show a more helpful message
+          if (topicData && topicData.content === undefined) {
+            contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
+          } else {
+            contentHTML = '<p>No content available. Please check the browser console for errors.</p>';
+          }
         }
+        // Debug logging
+        console.log('Content HTML:', contentHTML ? contentHTML.substring(0, 100) : 'empty');
+        console.log('Topic:', topic, 'Year:', year, 'Unique Key:', uniqueKey);
+        
         content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
         
