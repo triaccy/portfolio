@@ -51,10 +51,10 @@ function createGalleryDisplay(images, displayId, options) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${imageElements}
-        <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
-        <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
-        <div class="gallery-counter" data-display-id="${displayId}">1/${images.length}</div>
+        <button class="display-nav prev" data-display-id="${displayId}" style="display: none;">&lt;</button>
+        <button class="display-nav next" data-display-id="${displayId}" style="display: none;">&gt;</button>
       </div>
+      <div class="gallery-counter" data-display-id="${displayId}">1/${images.length}</div>
     </div>
   `;
 }
@@ -195,8 +195,9 @@ function initializeGallery(container, images, allImages) {
       galleryState.images[galleryState.currentImageIndex].classList.add('active');
     }
     
-    // Update counter
-    const counter = container.querySelector('.gallery-counter');
+    // Update counter - find counter outside container (sibling of display-container)
+    const gallery = container.closest('.image-display.gallery');
+    const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
     if (counter && galleryState.images.length > 0) {
       const current = galleryState.currentImageIndex + 1;
       const total = galleryState.images.length;
@@ -345,8 +346,9 @@ function initializeGallery(container, images, allImages) {
   // Initialize gallery
   updateGallery();
   
-  // Update counter with actual number of valid images
-  const counter = container.querySelector('.gallery-counter');
+  // Update counter with actual number of valid images - find counter outside container
+  const gallery = container.closest('.image-display.gallery');
+  const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
   if (counter && images.length > 0) {
     counter.textContent = `1/${images.length}`;
   }

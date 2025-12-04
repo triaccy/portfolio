@@ -1365,10 +1365,10 @@ function createVideoGallery(videos, options = {}) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${videoElements}
-        <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
-        <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
-        <div class="gallery-counter" data-display-id="${displayId}">1/${videos.length}</div>
+        <button class="display-nav prev" data-display-id="${displayId}" style="display: none;">&lt;</button>
+        <button class="display-nav next" data-display-id="${displayId}" style="display: none;">&gt;</button>
       </div>
+      <div class="gallery-counter" data-display-id="${displayId}">1/${videos.length}</div>
     </div>
   `;
 }
