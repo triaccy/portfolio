@@ -38,13 +38,49 @@ function createGalleryDisplay(images, displayId, options) {
   };
   
   const imageElements = images.map((img, index) => {
-    // For src, preserve URL as-is (browser will URL-encode when making request)
-    // Only escape HTML-breaking characters
-    const src = escapeAttr(img.src);
-    const alt = escapeAttr(img.alt || '');
-    return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}" 
-          onerror="this.style.display='none';" 
-          alt="${alt}" />`;
+    // Check if this is a video (YouTube, Vimeo, or explicitly marked as video)
+    const isVideo = img.type === 'video' || 
+                    img.src.includes('youtube.com') || 
+                    img.src.includes('youtu.be') || 
+                    img.src.includes('vimeo.com') ||
+                    img.src.includes('player.vimeo.com') ||
+                    img.src.includes('player.youtube.com');
+    
+    if (isVideo) {
+      // Create video iframe
+      let videoSrc = img.src;
+      // Convert YouTube watch URL to embed URL if needed
+      if (videoSrc.includes('youtube.com/watch') || videoSrc.includes('youtu.be/')) {
+        const videoIdMatch = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+        if (videoIdMatch) {
+          videoSrc = `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=0&loop=0&muted=0&controls=0&rel=0&modestbranding=1`;
+        }
+      }
+      // Ensure Vimeo URLs are embed URLs
+      if (videoSrc.includes('vimeo.com/') && !videoSrc.includes('player.vimeo.com')) {
+        const videoIdMatch = videoSrc.match(/vimeo\.com\/(\d+)/);
+        if (videoIdMatch) {
+          videoSrc = `https://player.vimeo.com/video/${videoIdMatch[1]}?autoplay=0&loop=0&muted=0&controls=0&title=0&byline=0&portrait=0`;
+        }
+      }
+      
+      const src = escapeAttr(videoSrc);
+      const alt = escapeAttr(img.alt || 'Video');
+      return `<iframe src="${src}" 
+            class="display-video ${index === 0 ? 'active' : ''}" 
+            title="${alt}" 
+            frameborder="0" 
+            allow="autoplay; fullscreen; picture-in-picture" 
+            allowfullscreen>
+            </iframe>`;
+    } else {
+      // Create image element
+      const src = escapeAttr(img.src);
+      const alt = escapeAttr(img.alt || '');
+      return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}" 
+            onerror="this.style.display='none';" 
+            alt="${alt}" />`;
+    }
   }).join('\n');
   
   return `
