@@ -222,27 +222,23 @@
 
         '3dxpaper': {
           title: '3DxPaper',
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
-              { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
-              { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
-              { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
-              { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
-            ], { id: 'paper-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
+            { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
+            { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
+            { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
+            { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
+          ], { id: 'paper-gallery' })
         },
         '2025-3dxpaper': {
           title: '3DxPaper (2025)',
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
-              { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
-              { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
-              { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
-              { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
-            ], { id: 'paper-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
+            { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
+            { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
+            { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
+            { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
+          ], { id: 'paper-gallery' })
         },
         
         '2025 food': {
@@ -264,13 +260,11 @@
         },
         '2024-machine': {
           title: 'Knitting Machine (2024)',
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
-              { src: 'images/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
-              { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
-            ], { id: 'machine-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
+            { src: 'images/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
+            { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
+          ], { id: 'machine-gallery' })
         },
         '2024-biology/material': {
           title: 'biology/material (2024)',
@@ -301,52 +295,44 @@ My work focused on pioneering the optimization of a green chemical extraction me
         
         '2023-installation': {
           title: 'Installation (2023)',
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/installation-1.jpg', alt: 'Installation 1' },
-              { src: 'images/installation-3.jpg', alt: 'Installation 3' }
-            ], { id: 'installation-2023-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/installation-1.jpg', alt: 'Installation 1' },
+            { src: 'images/installation-3.jpg', alt: 'Installation 3' }
+          ], { id: 'installation-2023-gallery' })
         },
        
        
         
         '2023-speculation': {
           title: 'Speculation (2023)',
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
-              { src: 'images/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
-              { src: 'images/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
-              { src: 'images/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
-            ], { id: 'whale-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
+            { src: 'images/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
+          ], { id: 'whale-gallery' })
         },
         '2024-conservation': {
           title: 'Conservation (2024)',
-          content: function() {
-            return safeCreateVideoGallery([
-              { 
-                src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-                title: 'Conservation Video 2',
-                allow: 'autoplay; fullscreen; picture-in-picture'
-              },
-              { 
-                src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-                title: 'Conservation Video 1',
-                allow: 'autoplay; fullscreen; picture-in-picture'
-              }
-            ], { id: 'conservation-video-gallery' });
-          }
+          content: safeCreateVideoGallery([
+            { 
+              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 2',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            },
+            { 
+              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 1',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            }
+          ], { id: 'conservation-video-gallery' })
         },
         '2023-conservation': {
-          content: function() {
-            return safeCreateImageDisplay('gallery', [
-              { src: 'images/conservation/Untitled-1.png', alt: 'Conservation Image 1' },
-              // add a video here of the conservation video: https://www.youtube.com/watch?v=jKCMreZw1CQ, all should still be gallery
-              { src: 'images/conservation/c-02-1.png', alt: 'Conservation Image 2' },
-            ], { id: 'whale-gallery' });
-          }
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/conservation/Untitled-1.png', alt: 'Conservation Image 1' },
+            // add a video here of the conservation video: https://www.youtube.com/watch?v=jKCMreZw1CQ, all should still be gallery
+            { src: 'images/conservation/c-02-1.png', alt: 'Conservation Image 2' },
+            ], { id: 'whale-gallery' })
         },
         '2024-chemistry': {
           content: `None`
@@ -406,48 +392,7 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         let contentHTML = topicData.content;
         if (typeof contentHTML === 'function') {
           try {
-            // Wait for required scripts to load
-            const waitForScripts = (callback, maxAttempts = 20) => {
-              let attempts = 0;
-              const check = () => {
-                // Check if required functions are available
-                const needsImageDisplay = contentHTML.toString().includes('safeCreateImageDisplay');
-                const needsVideoGallery = contentHTML.toString().includes('safeCreateVideoGallery');
-                const imageDisplayReady = !needsImageDisplay || typeof createImageDisplay !== 'undefined';
-                const videoGalleryReady = !needsVideoGallery || typeof createVideoGallery !== 'undefined';
-                
-                if (imageDisplayReady && videoGalleryReady) {
-                  callback();
-                } else if (attempts < maxAttempts) {
-                  attempts++;
-                  setTimeout(check, 50);
-                } else {
-                  console.error('Scripts failed to load after waiting');
-                  callback(); // Try anyway - might work if functions are defined but not detected
-                }
-              };
-              check();
-            };
-            
-            // Try to execute immediately if scripts are ready
-            const needsImageDisplay = contentHTML.toString().includes('safeCreateImageDisplay');
-            const needsVideoGallery = contentHTML.toString().includes('safeCreateVideoGallery');
-            const imageDisplayReady = !needsImageDisplay || typeof createImageDisplay !== 'undefined';
-            const videoGalleryReady = !needsVideoGallery || typeof createVideoGallery !== 'undefined';
-            
-            if (imageDisplayReady && videoGalleryReady) {
-              contentHTML = contentHTML();
-            } else {
-              // Wait for scripts to load
-              waitForScripts(() => {
-                try {
-                  contentHTML = contentHTML();
-                } catch (e) {
-                  console.error('Error executing content function:', e);
-                  contentHTML = '<p>Error loading content. Please refresh the page.</p>';
-                }
-              });
-            }
+            contentHTML = contentHTML();
           } catch (e) {
             console.error('Error executing content function:', e);
             contentHTML = '<p>Error loading content. Please refresh the page.</p>';
