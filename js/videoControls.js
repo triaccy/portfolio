@@ -103,31 +103,33 @@ function applyVideoImageStyle() {
       left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: auto;
-      width: calc(100% - 80px);
-      max-width: 600px;
-      min-width: 250px;
+      width: 60%;
+      max-width: 100%;
+      min-width: 200px;
       display: block;
       z-index: 11;
     }
     
-    /* Make duration bar responsive to video container size */
+    /* Make duration bar bounded by video container size */
+    .image-display.gallery .display-container .video-progress-overlay,
     .video-container .video-progress-overlay {
-      max-width: calc(var(--video-width, 720px) - 80px);
+      width: 60%;
+      max-width: calc(100% - 40px);
     }
     
     @media (max-width: 768px) {
       .video-progress-overlay {
-        width: calc(100% - 40px);
-        min-width: 200px;
+        width: 70%;
+        min-width: 180px;
       }
     }
     
     .video-progress-wrapper {
       display: flex !important;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       background: rgba(60, 60, 60, 0.85);
-      padding: 12px 16px;
+      padding: 8px 12px;
       border-radius: 4px;
       width: 100%;
       box-sizing: border-box;
@@ -137,32 +139,33 @@ function applyVideoImageStyle() {
     
     .video-progress-container {
       flex: 1;
-      height: 3px;
-      background: white;
-      border-radius: 6px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 3px;
       cursor: pointer;
       position: relative;
       z-index: 11;
     }
     
     .video-progress-container:hover {
-      height: 4px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.7);
     }
     
     .video-progress-bar {
       height: 100%;
       background: #000;
-      border-radius: 6px;
+      border-radius: 3px;
       width: 0%;
       transition: width 0.1s linear;
     }
     
     .video-time {
       color: white;
-      font-size: 14px;
+      font-size: 12px;
       white-space: nowrap;
       flex-shrink: 0;
-      min-width: 50px;
+      min-width: 45px;
       text-align: left;
       font-family: monospace;
     }
@@ -414,11 +417,11 @@ function createVideoControls(videoId, videoType) {
       <!-- Playback bar in the middle - appears on hover -->
       <div class="video-progress-overlay">
         <div class="video-progress-wrapper">
-          <div class="video-time" data-video-id="${videoId}" style="min-width: 70px;">00:00</div>
+          <div class="video-time" data-video-id="${videoId}" style="min-width: 45px;">00:00</div>
           <div class="video-progress-container" data-video-id="${videoId}">
             <div class="video-progress-bar" data-video-id="${videoId}"></div>
           </div>
-          <div class="video-time" data-video-id="${videoId}" style="min-width: 70px; text-align: right;">00:00</div>
+          <div class="video-time" data-video-id="${videoId}" style="min-width: 45px; text-align: right;">00:00</div>
         </div>
       </div>
     </div>

@@ -241,22 +241,40 @@ function initializeGallery(container, images, allImages) {
     if (e.target.closest('.video-progress-container')) return;
     if (e.target.closest('.video-progress-wrapper')) return;
     if (e.target.closest('.video-progress-overlay')) return;
-    // Don't navigate if clicking directly on a video iframe (handled separately)
-    if (e.target.classList.contains('display-video')) return;
+    if (e.target.closest('.video-click-overlay')) return; // Don't navigate when clicking on video (pause/resume)
     
-    // If there are videos in the gallery and we're clicking outside the video, navigate
+    // Check if there are videos in the gallery
     const videos = container.querySelectorAll('.display-video');
     if (videos.length > 0) {
-      // Check if click is on the video itself
-      const clickedVideo = e.target.closest('.display-video');
-      if (!clickedVideo) {
-        // Click is outside video, navigate to next
-        changeImage(1);
+      // For video galleries, check if click is actually on the video or its overlay
+      const activeVideo = container.querySelector('.display-video.active');
+      if (activeVideo) {
+        const videoRect = activeVideo.getBoundingClientRect();
+        const clickX = e.clientX;
+        const clickY = e.clientY;
+        
+        // Check if click is within video bounds
+        const isOnVideo = clickX >= videoRect.left && clickX <= videoRect.right &&
+                         clickY >= videoRect.top && clickY <= videoRect.bottom;
+        
+        // Also check if click is on video-related elements
+        const isOnVideoElement = e.target.classList.contains('display-video') ||
+                                 e.target.closest('.display-video') ||
+                                 e.target.closest('.video-click-overlay');
+        
+        if (!isOnVideo && !isOnVideoElement) {
+          // Click is outside video boundaries - navigate to next
+          e.stopPropagation();
+          changeImage(1);
+          return;
+        }
+        // If click is on video, let the pause/resume handler take care of it
+        return;
       }
-    } else {
-      // No videos, just navigate normally
-      changeImage(1);
     }
+    
+    // For image galleries or if no active video, navigate normally
+    changeImage(1);
   });
   
   // Add click handlers for video navigation
@@ -312,13 +330,14 @@ function initializeGallery(container, images, allImages) {
       const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
       
       if (clickTarget) {
-        // Don't navigate if click is on controls, progress bar, or video itself
+        // Don't navigate if click is on controls, progress bar, video click overlay, or video itself
         if (clickTarget.closest('.video-controls-overlay') ||
             clickTarget.closest('.video-controls') ||
             clickTarget.closest('.video-control-btn') ||
             clickTarget.closest('.video-progress-container') ||
             clickTarget.closest('.video-progress-wrapper') ||
             clickTarget.closest('.video-progress-overlay') ||
+            clickTarget.closest('.video-click-overlay') ||
             clickTarget.closest('.display-nav') ||
             clickTarget.classList.contains('display-nav') ||
             clickTarget.classList.contains('display-video') ||
@@ -327,10 +346,29 @@ function initializeGallery(container, images, allImages) {
         }
       }
       
-      // Click is outside video - navigate to next video/image
-      e.stopPropagation();
-      e.preventDefault();
-      changeImage(1);
+      // Get active video to check if click is within its bounds
+      const activeVideo = container.querySelector('.display-video.active');
+      if (activeVideo) {
+        const videoRect = activeVideo.getBoundingClientRect();
+        const clickX = e.clientX;
+        const clickY = e.clientY;
+        
+        // Check if click is within video bounds
+        const isOnVideo = clickX >= videoRect.left && clickX <= videoRect.right &&
+                         clickY >= videoRect.top && clickY <= videoRect.bottom;
+        
+        if (!isOnVideo) {
+          // Click is outside video boundaries - navigate to next video/image
+          e.stopPropagation();
+          e.preventDefault();
+          changeImage(1);
+        }
+      } else {
+        // No active video, navigate normally
+        e.stopPropagation();
+        e.preventDefault();
+        changeImage(1);
+      }
     });
     
     // Also handle mousedown to ensure we catch the event
