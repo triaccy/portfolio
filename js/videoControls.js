@@ -417,25 +417,6 @@ function createVideoControls(videoId, videoType) {
         </div>
       </div>
     </div>
-    <!-- Controls at the bottom - always visible -->
-    <div class="video-controls" data-video-id="${videoId}" data-video-type="${videoType}">
-      <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
-        <span class="play-text" style="display: none;">Play</span>
-        <span class="pause-text">Pause</span>
-        <span class="play-icon" style="display: none;"></span>
-        <span class="pause-icon"></span>
-      </button>
-      <div class="video-controls-combined">
-        <button class="sound-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
-          <span class="mute-icon"></span>
-          <span class="unmute-icon" style="display: none;"></span>
-          <span>Sound</span>
-        </button>
-        <button class="turn-off-btn" data-video-id="${videoId}" title="Turn off">
-          <span>Turn off</span>
-        </button>
-      </div>
-    </div>
   `;
 }
 
@@ -475,34 +456,10 @@ function initVideoControls() {
       
       if (videoId) {
         container.style.position = 'relative';
-        // Insert overlay inside container, controls after container
+        // Insert overlay inside container
         const controlsHTML = createVideoControls(videoId, videoType);
         console.log('Created controls HTML for', videoId, ':', controlsHTML.substring(0, 200));
-        const splitMarker = '<!-- Controls at the bottom';
-        const parts = controlsHTML.split(splitMarker);
-        if (parts.length >= 2) {
-          // Insert overlay (first part) inside container
-          container.insertAdjacentHTML('beforeend', parts[0].trim());
-          // Insert controls (second part) after container
-          const controlsPart = splitMarker + parts[1];
-          container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted controls after container for', videoId);
-          
-          // Verify controls were inserted
-          const insertedControls = container.nextElementSibling;
-          if (insertedControls && insertedControls.classList.contains('video-controls')) {
-            console.log('Controls successfully inserted and found in DOM');
-            insertedControls.style.display = 'flex';
-            insertedControls.style.visibility = 'visible';
-            insertedControls.style.opacity = '1';
-          } else {
-            console.warn('Controls not found after insertion');
-          }
-        } else {
-          // Fallback: insert everything inside if split fails
-          console.warn('Split failed, inserting all controls inside container');
           container.insertAdjacentHTML('beforeend', controlsHTML);
-        }
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
       } else {
@@ -529,34 +486,10 @@ function initVideoControls() {
       
       if (videoId) {
         container.style.position = 'relative';
-        // Insert overlay inside container, controls after container
+        // Insert overlay inside container
         const controlsHTML = createVideoControls(videoId, videoType);
         console.log('Created gallery controls HTML for', videoId);
-        const splitMarker = '<!-- Controls at the bottom';
-        const parts = controlsHTML.split(splitMarker);
-        if (parts.length >= 2) {
-          // Insert overlay (first part) inside container
-          container.insertAdjacentHTML('beforeend', parts[0].trim());
-          // Insert controls (second part) after container
-          const controlsPart = splitMarker + parts[1];
-          container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted gallery controls after container for', videoId);
-          
-          // Verify controls were inserted
-          const insertedControls = container.nextElementSibling;
-          if (insertedControls && insertedControls.classList.contains('video-controls')) {
-            console.log('Gallery controls successfully inserted and found in DOM');
-            insertedControls.style.display = 'flex';
-            insertedControls.style.visibility = 'visible';
-            insertedControls.style.opacity = '1';
-          } else {
-            console.warn('Gallery controls not found after insertion');
-          }
-        } else {
-          // Fallback: insert everything inside if split fails
-          console.warn('Split failed, inserting all controls inside container');
           container.insertAdjacentHTML('beforeend', controlsHTML);
-        }
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
         
         // Start progress updates for gallery videos
@@ -600,152 +533,7 @@ function initVideoControls() {
 
 // Function to setup video control event listeners
 function setupVideoControlListeners() {
-  // Play/Pause button
-  document.querySelectorAll('.play-pause-btn').forEach(btn => {
-    // Remove existing listeners to avoid duplicates
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const videoId = newBtn.dataset.videoId;
-      const controlsDiv = newBtn.closest('.video-controls');
-      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
-      
-      if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-        const player = window.ytPlayers[videoId];
-        // Toggle play/pause - we'll track state manually since postMessage doesn't return state
-        const isPlaying = newBtn.querySelector('.pause-icon').style.display !== 'none';
-            if (isPlaying) {
-              player.pauseVideo();
-              newBtn.querySelector('.play-icon').style.display = 'inline-block';
-              newBtn.querySelector('.pause-icon').style.display = 'none';
-              const playText = newBtn.querySelector('.play-text');
-              const pauseText = newBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'inline';
-              if (pauseText) pauseText.style.display = 'none';
-            } else {
-              player.playVideo();
-              // Track start time for time estimation
-              if (!window.ytStartTimes) window.ytStartTimes = {};
-              // Get current time if available, otherwise start from 0
-              let startTime = 0;
-              if (player.getCurrentTime && typeof player.getCurrentTime === 'function') {
-                try {
-                  startTime = player.getCurrentTime() || 0;
-                } catch (e) {
-                  startTime = 0;
-                }
-              }
-              window.ytStartTimes[videoId] = Date.now() - (startTime * 1000);
-              newBtn.querySelector('.play-icon').style.display = 'none';
-              newBtn.querySelector('.pause-icon').style.display = 'inline-block';
-              const playText = newBtn.querySelector('.play-text');
-              const pauseText = newBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'none';
-              if (pauseText) pauseText.style.display = 'inline';
-            }
-      } else if (videoType === 'vimeo' && window.Vimeo) {
-        const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
-        if (player) {
-          player.getPaused().then(paused => {
-            if (paused) {
-              player.play();
-              newBtn.querySelector('.play-icon').style.display = 'none';
-              newBtn.querySelector('.pause-icon').style.display = 'inline-block';
-              const playText = newBtn.querySelector('.play-text');
-              const pauseText = newBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'none';
-              if (pauseText) pauseText.style.display = 'inline';
-            } else {
-              player.pause();
-              newBtn.querySelector('.play-icon').style.display = 'inline-block';
-              newBtn.querySelector('.pause-icon').style.display = 'none';
-              const playText = newBtn.querySelector('.play-text');
-              const pauseText = newBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'inline';
-              if (pauseText) pauseText.style.display = 'none';
-            }
-          });
-        }
-      }
-    });
-  });
-  
-  // Mute button (now inside combined container)
-  document.querySelectorAll('.mute-btn').forEach(btn => {
-    // Remove existing listeners to avoid duplicates
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-    
-    newBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      const videoId = newBtn.dataset.videoId;
-      const controlsDiv = newBtn.closest('.video-controls');
-      const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
-      
-      if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-        const player = window.ytPlayers[videoId];
-        // Toggle mute - we'll track state manually
-        const isMuted = newBtn.querySelector('.unmute-icon').style.display !== 'none';
-        if (isMuted) {
-          player.unMute();
-          newBtn.querySelector('.mute-icon').style.display = 'inline-block';
-          newBtn.querySelector('.unmute-icon').style.display = 'none';
-        } else {
-          player.mute();
-          newBtn.querySelector('.mute-icon').style.display = 'none';
-          newBtn.querySelector('.unmute-icon').style.display = 'inline-block';
-        }
-      } else if (videoType === 'vimeo' && window.Vimeo) {
-        const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
-        if (player) {
-          player.getVolume().then(volume => {
-            if (volume === 0) {
-              player.setVolume(1);
-              newBtn.querySelector('.mute-icon').style.display = 'inline-block';
-              newBtn.querySelector('.unmute-icon').style.display = 'none';
-            } else {
-              player.setVolume(0);
-              newBtn.querySelector('.mute-icon').style.display = 'none';
-              newBtn.querySelector('.unmute-icon').style.display = 'inline-block';
-            }
-          });
-        }
-      }
-    });
-  });
-  
-  // Turn off button (now inside combined container)
-  document.querySelectorAll('.turn-off-btn').forEach(btn => {
-    // Skip if already processed as part of mute button handler
-    if (btn.closest('.video-controls-combined')) {
-      // Remove existing listeners to avoid duplicates
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      
-      newBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        const videoId = newBtn.dataset.videoId;
-        const controlsDiv = newBtn.closest('.video-controls');
-        const videoType = controlsDiv ? controlsDiv.dataset.videoType : (newBtn.closest('.video-controls-overlay')?.dataset.videoType || 'youtube');
-        
-        if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-          const player = window.ytPlayers[videoId];
-          player.pauseVideo();
-        } else if (videoType === 'vimeo' && window.Vimeo) {
-          const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
-          if (player) {
-            player.pause();
-          }
-        }
-      });
-    }
-  });
-  
-  // Progress bar - make it clickable to seek to specific time
+  // Progress bar - make it clickable to pause/resume (click on current position) or seek (click elsewhere)
   document.querySelectorAll('.video-progress-container').forEach(container => {
     // Remove existing listeners to avoid duplicates
     const newContainer = container.cloneNode(true);
@@ -755,169 +543,36 @@ function setupVideoControlListeners() {
       e.stopPropagation();
       e.preventDefault();
       e.stopImmediatePropagation();
-      const rect = newContainer.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const percent = Math.max(0, Math.min(1, clickX / rect.width));
       const videoId = newContainer.dataset.videoId;
       const overlay = newContainer.closest('.video-controls-overlay');
       if (!overlay) return;
       const videoType = overlay.dataset.videoType || 'youtube';
       
-      // Set seeking flag to prevent progress updates from interfering
-      if (!window.videoSeeking) window.videoSeeking = {};
-      window.videoSeeking[videoId] = true;
-      
-      // Store current play/pause state to preserve it during seek
-      const container = overlay.closest('.video-container, .display-container');
-      const controls = container ? container.nextElementSibling : null;
-      const playBtn = controls?.querySelector('.play-pause-btn') || container?.querySelector('.play-pause-btn');
-      let wasPlaying = false;
-      if (playBtn) {
-        // Check if pause icon is visible (meaning video is playing)
-        wasPlaying = playBtn.querySelector('.pause-icon').style.display !== 'none';
-      }
-      
-      // Get progress bar and time displays for smooth update
-      const progressBar = overlay.querySelector('.video-progress-bar');
-      const timeDisplays = overlay.querySelectorAll('.video-time');
-      
-      // Update UI immediately for smooth visual feedback
-      const updateUI = (seekTime, duration) => {
-        if (progressBar) {
-          // Use requestAnimationFrame for smooth update
-          requestAnimationFrame(() => {
-            progressBar.style.transition = 'none'; // Disable transition during seek
-            progressBar.style.width = (percent * 100) + '%';
-            // Re-enable transition after a brief delay
-            setTimeout(() => {
-              progressBar.style.transition = 'width 0.1s linear';
-            }, 50);
-          });
-        }
-        
-        if (timeDisplays.length >= 2) {
-          requestAnimationFrame(() => {
-            timeDisplays[0].textContent = formatTime(seekTime);
-            if (duration) {
-              timeDisplays[1].textContent = formatTime(duration);
-            }
-          });
-        }
-      };
-      
-      // Function to restore play/pause button state
-      const restorePlayPauseState = () => {
-        if (playBtn) {
-          requestAnimationFrame(() => {
-            if (wasPlaying) {
-              playBtn.querySelector('.play-icon').style.display = 'none';
-              playBtn.querySelector('.pause-icon').style.display = 'inline-block';
-              const playText = playBtn.querySelector('.play-text');
-              const pauseText = playBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'none';
-              if (pauseText) pauseText.style.display = 'inline';
-            } else {
-              playBtn.querySelector('.play-icon').style.display = 'inline-block';
-              playBtn.querySelector('.pause-icon').style.display = 'none';
-              const playText = playBtn.querySelector('.play-text');
-              const pauseText = playBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'inline';
-              if (pauseText) pauseText.style.display = 'none';
-            }
-          });
-        }
-      };
-      
+      // Clicking on progress bar toggles play/pause
       if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
         const player = window.ytPlayers[videoId];
-        
-        // Try to get actual duration
-        let duration = 0;
-        if (player.getDuration && typeof player.getDuration === 'function') {
-          try {
-            duration = player.getDuration();
-          } catch (e) {
-            // Fallback to stored duration
-            duration = (window.ytDurations && window.ytDurations[videoId]) || 0;
+        // Check current state and toggle
+        try {
+          const state = player.getPlayerState ? player.getPlayerState() : -1;
+          // YouTube PlayerState: -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (cued)
+          if (state === 1) { // Playing
+            player.pauseVideo();
+          } else { // Paused or other
+            player.playVideo();
           }
-        } else if (window.ytDurations && window.ytDurations[videoId]) {
-          duration = window.ytDurations[videoId];
-        }
-        
-        // If we have duration, use it; otherwise use a reasonable estimate
-        if (duration && duration > 0) {
-          const seekTime = duration * percent;
-          
-          // Update UI immediately for smooth feedback
-          updateUI(seekTime, duration);
-          
-          // Perform seek
-          player.seekTo(seekTime, true); // true = allowSeekAhead
-          
-          // Reset start time tracking to the seek position
-          if (!window.ytStartTimes) window.ytStartTimes = {};
-          window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
-          
-          // Restore play/pause button state after a brief delay
-          setTimeout(() => {
-            restorePlayPauseState();
-          }, 100);
-          
-          // Clear seeking flag after a short delay to allow player to catch up
-          setTimeout(() => {
-            window.videoSeeking[videoId] = false;
-          }, 300);
-        } else {
-          // Fallback: try to seek with estimated duration
-          const estimatedDuration = 300; // 5 minutes default
-          const seekTime = estimatedDuration * percent;
-          
-          // Update UI immediately
-          updateUI(seekTime, estimatedDuration);
-          
-          // Perform seek
-          player.seekTo(seekTime, true);
-          
-          // Reset start time tracking
-          if (!window.ytStartTimes) window.ytStartTimes = {};
-          window.ytStartTimes[videoId] = Date.now() - (seekTime * 1000);
-          
-          // Restore play/pause button state after a brief delay
-          setTimeout(() => {
-            restorePlayPauseState();
-          }, 100);
-          
-          // Clear seeking flag
-          setTimeout(() => {
-            window.videoSeeking[videoId] = false;
-          }, 300);
+          } catch (e) {
+          // Fallback: try to play
+          player.playVideo();
         }
       } else if (videoType === 'vimeo' && window.Vimeo) {
         const player = window.vimeoPlayers && window.vimeoPlayers[videoId];
         if (player) {
-          player.getDuration().then(duration => {
-            if (duration && duration > 0) {
-              const seekTime = duration * percent;
-              
-              // Update UI immediately
-              updateUI(seekTime, duration);
-              
-              // Perform seek
-              player.setCurrentTime(seekTime);
-              
-              // Restore play/pause button state after a brief delay
-              setTimeout(() => {
-                restorePlayPauseState();
-              }, 100);
-              
-              // Clear seeking flag
-              setTimeout(() => {
-                window.videoSeeking[videoId] = false;
-              }, 300);
+          player.getPaused().then(paused => {
+            if (paused) {
+              player.play();
+            } else {
+              player.pause();
             }
-          }).catch(err => {
-            console.warn('Failed to seek Vimeo video:', err);
-            window.videoSeeking[videoId] = false;
           });
         }
       }
@@ -987,31 +642,6 @@ function initYouTubePlayers() {
                 // Ensure progress updates are running
                 if (!window.videoProgressIntervals || !window.videoProgressIntervals[videoId]) {
                   updateVideoProgress(videoId, 'youtube');
-                }
-              }
-              
-              // Update play/pause button state
-              const container = iframe.closest('.video-container, .display-container');
-              if (container) {
-                // Controls are now siblings, not children
-                const controls = container.nextElementSibling;
-                const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
-                if (playBtn) {
-                  if (event.data === window.YT.PlayerState.PLAYING) {
-                    playBtn.querySelector('.play-icon').style.display = 'none';
-                    playBtn.querySelector('.pause-icon').style.display = 'inline-block';
-                    const playText = playBtn.querySelector('.play-text');
-                    const pauseText = playBtn.querySelector('.pause-text');
-                    if (playText) playText.style.display = 'none';
-                    if (pauseText) pauseText.style.display = 'inline';
-                  } else {
-                    playBtn.querySelector('.play-icon').style.display = 'inline-block';
-                    playBtn.querySelector('.pause-icon').style.display = 'none';
-                    const playText = playBtn.querySelector('.play-text');
-                    const pauseText = playBtn.querySelector('.pause-text');
-                    if (playText) playText.style.display = 'inline';
-                    if (pauseText) pauseText.style.display = 'none';
-                  }
                 }
               }
             }
@@ -1138,42 +768,12 @@ function initVimeoPlayers() {
           if (!window.videoProgressIntervals || !window.videoProgressIntervals[videoId]) {
             updateVideoProgress(videoId, 'vimeo');
           }
-          
-          const container = iframe.closest('.video-container, .display-container');
-          if (container) {
-            // Controls are now siblings, not children
-            const controls = container.nextElementSibling;
-            const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
-            if (playBtn) {
-              playBtn.querySelector('.play-icon').style.display = 'none';
-              playBtn.querySelector('.pause-icon').style.display = 'inline-block';
-              const playText = playBtn.querySelector('.play-text');
-              const pauseText = playBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'none';
-              if (pauseText) pauseText.style.display = 'inline';
-            }
-          }
         });
         
         player.on('pause', () => {
           // Skip state change updates if currently seeking
           if (window.videoSeeking && window.videoSeeking[videoId]) {
             return;
-          }
-          
-          const container = iframe.closest('.video-container, .display-container');
-          if (container) {
-            // Controls are now siblings, not children
-            const controls = container.nextElementSibling;
-            const playBtn = controls?.querySelector('.play-pause-btn') || container.querySelector('.play-pause-btn');
-            if (playBtn) {
-              playBtn.querySelector('.play-icon').style.display = 'inline-block';
-              playBtn.querySelector('.pause-icon').style.display = 'none';
-              const playText = playBtn.querySelector('.play-text');
-              const pauseText = playBtn.querySelector('.pause-text');
-              if (playText) playText.style.display = 'inline';
-              if (pauseText) pauseText.style.display = 'none';
-            }
           }
         });
         

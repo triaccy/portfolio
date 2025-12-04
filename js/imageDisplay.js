@@ -227,7 +227,7 @@ function initializeGallery(container, images, allImages) {
     nextBtn.addEventListener('click', () => changeImage(1));
   }
   
-  // Click on container to go to next (but not on video controls)
+  // Click on container to go to next (but not on video controls or progress bar)
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('display-nav')) return;
     if (e.target.closest('.video-controls-overlay')) return;
@@ -236,9 +236,17 @@ function initializeGallery(container, images, allImages) {
     if (e.target.closest('.video-progress-container')) return;
     if (e.target.closest('.video-progress-wrapper')) return;
     if (e.target.closest('.video-progress-overlay')) return;
-    // Don't navigate if clicking directly on a video iframe (handled separately)
-    if (e.target.classList.contains('display-video')) return;
-    changeImage(1);
+    // Don't navigate if clicking directly on a video iframe
+    if (e.target.classList.contains('display-video') || e.target.tagName === 'IFRAME') return;
+    
+    // For video galleries with multiple videos, navigate to next
+    const videos = container.querySelectorAll('.display-video');
+    if (videos.length > 1) {
+      changeImage(1);
+    } else {
+      // For single video or images, navigate to next
+      changeImage(1);
+    }
   });
   
   // Add click handlers for video navigation
@@ -295,7 +303,7 @@ function initializeGallery(container, images, allImages) {
       const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
       
       if (clickTarget) {
-        // Don't navigate if click is on controls or navigation buttons
+        // Don't navigate if click is on progress bar or controls
         if (clickTarget.closest('.video-controls-overlay') ||
             clickTarget.closest('.video-controls') ||
             clickTarget.closest('.video-control-btn') ||
@@ -308,7 +316,7 @@ function initializeGallery(container, images, allImages) {
         }
       }
       
-      // Navigate to next video/image
+      // Navigate to next video/image when clicking outside the video/controls
       e.stopPropagation();
       e.preventDefault();
       changeImage(1);
