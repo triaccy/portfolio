@@ -558,6 +558,12 @@ function initVideoControls() {
           container.insertAdjacentHTML('beforeend', controlsHTML);
         }
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
+        
+        // Start progress updates for gallery videos
+        // Wait a bit for player to be ready, then start updates
+        setTimeout(() => {
+          updateVideoProgress(videoId, videoType);
+        }, 500);
       } else {
         console.warn('Could not extract video ID from:', src);
       }
@@ -566,6 +572,28 @@ function initVideoControls() {
   
   // Set up control event listeners
   setupVideoControlListeners();
+  
+  // Start progress updates for all video containers as well
+  document.querySelectorAll('.video-container iframe').forEach(iframe => {
+    const src = iframe.src;
+    let videoType = 'youtube';
+    let videoId = null;
+    
+    if (src.includes('youtube.com') || src.includes('youtu.be')) {
+      videoType = 'youtube';
+      videoId = getVideoId(src, 'youtube');
+    } else if (src.includes('vimeo.com')) {
+      videoType = 'vimeo';
+      videoId = getVideoId(src, 'vimeo');
+    }
+    
+    if (videoId) {
+      // Wait a bit for player to be ready, then start updates
+      setTimeout(() => {
+        updateVideoProgress(videoId, videoType);
+      }, 500);
+    }
+  });
   
   console.log(`Video controls initialization complete. Added controls to ${controlsAdded} video containers and ${document.querySelectorAll('.display-video').length} gallery videos.`);
 }
@@ -955,6 +983,11 @@ function initYouTubePlayers() {
                 if (!window.ytStartTimes) window.ytStartTimes = {};
                 const currentTime = event.target.getCurrentTime ? event.target.getCurrentTime() : 0;
                 window.ytStartTimes[videoId] = Date.now() - (currentTime * 1000);
+                
+                // Ensure progress updates are running
+                if (!window.videoProgressIntervals || !window.videoProgressIntervals[videoId]) {
+                  updateVideoProgress(videoId, 'youtube');
+                }
               }
               
               // Update play/pause button state
@@ -1099,6 +1132,11 @@ function initVimeoPlayers() {
           // Skip state change updates if currently seeking
           if (window.videoSeeking && window.videoSeeking[videoId]) {
             return;
+          }
+          
+          // Ensure progress updates are running
+          if (!window.videoProgressIntervals || !window.videoProgressIntervals[videoId]) {
+            updateVideoProgress(videoId, 'vimeo');
           }
           
           const container = iframe.closest('.video-container, .display-container');
@@ -1295,11 +1333,30 @@ function updateVideoProgress(videoId, videoType) {
     }
   };
   
+  // Don't start interval if one already exists for this video
+  if (!window.videoProgressIntervals) window.videoProgressIntervals = {};
+  if (window.videoProgressIntervals[videoId]) {
+    // Already updating, just return
+    return;
+  }
+  
+  // Initial update
   update();
-  const interval = setInterval(update, 100);
+  
+  // Start continuous updates every 100ms
+  const interval = setInterval(() => {
+    // Check if overlay still exists
+    const overlay = document.querySelector(`.video-controls-overlay[data-video-id="${videoId}"]`);
+    if (!overlay) {
+      // Clean up if overlay is removed
+      clearInterval(interval);
+      delete window.videoProgressIntervals[videoId];
+      return;
+    }
+    update();
+  }, 100);
   
   // Store interval to clear later if needed
-  if (!window.videoProgressIntervals) window.videoProgressIntervals = {};
   window.videoProgressIntervals[videoId] = interval;
 }
 
