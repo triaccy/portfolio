@@ -166,28 +166,11 @@ function applyVideoImageStyle() {
       font-family: monospace;
     }
     
-    /* Controls at the bottom - always visible below video */
+    /* Controls at the bottom - hidden (buttons removed) */
     .video-controls {
-      display: flex !important;
-      align-items: center;
-      gap: 12px;
-      pointer-events: auto;
-      margin-top: 8px;
-      justify-content: center;
-      flex-wrap: wrap;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-    
-    /* Ensure controls are positioned relative to video container */
-    .video-container + .video-controls,
-    .display-container + .video-controls {
-      width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
     }
     
     /* Video wrapper to contain video and controls */
@@ -417,25 +400,6 @@ function createVideoControls(videoId, videoType) {
         </div>
       </div>
     </div>
-    <!-- Controls at the bottom - always visible -->
-    <div class="video-controls" data-video-id="${videoId}" data-video-type="${videoType}">
-      <button class="video-control-btn play-pause-btn" data-video-id="${videoId}" title="Play/Pause">
-        <span class="play-text" style="display: none;">Play</span>
-        <span class="pause-text">Pause</span>
-        <span class="play-icon" style="display: none;"></span>
-        <span class="pause-icon"></span>
-      </button>
-      <div class="video-controls-combined">
-        <button class="sound-btn mute-btn" data-video-id="${videoId}" title="Mute/Unmute">
-          <span class="mute-icon"></span>
-          <span class="unmute-icon" style="display: none;"></span>
-          <span>Sound</span>
-        </button>
-        <button class="turn-off-btn" data-video-id="${videoId}" title="Turn off">
-          <span>Turn off</span>
-        </button>
-      </div>
-    </div>
   `;
 }
 
@@ -478,31 +442,8 @@ function initVideoControls() {
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
         console.log('Created controls HTML for', videoId, ':', controlsHTML.substring(0, 200));
-        const splitMarker = '<!-- Controls at the bottom';
-        const parts = controlsHTML.split(splitMarker);
-        if (parts.length >= 2) {
-          // Insert overlay (first part) inside container
-          container.insertAdjacentHTML('beforeend', parts[0].trim());
-          // Insert controls (second part) after container
-          const controlsPart = splitMarker + parts[1];
-          container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted controls after container for', videoId);
-          
-          // Verify controls were inserted
-          const insertedControls = container.nextElementSibling;
-          if (insertedControls && insertedControls.classList.contains('video-controls')) {
-            console.log('Controls successfully inserted and found in DOM');
-            insertedControls.style.display = 'flex';
-            insertedControls.style.visibility = 'visible';
-            insertedControls.style.opacity = '1';
-          } else {
-            console.warn('Controls not found after insertion');
-          }
-        } else {
-          // Fallback: insert everything inside if split fails
-          console.warn('Split failed, inserting all controls inside container');
-          container.insertAdjacentHTML('beforeend', controlsHTML);
-        }
+        // Insert overlay inside container
+        container.insertAdjacentHTML('beforeend', controlsHTML);
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
       } else {
@@ -532,31 +473,8 @@ function initVideoControls() {
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
         console.log('Created gallery controls HTML for', videoId);
-        const splitMarker = '<!-- Controls at the bottom';
-        const parts = controlsHTML.split(splitMarker);
-        if (parts.length >= 2) {
-          // Insert overlay (first part) inside container
-          container.insertAdjacentHTML('beforeend', parts[0].trim());
-          // Insert controls (second part) after container
-          const controlsPart = splitMarker + parts[1];
-          container.insertAdjacentHTML('afterend', controlsPart);
-          console.log('Inserted gallery controls after container for', videoId);
-          
-          // Verify controls were inserted
-          const insertedControls = container.nextElementSibling;
-          if (insertedControls && insertedControls.classList.contains('video-controls')) {
-            console.log('Gallery controls successfully inserted and found in DOM');
-            insertedControls.style.display = 'flex';
-            insertedControls.style.visibility = 'visible';
-            insertedControls.style.opacity = '1';
-          } else {
-            console.warn('Gallery controls not found after insertion');
-          }
-        } else {
-          // Fallback: insert everything inside if split fails
-          console.warn('Split failed, inserting all controls inside container');
-          container.insertAdjacentHTML('beforeend', controlsHTML);
-        }
+        // Insert overlay inside container
+        container.insertAdjacentHTML('beforeend', controlsHTML);
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
         
         // Start progress updates for gallery videos
@@ -572,6 +490,9 @@ function initVideoControls() {
   
   // Set up control event listeners
   setupVideoControlListeners();
+  
+  // Add click-to-pause/resume for videos
+  setupVideoClickHandlers();
   
   // Start progress updates for all video containers as well
   document.querySelectorAll('.video-container iframe').forEach(iframe => {
@@ -596,6 +517,95 @@ function initVideoControls() {
   });
   
   console.log(`Video controls initialization complete. Added controls to ${controlsAdded} video containers and ${document.querySelectorAll('.display-video').length} gallery videos.`);
+}
+
+// Function to setup click-to-pause/resume handlers
+function setupVideoClickHandlers() {
+  // Handle clicks on video containers to toggle play/pause
+  // We'll add handlers to containers, not iframes (iframes block clicks)
+  document.querySelectorAll('.display-container:has(.display-video), .video-container').forEach(container => {
+    const video = container.querySelector('.display-video, iframe');
+    if (!video) return;
+    
+    // Get video info
+    const src = video.src || video.getAttribute('src');
+    let videoType = 'youtube';
+    let videoId = null;
+    
+    if (src && (src.includes('youtube.com') || src.includes('youtu.be'))) {
+      videoType = 'youtube';
+      videoId = getVideoId(src, 'youtube');
+    } else if (src && src.includes('vimeo.com')) {
+      videoType = 'vimeo';
+      videoId = getVideoId(src, 'vimeo');
+    }
+    
+    if (!videoId) return;
+    
+    // Add click handler to container for pause/resume
+    const clickHandler = (e) => {
+      // Don't toggle if clicking on progress bar, controls, or outside video area
+      if (e.target.closest('.video-progress-container') ||
+          e.target.closest('.video-progress-wrapper') ||
+          e.target.closest('.video-progress-overlay') ||
+          e.target.closest('.video-controls-overlay') ||
+          e.target.closest('.video-nav-overlay')) {
+        return;
+      }
+      
+      // Only toggle if clicking directly on or very near the video
+      const videoRect = video.getBoundingClientRect();
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      
+      // Check if click is within video bounds (with small margin for iframe click-through issues)
+      if (clickX >= videoRect.left - 10 && clickX <= videoRect.right + 10 &&
+          clickY >= videoRect.top - 10 && clickY <= videoRect.bottom + 10) {
+        // Toggle play/pause
+        if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
+          const player = window.ytPlayers[videoId];
+          if (player.getPlayerState && typeof player.getPlayerState === 'function') {
+            try {
+              const state = player.getPlayerState();
+              if (state === window.YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+              } else {
+                player.playVideo();
+              }
+            } catch (e) {
+              // Fallback: try to toggle
+              player.pauseVideo();
+              setTimeout(() => player.playVideo(), 100);
+            }
+          } else {
+            // Fallback for postMessage API - toggle
+            try {
+              player.pauseVideo();
+              setTimeout(() => player.playVideo(), 100);
+            } catch (e) {
+              console.warn('Could not toggle YouTube video:', e);
+            }
+          }
+        } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
+          const player = window.vimeoPlayers[videoId];
+          player.getPaused().then(paused => {
+            if (paused) {
+              player.play();
+            } else {
+              player.pause();
+            }
+          }).catch(e => {
+            console.warn('Could not toggle Vimeo video:', e);
+          });
+        }
+        e.stopPropagation();
+      }
+    };
+    
+    // Remove existing handler if any
+    container.removeEventListener('click', clickHandler);
+    container.addEventListener('click', clickHandler);
+  });
 }
 
 // Function to setup video control event listeners

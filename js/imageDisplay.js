@@ -227,7 +227,7 @@ function initializeGallery(container, images, allImages) {
     nextBtn.addEventListener('click', () => changeImage(1));
   }
   
-  // Click on container to go to next (but not on video controls)
+  // Click on container to go to next (but not on video controls or videos)
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('display-nav')) return;
     if (e.target.closest('.video-controls-overlay')) return;
@@ -238,7 +238,20 @@ function initializeGallery(container, images, allImages) {
     if (e.target.closest('.video-progress-overlay')) return;
     // Don't navigate if clicking directly on a video iframe (handled separately)
     if (e.target.classList.contains('display-video')) return;
-    changeImage(1);
+    
+    // If there are videos in the gallery and we're clicking outside the video, navigate
+    const videos = container.querySelectorAll('.display-video');
+    if (videos.length > 0) {
+      // Check if click is on the video itself
+      const clickedVideo = e.target.closest('.display-video');
+      if (!clickedVideo) {
+        // Click is outside video, navigate to next
+        changeImage(1);
+      }
+    } else {
+      // No videos, just navigate normally
+      changeImage(1);
+    }
   });
   
   // Add click handlers for video navigation
@@ -288,14 +301,13 @@ function initializeGallery(container, images, allImages) {
       observer.observe(video, { attributes: true, attributeFilter: ['class'] });
     });
     
-    // Add click handler to navigation overlay
+    // Add click handler to navigation overlay - navigate when clicking outside video
     navOverlay.addEventListener('click', (e) => {
       // Check what element is actually at the click point
-      // Controls overlay has z-index 10, so it should be on top
       const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
       
       if (clickTarget) {
-        // Don't navigate if click is on controls or navigation buttons
+        // Don't navigate if click is on controls, progress bar, or video itself
         if (clickTarget.closest('.video-controls-overlay') ||
             clickTarget.closest('.video-controls') ||
             clickTarget.closest('.video-control-btn') ||
@@ -303,12 +315,14 @@ function initializeGallery(container, images, allImages) {
             clickTarget.closest('.video-progress-wrapper') ||
             clickTarget.closest('.video-progress-overlay') ||
             clickTarget.closest('.display-nav') ||
-            clickTarget.classList.contains('display-nav')) {
+            clickTarget.classList.contains('display-nav') ||
+            clickTarget.classList.contains('display-video') ||
+            clickTarget.tagName === 'IFRAME') {
           return;
         }
       }
       
-      // Navigate to next video/image
+      // Click is outside video - navigate to next video/image
       e.stopPropagation();
       e.preventDefault();
       changeImage(1);
