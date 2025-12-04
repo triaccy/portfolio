@@ -388,17 +388,25 @@ function applyVideoImageStyle() {
       z-index: 10 !important;
     }
     
-    /* Clickable overlay for pause/resume - covers entire video area */
+    /* Clickable overlay for pause/resume - only covers visible video area */
     .video-click-overlay {
       position: absolute;
+      /* Match the video iframe's position - videos use object-fit: contain, so they may not fill container */
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
+      width: 100%;
+      height: 100%;
       background: transparent;
       cursor: inherit;
       z-index: 5;
       pointer-events: auto;
+    }
+    
+    /* For gallery videos, the overlay should match the video iframe bounds */
+    .image-display.gallery .display-container .video-click-overlay {
+      /* The video iframe is positioned absolute and fills the container with object-fit: contain */
+      /* So the overlay should match the iframe's actual rendered size */
+      /* We'll use JavaScript to dynamically size it to match the video */
     }
     
     /* Progress overlay should be above click overlay */
@@ -470,6 +478,32 @@ function initVideoControls() {
         console.log('Created controls HTML for', videoId, ':', controlsHTML.substring(0, 200));
         // Insert overlay inside container
         container.insertAdjacentHTML('beforeend', controlsHTML);
+        
+        // Make click overlay match the actual video iframe size (not the container)
+        const updateClickOverlaySize = () => {
+          const overlay = container.querySelector('.video-click-overlay');
+          if (overlay && iframe) {
+            const videoRect = iframe.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            // Calculate relative position and size
+            const top = videoRect.top - containerRect.top;
+            const left = videoRect.left - containerRect.left;
+            const width = videoRect.width;
+            const height = videoRect.height;
+            
+            overlay.style.top = `${top}px`;
+            overlay.style.left = `${left}px`;
+            overlay.style.width = `${width}px`;
+            overlay.style.height = `${height}px`;
+          }
+        };
+        
+        // Update on load and resize
+        iframe.addEventListener('load', updateClickOverlaySize);
+        updateClickOverlaySize();
+        window.addEventListener('resize', updateClickOverlaySize);
+        
         controlsAdded++;
         console.log(`Added video controls to container: ${videoType} ${videoId}`, new Date().toISOString());
       } else {
@@ -509,6 +543,42 @@ function initVideoControls() {
           container.style.cursor = 'ew-resize';
         } else {
           container.style.cursor = 'default';
+        }
+        
+        // Make click overlay match the actual video iframe size (not the container)
+        const activeVideo = container.querySelector('.display-video.active');
+        if (activeVideo) {
+          const updateClickOverlaySize = () => {
+            const overlay = container.querySelector('.video-click-overlay');
+            if (overlay && activeVideo) {
+              const videoRect = activeVideo.getBoundingClientRect();
+              const containerRect = container.getBoundingClientRect();
+              
+              // Calculate relative position and size
+              const top = videoRect.top - containerRect.top;
+              const left = videoRect.left - containerRect.left;
+              const width = videoRect.width;
+              const height = videoRect.height;
+              
+              overlay.style.top = `${top}px`;
+              overlay.style.left = `${left}px`;
+              overlay.style.width = `${width}px`;
+              overlay.style.height = `${height}px`;
+            }
+          };
+          
+          // Update on load and resize
+          if (activeVideo.tagName === 'IFRAME') {
+            activeVideo.addEventListener('load', updateClickOverlaySize);
+          }
+          updateClickOverlaySize();
+          
+          // Update when video becomes active
+          const observer = new MutationObserver(updateClickOverlaySize);
+          observer.observe(activeVideo, { attributes: true, attributeFilter: ['class'] });
+          
+          // Update on window resize
+          window.addEventListener('resize', updateClickOverlaySize);
         }
         
         // Start progress updates for gallery videos

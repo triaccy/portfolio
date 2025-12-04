@@ -208,6 +208,29 @@ function initializeGallery(container, images, allImages) {
       const total = galleryState.images.length;
       counter.textContent = `${current}/${total}`;
     }
+    
+    // Update click overlay size for videos when they become active
+    const activeVideo = container.querySelector('.display-video.active');
+    if (activeVideo) {
+      setTimeout(() => {
+        const overlay = container.querySelector('.video-click-overlay');
+        if (overlay && activeVideo) {
+          const videoRect = activeVideo.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          
+          // Calculate relative position and size
+          const top = videoRect.top - containerRect.top;
+          const left = videoRect.left - containerRect.left;
+          const width = videoRect.width;
+          const height = videoRect.height;
+          
+          overlay.style.top = `${top}px`;
+          overlay.style.left = `${left}px`;
+          overlay.style.width = `${width}px`;
+          overlay.style.height = `${height}px`;
+        }
+      }, 50);
+    }
   }
   
   function changeImage(direction) {
