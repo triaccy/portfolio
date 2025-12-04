@@ -418,6 +418,15 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
         
+        // Add page title below the counter at the bottom
+        let pageTitleElement = document.querySelector('.gallery-page-title');
+        if (!pageTitleElement) {
+          pageTitleElement = document.createElement('div');
+          pageTitleElement.className = 'gallery-page-title';
+          document.body.appendChild(pageTitleElement);
+        }
+        pageTitleElement.textContent = pageTitle;
+        
         // Initialize image displays after content is loaded
         // Use multiple attempts to ensure galleries/videos are initialized
         const initDisplays = () => {

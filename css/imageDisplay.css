@@ -15,7 +15,7 @@
   height: auto;
   min-height: 70vh;
   aspect-ratio: 4 / 3;
-  background: #f8f8f8;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -120,18 +120,37 @@
 /* Gallery counter - at the very bottom of the page */
 .gallery-counter {
   position: fixed;
-  bottom: 0;
+  bottom: 24px;
   left: 0;
   right: 0;
   background: transparent;
   color: var(--fg, #333);
-  padding: 12px 0;
+  padding: 0;
   font-size: 14px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   z-index: 100;
   pointer-events: none;
   text-align: center;
   width: 100%;
+  line-height: 1.4;
+}
+
+/* Page title below counter */
+.gallery-page-title {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: transparent;
+  color: var(--fg, #333);
+  padding: 0 0 12px 0;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  z-index: 100;
+  pointer-events: none;
+  text-align: center;
+  width: 100%;
+  line-height: 1.4;
 }
 
 /* Vertical scroll style */
