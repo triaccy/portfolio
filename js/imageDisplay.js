@@ -214,6 +214,11 @@ function initializeGallery(container, images, allImages) {
       const pageTitle = getPageTitle();
       if (pageTitle) {
         titleElement.textContent = pageTitle;
+      } else {
+        // Try to get from window if not set yet
+        if (window.currentPageTitle) {
+          titleElement.textContent = window.currentPageTitle;
+        }
       }
     }
   };

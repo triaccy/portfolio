@@ -60,6 +60,14 @@
         if (galleryHTML) {
           document.getElementById('installation-gallery').innerHTML = galleryHTML;
           
+          // Set page title for bottom bar
+          const pageTitle = 'Installation (2023)';
+          window.currentPageTitle = pageTitle;
+          const galleries = document.querySelectorAll('.image-display.gallery');
+          galleries.forEach(gallery => {
+            gallery.dataset.pageTitle = pageTitle;
+          });
+          
           // Initialize the gallery after images have a chance to load
           setTimeout(() => {
             if (typeof initImageDisplays === 'function') {
