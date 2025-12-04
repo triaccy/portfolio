@@ -221,6 +221,37 @@ function initializeGallery(container, images, allImages) {
     updateGallery(direction);
   }
   
+  // Add keyboard navigation for galleries (especially useful for video galleries)
+  // This allows navigating without clicking on the video (which would pause/resume)
+  const keyboardHandler = (e) => {
+    // Only handle if this gallery is visible
+    const gallery = container.closest('.image-display.gallery');
+    if (!gallery || !document.body.contains(gallery)) return;
+    
+    // Check if gallery is visible on screen
+    const rect = gallery.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0 && 
+                      rect.left < window.innerWidth && rect.right > 0;
+    if (!isVisible) return;
+    
+    // Don't handle if user is typing in an input/textarea
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    
+    // Handle arrow keys - navigate without triggering pause/resume
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      e.stopPropagation();
+      changeImage(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      e.stopPropagation();
+      changeImage(-1);
+    }
+  };
+  
+  // Add keyboard listener
+  document.addEventListener('keydown', keyboardHandler);
+  
   // Set up navigation buttons
   const prevBtn = container.querySelector('.display-nav.prev');
   const nextBtn = container.querySelector('.display-nav.next');

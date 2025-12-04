@@ -110,9 +110,10 @@ function applyVideoImageStyle() {
       z-index: 11;
     }
     
-    /* Make duration bar bounded by video container size */
+    /* Make duration bar bounded by video container size - applies to ALL videos */
     .image-display.gallery .display-container .video-progress-overlay,
-    .video-container .video-progress-overlay {
+    .video-container .video-progress-overlay,
+    .display-container .video-progress-overlay {
       width: 60%;
       max-width: calc(100% - 40px);
     }
