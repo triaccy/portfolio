@@ -49,9 +49,10 @@
       .video-container {
         display: flex;
         justify-content: center;
+        align-items: center;
         margin: 40px auto 80px auto;
         width: 70%;
-        max-width: 1400px;
+        max-width: 70vw;
         pointer-events: none;
         position: relative;
       }
@@ -59,7 +60,6 @@
       .video-container iframe {
         width: 100%;
         height: auto;
-        min-height: 70vh;
         aspect-ratio: 4 / 3;
         border-radius: 0;
         pointer-events: auto !important;
@@ -68,6 +68,8 @@
         -moz-user-select: none;
         -ms-user-select: none;
         object-fit: contain;
+        display: block;
+        margin: 0 auto;
       }
       
       /* Vimeo video styling */
@@ -75,16 +77,21 @@
         width: 100%;
         height: auto;
         aspect-ratio: 16 / 9;
+        display: block;
+        margin: 0 auto;
       }
       
       @media (max-width: 768px) {
         .video-container {
-          width: 100%;
+          width: 70%;
+          max-width: 70vw;
         }
         .video-container iframe {
           width: 100%;
           height: auto;
           aspect-ratio: 16 / 9;
+          display: block;
+          margin: 0 auto;
         }
       }
       

@@ -4,7 +4,7 @@
 .image-display.gallery {
   position: relative;
   width: 70%;
-  max-width: 1400px;
+  max-width: 70vw;
   margin: 40px auto 80px auto;
   overflow: hidden;
 }
@@ -13,10 +13,12 @@
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 70vh;
   aspect-ratio: 4 / 3;
   background: transparent;
   cursor: ew-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-display.gallery .display-image {
