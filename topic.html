@@ -471,6 +471,18 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
               initVimeoPlayers();
             }, 2500);
           }
+          // Setup click handlers for pause/resume
+          if (typeof setupVideoClickHandlers === 'function') {
+            setTimeout(() => {
+              setupVideoClickHandlers();
+            }, 200);
+            setTimeout(() => {
+              setupVideoClickHandlers();
+            }, 1200);
+            setTimeout(() => {
+              setupVideoClickHandlers();
+            }, 2200);
+          }
         };
         
         // Try immediately, then after a short delay, and again after content renders

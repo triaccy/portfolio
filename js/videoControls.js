@@ -107,6 +107,7 @@ function applyVideoImageStyle() {
       max-width: 600px;
       min-width: 250px;
       display: block;
+      z-index: 11;
     }
     
     /* Make duration bar responsive to video container size */
@@ -381,6 +382,24 @@ function applyVideoImageStyle() {
     .video-controls-overlay {
       z-index: 10 !important;
     }
+    
+    /* Clickable overlay for pause/resume - covers entire video area */
+    .video-click-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      cursor: pointer;
+      z-index: 5;
+      pointer-events: auto;
+    }
+    
+    /* Progress overlay should be above click overlay */
+    .video-progress-overlay {
+      z-index: 11 !important;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -389,6 +408,8 @@ function applyVideoImageStyle() {
 function createVideoControls(videoId, videoType) {
   return `
     <div class="video-controls-overlay" data-video-id="${videoId}" data-video-type="${videoType}">
+      <!-- Clickable area for pause/resume - covers entire video -->
+      <div class="video-click-overlay" data-video-id="${videoId}" data-video-type="${videoType}"></div>
       <!-- Playback bar in the middle - appears on hover -->
       <div class="video-progress-overlay">
         <div class="video-progress-wrapper">
@@ -491,8 +512,10 @@ function initVideoControls() {
   // Set up control event listeners
   setupVideoControlListeners();
   
-  // Add click-to-pause/resume for videos
-  setupVideoClickHandlers();
+  // Add click-to-pause/resume for videos (call after a short delay to ensure overlays exist)
+  setTimeout(() => {
+    setupVideoClickHandlers();
+  }, 100);
   
   // Start progress updates for all video containers as well
   document.querySelectorAll('.video-container iframe').forEach(iframe => {
@@ -521,90 +544,86 @@ function initVideoControls() {
 
 // Function to setup click-to-pause/resume handlers
 function setupVideoClickHandlers() {
-  // Handle clicks on video containers to toggle play/pause
-  // We'll add handlers to containers, not iframes (iframes block clicks)
-  document.querySelectorAll('.display-container:has(.display-video), .video-container').forEach(container => {
-    const video = container.querySelector('.display-video, iframe');
-    if (!video) return;
-    
-    // Get video info
-    const src = video.src || video.getAttribute('src');
-    let videoType = 'youtube';
-    let videoId = null;
-    
-    if (src && (src.includes('youtube.com') || src.includes('youtu.be'))) {
-      videoType = 'youtube';
-      videoId = getVideoId(src, 'youtube');
-    } else if (src && src.includes('vimeo.com')) {
-      videoType = 'vimeo';
-      videoId = getVideoId(src, 'vimeo');
-    }
+  // Handle clicks on the click overlay to toggle play/pause
+  document.querySelectorAll('.video-click-overlay').forEach(overlay => {
+    const videoId = overlay.dataset.videoId;
+    const videoType = overlay.dataset.videoType || 'youtube';
     
     if (!videoId) return;
     
-    // Add click handler to container for pause/resume
     const clickHandler = (e) => {
-      // Don't toggle if clicking on progress bar, controls, or outside video area
+      // Don't toggle if clicking on progress bar
       if (e.target.closest('.video-progress-container') ||
           e.target.closest('.video-progress-wrapper') ||
-          e.target.closest('.video-progress-overlay') ||
-          e.target.closest('.video-controls-overlay') ||
-          e.target.closest('.video-nav-overlay')) {
+          e.target.closest('.video-progress-overlay')) {
         return;
       }
       
-      // Only toggle if clicking directly on or very near the video
-      const videoRect = video.getBoundingClientRect();
-      const clickX = e.clientX;
-      const clickY = e.clientY;
+      e.stopPropagation();
+      e.preventDefault();
       
-      // Check if click is within video bounds (with small margin for iframe click-through issues)
-      if (clickX >= videoRect.left - 10 && clickX <= videoRect.right + 10 &&
-          clickY >= videoRect.top - 10 && clickY <= videoRect.bottom + 10) {
-        // Toggle play/pause
-        if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
-          const player = window.ytPlayers[videoId];
-          if (player.getPlayerState && typeof player.getPlayerState === 'function') {
-            try {
-              const state = player.getPlayerState();
-              if (state === window.YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-              } else {
-                player.playVideo();
-              }
-            } catch (e) {
-              // Fallback: try to toggle
+      // Toggle play/pause
+      if (videoType === 'youtube' && window.ytPlayers && window.ytPlayers[videoId]) {
+        const player = window.ytPlayers[videoId];
+        if (player.getPlayerState && typeof player.getPlayerState === 'function') {
+          try {
+            const state = player.getPlayerState();
+            if (state === window.YT.PlayerState.PLAYING) {
               player.pauseVideo();
-              setTimeout(() => player.playVideo(), 100);
+            } else {
+              player.playVideo();
             }
-          } else {
-            // Fallback for postMessage API - toggle
+          } catch (e) {
+            // Fallback: try to toggle
             try {
               player.pauseVideo();
-              setTimeout(() => player.playVideo(), 100);
-            } catch (e) {
-              console.warn('Could not toggle YouTube video:', e);
+              setTimeout(() => {
+                try {
+                  player.playVideo();
+                } catch (e2) {
+                  console.warn('Could not play YouTube video:', e2);
+                }
+              }, 100);
+            } catch (e1) {
+              console.warn('Could not pause YouTube video:', e1);
             }
           }
-        } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
-          const player = window.vimeoPlayers[videoId];
-          player.getPaused().then(paused => {
-            if (paused) {
-              player.play();
-            } else {
-              player.pause();
-            }
-          }).catch(e => {
-            console.warn('Could not toggle Vimeo video:', e);
-          });
+        } else {
+          // Fallback for postMessage API - toggle
+          try {
+            player.pauseVideo();
+            setTimeout(() => {
+              try {
+                player.playVideo();
+              } catch (e2) {
+                console.warn('Could not play YouTube video:', e2);
+              }
+            }, 100);
+          } catch (e1) {
+            console.warn('Could not toggle YouTube video:', e1);
+          }
         }
-        e.stopPropagation();
+      } else if (videoType === 'vimeo' && window.vimeoPlayers && window.vimeoPlayers[videoId]) {
+        const player = window.vimeoPlayers[videoId];
+        player.getPaused().then(paused => {
+          if (paused) {
+            player.play().catch(e => {
+              console.warn('Could not play Vimeo video:', e);
+            });
+          } else {
+            player.pause().catch(e => {
+              console.warn('Could not pause Vimeo video:', e);
+            });
+          }
+        }).catch(e => {
+          console.warn('Could not get Vimeo video state:', e);
+        });
       }
     };
     
     // Remove existing handler if any
-    container.removeEventListener('click', clickHandler);
-    container.addEventListener('click', clickHandler);
+    overlay.removeEventListener('click', clickHandler);
+    overlay.addEventListener('click', clickHandler);
   });
 }
 
