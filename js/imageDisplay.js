@@ -51,13 +51,8 @@ function createGalleryDisplay(images, displayId, options) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${imageElements}
-        <div class="gallery-bottom-bar">
-          <div class="gallery-info-left"></div>
-          <div class="gallery-info-center">
-            <span class="gallery-count">1/${images.length}</span>
-            <span class="gallery-title"></span>
-          </div>
-        </div>
+        <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
+        <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
       </div>
     </div>
   `;
@@ -184,44 +179,12 @@ function initializeGallery(container, images, allImages) {
     images: images
   };
   
-  // Get page title from document title or data attribute
-  const getPageTitle = () => {
-    // First try window.currentPageTitle (set by topic.html)
-    if (window.currentPageTitle) {
-      return window.currentPageTitle;
-    }
-    // Try to get from a data attribute on the gallery
-    const galleryElement = container.closest('.image-display.gallery');
-    if (galleryElement && galleryElement.dataset.pageTitle) {
-      return galleryElement.dataset.pageTitle;
-    }
-    // Fallback to document title
-    const docTitle = document.title;
-    if (docTitle && docTitle.includes('—')) {
-      return docTitle.split('—')[0].trim();
-    }
-    return '';
-  };
-  
-  // Update bottom bar with count and title
-  const updateBottomBar = () => {
-    const countElement = container.querySelector('.gallery-count');
-    const titleElement = container.querySelector('.gallery-title');
-    if (countElement) {
-      countElement.textContent = `${galleryState.currentImageIndex + 1}/${images.length}`;
-    }
-    if (titleElement) {
-      const pageTitle = getPageTitle();
-      if (pageTitle) {
-        titleElement.textContent = pageTitle;
-      } else {
-        // Try to get from window if not set yet
-        if (window.currentPageTitle) {
-          titleElement.textContent = window.currentPageTitle;
-        }
-      }
-    }
-  };
+  // Hide navigation if only one image
+  const navButtons = container.querySelectorAll('.display-nav');
+  if (images.length <= 1) {
+    navButtons.forEach(btn => btn.style.display = 'none');
+    return;
+  }
   
   function updateGallery(direction = 0) {
     galleryState.images.forEach(img => {
@@ -230,7 +193,6 @@ function initializeGallery(container, images, allImages) {
     if (galleryState.images[galleryState.currentImageIndex]) {
       galleryState.images[galleryState.currentImageIndex].classList.add('active');
     }
-    updateBottomBar();
   }
   
   function changeImage(direction) {
@@ -244,8 +206,20 @@ function initializeGallery(container, images, allImages) {
     updateGallery(direction);
   }
   
+  // Set up navigation buttons
+  const prevBtn = container.querySelector('.display-nav.prev');
+  const nextBtn = container.querySelector('.display-nav.next');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => changeImage(-1));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => changeImage(1));
+  }
+  
   // Click on container to go to next (but not on video controls)
   container.addEventListener('click', (e) => {
+    if (e.target.classList.contains('display-nav')) return;
     if (e.target.closest('.video-controls-overlay')) return;
     if (e.target.closest('.video-controls')) return;
     if (e.target.closest('.video-control-btn')) return;
@@ -317,7 +291,9 @@ function initializeGallery(container, images, allImages) {
             clickTarget.closest('.video-control-btn') ||
             clickTarget.closest('.video-progress-container') ||
             clickTarget.closest('.video-progress-wrapper') ||
-            clickTarget.closest('.video-progress-overlay')) {
+            clickTarget.closest('.video-progress-overlay') ||
+            clickTarget.closest('.display-nav') ||
+            clickTarget.classList.contains('display-nav')) {
           return;
         }
       }
@@ -335,7 +311,8 @@ function initializeGallery(container, images, allImages) {
         clickTarget.closest('.video-controls-overlay') ||
         clickTarget.closest('.video-controls') ||
         clickTarget.closest('.video-control-btn') ||
-        clickTarget.closest('.video-progress-container')
+        clickTarget.closest('.video-progress-container') ||
+        clickTarget.closest('.display-nav')
       )) {
         return; // Let controls handle it
       }
@@ -347,19 +324,16 @@ function initializeGallery(container, images, allImages) {
   allImages.forEach(img => {
     img.addEventListener('error', function() {
       this.style.display = 'none';
-      // Image error handled, gallery will continue with remaining images
+      const validImages = Array.from(allImages).filter(i => 
+        i.style.display !== 'none' && (i.complete && i.naturalHeight > 0)
+      );
+      if (validImages.length <= 1) {
+        navButtons.forEach(btn => btn.style.display = 'none');
+      }
     });
   });
   
-  // Initialize gallery (only if multiple images)
-  if (images.length > 1) {
-    updateGallery();
-  } else {
-    // Still show bottom bar for single image
-    updateBottomBar();
-    if (images.length > 0 && images[0]) {
-      images[0].classList.add('active');
-    }
-  }
+  // Initialize gallery
+  updateGallery();
 }
 

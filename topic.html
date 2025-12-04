@@ -391,28 +391,6 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
         
-        // Store page title for galleries to access
-        window.currentPageTitle = pageTitle;
-        
-        // Set page title on all galleries (including video galleries)
-        const setPageTitleOnGalleries = () => {
-          const galleries = document.querySelectorAll('.image-display.gallery');
-          galleries.forEach(gallery => {
-            gallery.dataset.pageTitle = pageTitle;
-            // Also update bottom bar if it exists
-            const bottomBar = gallery.querySelector('.gallery-bottom-bar');
-            if (bottomBar) {
-              const titleElement = bottomBar.querySelector('.gallery-title');
-              if (titleElement) {
-                titleElement.textContent = pageTitle;
-              }
-            }
-          });
-        };
-        setTimeout(setPageTitleOnGalleries, 100);
-        setTimeout(setPageTitleOnGalleries, 500);
-        setTimeout(setPageTitleOnGalleries, 1000);
-        
         // Initialize image displays after content is loaded
         // Use multiple attempts to ensure galleries/videos are initialized
         const initDisplays = () => {
