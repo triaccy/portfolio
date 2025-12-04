@@ -42,47 +42,60 @@
       
       /* Video container */
       :root {
-        --video-width: 720px;
-        --video-height: 405px;
+        --video-width: 70vw;
+        --video-height: 70vh;
       }
       
       .video-container {
         display: flex;
         justify-content: center;
-        margin: 20px 0;
+        align-items: center;
+        width: 70vw;
+        height: 70vh;
+        margin: 15vh auto;
         pointer-events: none;
       }
       
       .video-container iframe {
-        width: var(--video-width);
-        height: var(--video-height);
+        width: 70vw;
+        height: 70vh;
         max-width: 100%;
+        max-height: 100%;
         border-radius: 8px;
         pointer-events: auto !important;
         user-select: none;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
+        object-fit: contain;
       }
       
       /* Vimeo video styling */
       .video-container iframe[src*="vimeo.com"] {
-        width: var(--video-width);
-        height: var(--video-height);
+        width: 70vw;
+        height: 70vh;
+        max-width: 100%;
+        max-height: 100%;
       }
       
       @media (max-width: 768px) {
+        .video-container {
+          width: 70vw;
+          height: 70vh;
+          margin: 15vh auto;
+        }
         .video-container iframe {
-          width: 100%;
+          width: 70vw;
           height: auto;
+          max-height: 70vh;
           aspect-ratio: 16 / 9;
         }
       }
       
       .video-container media-item {
-        width: 100%;
-        max-width: 800px;
+        width: 70vw;
         height: auto;
+        max-height: 70vh;
       }
       
       /* Project grid */
@@ -123,20 +136,29 @@
       
       /* Grid style (for backwards compatibility) */
       .image-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         gap: 20px;
-        margin: 20px 0;
+        width: 70vw;
+        margin: 15vh auto;
       }
       
       .image-item {
         text-align: center;
+        width: 70vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
       
       .image-item img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
+        width: 70vw;
+        height: auto;
+        max-height: 70vh;
+        object-fit: contain;
         border-radius: 8px;
         margin-bottom: 8px;
       }
