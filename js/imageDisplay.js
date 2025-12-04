@@ -53,6 +53,7 @@ function createGalleryDisplay(images, displayId, options) {
         ${imageElements}
         <button class="display-nav prev" data-display-id="${displayId}">&lt;</button>
         <button class="display-nav next" data-display-id="${displayId}">&gt;</button>
+        <div class="gallery-counter" data-display-id="${displayId}">1/${images.length}</div>
       </div>
     </div>
   `;
@@ -192,6 +193,14 @@ function initializeGallery(container, images, allImages) {
     });
     if (galleryState.images[galleryState.currentImageIndex]) {
       galleryState.images[galleryState.currentImageIndex].classList.add('active');
+    }
+    
+    // Update counter
+    const counter = container.querySelector('.gallery-counter');
+    if (counter && galleryState.images.length > 0) {
+      const current = galleryState.currentImageIndex + 1;
+      const total = galleryState.images.length;
+      counter.textContent = `${current}/${total}`;
     }
   }
   
@@ -335,5 +344,11 @@ function initializeGallery(container, images, allImages) {
   
   // Initialize gallery
   updateGallery();
+  
+  // Update counter with actual number of valid images
+  const counter = container.querySelector('.gallery-counter');
+  if (counter && images.length > 0) {
+    counter.textContent = `1/${images.length}`;
+  }
 }
 

@@ -49,14 +49,16 @@
       .video-container {
         display: flex;
         justify-content: center;
-        margin: 20px 0;
+        margin: 20px auto;
+        width: 70%;
+        max-width: 1100px;
         pointer-events: none;
       }
       
       .video-container iframe {
-        width: var(--video-width);
-        height: var(--video-height);
-        max-width: 100%;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
         border-radius: 8px;
         pointer-events: auto !important;
         user-select: none;
@@ -67,11 +69,15 @@
       
       /* Vimeo video styling */
       .video-container iframe[src*="vimeo.com"] {
-        width: var(--video-width);
-        height: var(--video-height);
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
       }
       
       @media (max-width: 768px) {
+        .video-container {
+          width: 100%;
+        }
         .video-container iframe {
           width: 100%;
           height: auto;
