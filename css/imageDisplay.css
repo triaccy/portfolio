@@ -16,7 +16,7 @@
   min-height: 70vh;
   aspect-ratio: 4 / 3;
   background: transparent;
-  cursor: pointer;
+  cursor: ew-resize;
 }
 
 .image-display.gallery .display-image {
@@ -55,9 +55,9 @@
   opacity: 1;
 }
 
-/* Allow clicking on video galleries to navigate */
+/* Allow clicking on video galleries to navigate - same cursor as image galleries */
 .image-display.gallery .display-container:has(.display-video) {
-  cursor: pointer;
+  cursor: ew-resize;
 }
 
 .image-display.gallery .display-container:has(.display-video):hover .display-video {

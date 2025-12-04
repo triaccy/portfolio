@@ -59,7 +59,7 @@ function applyVideoImageStyle() {
     .display-video,
     .video-container iframe {
       pointer-events: auto !important;
-      object-fit: cover;
+      object-fit: contain;
     }
     
     /* Hide YouTube controls overlay */
@@ -345,9 +345,9 @@ function applyVideoImageStyle() {
       opacity: 0.7;
     }
     
-    /* Prevent hover interactions on video containers */
+    /* Prevent hover interactions on video containers - use same cursor as image galleries */
     .image-display.gallery .display-container:has(.display-video) {
-      cursor: default;
+      cursor: ew-resize;
     }
     
     /* Make videos in gallery look exactly like images but still playable */
@@ -357,6 +357,7 @@ function applyVideoImageStyle() {
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
+      object-fit: contain;
     }
     
     /* Show controls on hover */
@@ -391,7 +392,7 @@ function applyVideoImageStyle() {
       right: 0;
       bottom: 0;
       background: transparent;
-      cursor: pointer;
+      cursor: inherit;
       z-index: 5;
       pointer-events: auto;
     }
@@ -497,6 +498,14 @@ function initVideoControls() {
         // Insert overlay inside container
         container.insertAdjacentHTML('beforeend', controlsHTML);
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
+        
+        // Set cursor for video galleries (same as image galleries)
+        const allVideos = container.querySelectorAll('.display-video');
+        if (allVideos.length > 1) {
+          container.style.cursor = 'ew-resize';
+        } else {
+          container.style.cursor = 'default';
+        }
         
         // Start progress updates for gallery videos
         // Wait a bit for player to be ready, then start updates

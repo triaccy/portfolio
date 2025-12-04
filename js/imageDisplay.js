@@ -184,8 +184,13 @@ function initializeGallery(container, images, allImages) {
   const navButtons = container.querySelectorAll('.display-nav');
   if (images.length <= 1) {
     navButtons.forEach(btn => btn.style.display = 'none');
+    // Change cursor to default if only one item
+    container.style.cursor = 'default';
     return;
   }
+  
+  // Set cursor to ew-resize for navigable galleries
+  container.style.cursor = 'ew-resize';
   
   function updateGallery(direction = 0) {
     galleryState.images.forEach(img => {
@@ -365,6 +370,13 @@ function initializeGallery(container, images, allImages) {
   const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
   if (counter && images.length > 0) {
     counter.textContent = `1/${images.length}`;
+  }
+  
+  // Update cursor based on number of items
+  if (images.length <= 1) {
+    container.style.cursor = 'default';
+  } else {
+    container.style.cursor = 'ew-resize';
   }
 }
 
