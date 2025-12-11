@@ -175,12 +175,23 @@ function initImageDisplays() {
     
     // If no media are ready yet, wait for images to load (videos don't need to wait)
     if (media.length === 0 && allImages.length > 0) {
-      // Wait for images to load
+      // Wait for images to load, but don't wait too long
       const imagePromises = Array.from(allImages).map(img => {
         if (img.complete) return Promise.resolve();
         return new Promise((resolve, reject) => {
-          img.addEventListener('load', resolve, { once: true });
-          img.addEventListener('error', reject, { once: true });
+          const timeout = setTimeout(() => {
+            // If image takes too long, still include it (might be loading)
+            resolve();
+          }, 2000);
+          img.addEventListener('load', () => {
+            clearTimeout(timeout);
+            resolve();
+          }, { once: true });
+          img.addEventListener('error', () => {
+            clearTimeout(timeout);
+            // Don't reject - just resolve so we can check if it's valid
+            resolve();
+          }, { once: true });
         });
       });
       
@@ -188,13 +199,25 @@ function initImageDisplays() {
         media = checkMedia();
         if (media.length > 0) {
           initializeGallery(container, media, allMedia);
+        } else if (allMedia.length > 0) {
+          // If all media were filtered out but we have media, initialize anyway
+          // (they might be loading or videos)
+          console.log('All media filtered out, but initializing anyway with all media');
+          initializeGallery(container, Array.from(allMedia), allMedia);
         }
       });
       return;
     }
     
     if (media.length === 0) {
-      console.log('No valid media found in gallery container');
+      // If no media passed the check but we have media elements, initialize anyway
+      // (they might be videos or images that are still loading)
+      if (allMedia.length > 0) {
+        console.log('No media passed check, but initializing with all media anyway');
+        initializeGallery(container, Array.from(allMedia), allMedia);
+      } else {
+        console.log('No valid media found in gallery container');
+      }
       return;
     }
     

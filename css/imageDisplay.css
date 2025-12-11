@@ -30,9 +30,15 @@
   object-fit: contain;
   opacity: 0;
   transition: none;
+  display: block;
 }
 
 .image-display.gallery .display-image.active {
+  opacity: 1;
+}
+
+/* Show first image by default if no active class is set yet (fallback) */
+.image-display.gallery .display-container > .display-image:first-of-type:not(.active) {
   opacity: 1;
 }
 
