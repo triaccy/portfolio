@@ -79,8 +79,13 @@ function createGalleryDisplay(images, displayId, options) {
       // Create image element
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || '');
+      // Check if it's a TIFF file - browsers don't support TIFF
+      const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
+      if (isTiff) {
+        console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
+      }
       return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}" 
-            onerror="this.style.display='none';" 
+            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
             alt="${alt}" />`;
     }
   }).join('\n');
@@ -114,8 +119,13 @@ function createVerticalScrollDisplay(images, displayId, options) {
     // Only escape HTML-breaking characters
     const src = escapeAttr(img.src);
     const alt = escapeAttr(img.alt || '');
+    // Check if it's a TIFF file - browsers don't support TIFF
+    const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
+    if (isTiff) {
+      console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
+    }
     return `<img src="${src}" class="display-image" 
-          onerror="this.style.display='none';" 
+          onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
           alt="${alt}" />`;
   }).join('\n');
   
@@ -148,8 +158,13 @@ function createSpreadDisplay(images, displayId, options) {
     const imageElements = spread.map((img, imgIndex) => {
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || '');
+      // Check if it's a TIFF file - browsers don't support TIFF
+      const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
+      if (isTiff) {
+        console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
+      }
       return `<img src="${src}" class="display-image" 
-            onerror="this.style.display='none';" 
+            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
             alt="${alt}" />`;
     }).join('\n');
     
