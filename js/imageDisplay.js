@@ -20,6 +20,8 @@ function createImageDisplay(type, images, options = {}) {
       return createGalleryDisplay(images, displayId, options);
     case 'vertical':
       return createVerticalScrollDisplay(images, displayId, options);
+    case 'spread':
+      return createSpreadDisplay(images, displayId, options);
     default:
       return '';
   }
@@ -120,6 +122,45 @@ function createVerticalScrollDisplay(images, displayId, options) {
   return `
     <div class="image-display vertical" data-display-id="${displayId}">
       ${imageElements}
+    </div>
+  `;
+}
+
+/**
+ * Creates spread display (side-by-side images like a book spread)
+ */
+function createSpreadDisplay(images, displayId, options) {
+  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
+  const escapeAttr = (str) => {
+    if (!str) return '';
+    // Only escape characters that break HTML attributes
+    return String(str).replace(/&/g, '&amp;')
+                      .replace(/"/g, '&quot;');
+  };
+  
+  // Group images into pairs for spreads
+  const spreads = [];
+  for (let i = 0; i < images.length; i += 2) {
+    spreads.push(images.slice(i, i + 2));
+  }
+  
+  const spreadElements = spreads.map((spread, spreadIndex) => {
+    const imageElements = spread.map((img, imgIndex) => {
+      const src = escapeAttr(img.src);
+      const alt = escapeAttr(img.alt || '');
+      return `<img src="${src}" class="display-image" 
+            onerror="this.style.display='none';" 
+            alt="${alt}" />`;
+    }).join('\n');
+    
+    return `<div class="spread-row">
+      ${imageElements}
+    </div>`;
+  }).join('\n');
+  
+  return `
+    <div class="image-display spread" data-display-id="${displayId}">
+      ${spreadElements}
     </div>
   `;
 }

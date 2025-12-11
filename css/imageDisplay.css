@@ -180,3 +180,39 @@
   display: block;
 }
 
+/* Spread style (side-by-side like a book spread) */
+.image-display.spread {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin: 40px 0;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-display.spread .spread-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.image-display.spread .spread-row .display-image {
+  flex: 1;
+  max-width: 48%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* If only one image in a spread row, center it */
+.image-display.spread .spread-row:has(.display-image:only-child) {
+  justify-content: center;
+}
+
+.image-display.spread .spread-row:has(.display-image:only-child) .display-image {
+  max-width: 70%;
+}
+
