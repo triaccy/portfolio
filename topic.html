@@ -261,7 +261,7 @@
           title: 'Book (2025)',
           content: `
             <div class="flipbook-container" style="width: 100%; height: 80vh; margin: 40px auto; border: none; overflow: hidden;">
-              <iframe src="wine-bottle-flipbook/index.html" 
+              <iframe src="./wine-bottle-flipbook/index.html" 
                       style="width: 100%; height: 100%; border: none; display: block;"
                       title="Wine Bottle Flipbook"
                       allowfullscreen>
@@ -386,7 +386,17 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         },
         '2023-ecosystem': {
           title: 'Ecosystem (2023)',
-          content: '<p style="color: #999; padding: 2rem; text-align: center;">No images found in images/archi2/ folder. Please add your images (PNG or JPG format) to this folder and update the paths in topic.html.</p>'
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/archi2/architecture portfolio.jpg', alt: 'Architecture Portfolio' },
+            { src: 'images/archi2/architecture portfolio2.jpg', alt: 'Architecture Portfolio 2' },
+            { src: 'images/archi2/architecture portfolio3.jpg', alt: 'Architecture Portfolio 3' },
+            { src: 'images/archi2/architecture portfolio4.jpg', alt: 'Architecture Portfolio 4' },
+            { src: 'images/archi2/architecture portfolio5.jpg', alt: 'Architecture Portfolio 5' },
+            { src: 'images/archi2/architecture portfolio6.jpg', alt: 'Architecture Portfolio 6' },
+            { src: 'images/archi2/architecture portfolio7.jpg', alt: 'Architecture Portfolio 7' },
+            { src: 'images/archi2/architecture portfolio 8.png', alt: 'Architecture Portfolio 8' },
+            { src: 'images/archi2/architecture portfolio9.jpg', alt: 'Architecture Portfolio 9' },
+          ], { id: 'ecosystem-2023-gallery' })
         },
         '2021-motion': {
           content: `None`
