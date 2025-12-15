@@ -19,7 +19,8 @@ export default defineConfig({
           'topic.html',
           'project.html',
           'installations',
-          'images'
+          'images',
+          'wine-bottle-flipbook'
         ]
         
         filesToCopy.forEach(file => {
@@ -27,7 +28,7 @@ export default defineConfig({
           const dest = join(process.cwd(), 'dist', file)
           
           if (existsSync(src)) {
-            if (file === 'installations' || file === 'images') {
+            if (file === 'installations' || file === 'images' || file === 'wine-bottle-flipbook') {
               // Copy directory recursively
               // Create destination directory if it doesn't exist
               if (!existsSync(dest)) {
