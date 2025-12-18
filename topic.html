@@ -177,12 +177,14 @@
       
       // Helper function to safely create image displays
       function safeCreateImageDisplay(type, images, options) {
+        console.log('safeCreateImageDisplay called:', { type, imagesCount: images?.length, options });
         if (typeof createImageDisplay === 'undefined') {
           console.error('createImageDisplay is not available');
           return '<p style="color: red;">Error: Image display function not loaded. Please refresh the page.</p>';
         }
         try {
           const result = createImageDisplay(type, images, options);
+          console.log('createImageDisplay result length:', result?.length);
           if (!result || result.trim() === '') {
             console.warn('createImageDisplay returned empty result', { type, images, options });
             return '<p>No images to display.</p>';
@@ -413,144 +415,163 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
       // ============================================
       
       (function(){
-        const params = new URLSearchParams(location.search);
-        const topic = (params.get('t') || '').trim();
-        const year = (params.get('y') || '').trim();
-        const title = document.getElementById('title');
-        const content = document.getElementById('content');
-        
-        if (!topic) {
+        // Wait for imageDisplay.js to load
+        const initPage = () => {
+          if (typeof createImageDisplay === 'undefined') {
+            console.warn('Waiting for imageDisplay.js to load...');
+            setTimeout(initPage, 50);
+            return;
+          }
+          
+          const params = new URLSearchParams(location.search);
+          const topic = (params.get('t') || '').trim();
+          const year = (params.get('y') || '').trim();
+          const title = document.getElementById('title');
+          const content = document.getElementById('content');
+          
+          if (!topic) {
+            title.style.display = 'none';
+            content.textContent = 'No topic specified.';
+            return;
+          }
+          
+          // Create unique key for year-topic combination
+          const uniqueKey = year ? `${year}-${topic}` : topic;
+          
+          // Get topic data or use default
+          let topicData = topicContent[uniqueKey];
+          if (!topicData) {
+            topicData = topicContent[topic];
+          }
+          if (!topicData) {
+            topicData = {
+              title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
+              content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
+            };
+          }
+          
+            // Set title - use topicData.title if available, otherwise generate one
+          const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+          // Hide the title element
           title.style.display = 'none';
-          content.textContent = 'No topic specified.';
-          return;
-        }
-        
-        // Create unique key for year-topic combination
-        const uniqueKey = year ? `${year}-${topic}` : topic;
-        
-        // Get topic data or use default
-        let topicData = topicContent[uniqueKey];
-        if (!topicData) {
-          topicData = topicContent[topic];
-        }
-        if (!topicData) {
-          topicData = {
-            title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
-            content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
-          };
-        }
-        
-        // Set title - use topicData.title if available, otherwise generate one
-        const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
-        // Hide the title element
-        title.style.display = 'none';
-        
-        // Get content - if it's a function, call it; otherwise use it directly
-        let contentHTML = topicData.content;
-        if (typeof contentHTML === 'function') {
-          try {
-            contentHTML = contentHTML();
-          } catch (e) {
-            console.error('Error executing content function:', e);
-            contentHTML = '<p>Error loading content. Please refresh the page.</p>';
+          
+          // Get content - if it's a function, call it; otherwise use it directly
+          let contentHTML = topicData.content;
+          if (typeof contentHTML === 'function') {
+            try {
+              contentHTML = contentHTML();
+            } catch (e) {
+              console.error('Error executing content function:', e);
+              contentHTML = '<p>Error loading content. Please refresh the page.</p>';
+            }
           }
-        }
-        // Treat "None" string as empty content
-        if (contentHTML === 'None' || contentHTML === 'none') {
-          contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
-        }
-        // Check if contentHTML is empty or just whitespace
-        if (!contentHTML || (typeof contentHTML === 'string' && !contentHTML.trim())) {
-          // If we have a topic but no content, show a more helpful message
-          if (topicData && topicData.content === undefined) {
+          // Treat "None" string as empty content
+          if (contentHTML === 'None' || contentHTML === 'none') {
             contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
-          } else {
-            contentHTML = '<p>No content available. Please check the browser console for errors.</p>';
           }
-        }
-        // Debug logging
-        console.log('Content HTML:', contentHTML ? contentHTML.substring(0, 100) : 'empty');
-        console.log('Topic:', topic, 'Year:', year, 'Unique Key:', uniqueKey);
-        
-        content.innerHTML = contentHTML;
-        document.title = `${pageTitle} — Portfolio`;
-        
-        // Add page title below the counter at the bottom
-        let pageTitleElement = document.querySelector('.gallery-page-title');
-        if (!pageTitleElement) {
-          pageTitleElement = document.createElement('div');
-          pageTitleElement.className = 'gallery-page-title';
-          document.body.appendChild(pageTitleElement);
-        }
-        pageTitleElement.textContent = pageTitle;
-        
-        // Initialize image displays after content is loaded
-        // Use multiple attempts to ensure galleries/videos are initialized
-        const initDisplays = () => {
-          if (typeof initImageDisplays === 'function') {
-            // Wait a bit for DOM to update after innerHTML
-            setTimeout(() => {
-              initImageDisplays();
-            }, 10);
-          } else {
-            console.warn('initImageDisplays function not available yet, retrying...');
-            setTimeout(initDisplays, 100);
+          // Check if contentHTML is empty or just whitespace
+          if (!contentHTML || (typeof contentHTML === 'string' && !contentHTML.trim())) {
+            // If we have a topic but no content, show a more helpful message
+            if (topicData && topicData.content === undefined) {
+              contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
+            } else {
+              contentHTML = '<p>No content available. Please check the browser console for errors.</p>';
+            }
           }
+          // Debug logging
+          console.log('Content HTML:', contentHTML ? contentHTML.substring(0, 100) : 'empty');
+          console.log('Topic:', topic, 'Year:', year, 'Unique Key:', uniqueKey);
+          console.log('Topic data:', topicData);
+          
+          content.innerHTML = contentHTML;
+          
+          // Additional debug for ecosystem page
+          if (uniqueKey === '2023-ecosystem') {
+            console.log('Ecosystem page loaded. Content length:', contentHTML?.length);
+            console.log('Gallery containers found:', document.querySelectorAll('.image-display.gallery').length);
+          }
+          document.title = `${pageTitle} — Portfolio`;
+          
+          // Add page title below the counter at the bottom
+          let pageTitleElement = document.querySelector('.gallery-page-title');
+          if (!pageTitleElement) {
+            pageTitleElement = document.createElement('div');
+            pageTitleElement.className = 'gallery-page-title';
+            document.body.appendChild(pageTitleElement);
+          }
+          pageTitleElement.textContent = pageTitle;
+          
+          // Initialize image displays after content is loaded
+          // Use multiple attempts to ensure galleries/videos are initialized
+          const initDisplays = () => {
+            if (typeof initImageDisplays === 'function') {
+              // Wait a bit for DOM to update after innerHTML
+              setTimeout(() => {
+                initImageDisplays();
+              }, 10);
+            } else {
+              console.warn('initImageDisplays function not available yet, retrying...');
+              setTimeout(initDisplays, 100);
+            }
+          };
+          
+          // Apply video styling to make all videos look like images
+          if (typeof applyVideoImageStyle === 'function' && !window.videoImageStyleApplied) {
+            applyVideoImageStyle();
+            window.videoImageStyleApplied = true;
+          }
+          
+          // Load video APIs
+          if (typeof loadYouTubeAPI === 'function') loadYouTubeAPI();
+          if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
+          
+          // Initialize video controls and players
+          const initVideoControlsDelayed = () => {
+            if (typeof initVideoControls === 'function') {
+              initVideoControls();
+              // Re-initialize after APIs load
+              setTimeout(initVideoControls, 1000);
+              setTimeout(initVideoControls, 2000);
+            }
+            // Also initialize Vimeo players after content is inserted
+            if (typeof initVimeoPlayers === 'function') {
+              setTimeout(() => {
+                initVimeoPlayers();
+              }, 500);
+              setTimeout(() => {
+                initVimeoPlayers();
+              }, 1500);
+              setTimeout(() => {
+                initVimeoPlayers();
+              }, 2500);
+            }
+            // Setup click handlers for pause/resume
+            if (typeof setupVideoClickHandlers === 'function') {
+              setTimeout(() => {
+                setupVideoClickHandlers();
+              }, 200);
+              setTimeout(() => {
+                setupVideoClickHandlers();
+              }, 1200);
+              setTimeout(() => {
+                setupVideoClickHandlers();
+              }, 2200);
+            }
+          };
+          
+          // Try immediately, then after a short delay, and again after content renders
+          setTimeout(initDisplays, 50);
+          setTimeout(initDisplays, 200);
+          setTimeout(initDisplays, 500);
+          
+          // Initialize video controls
+          setTimeout(initVideoControlsDelayed, 100);
+          setTimeout(initVideoControlsDelayed, 500);
+          setTimeout(initVideoControlsDelayed, 1000);
         };
         
-        // Apply video styling to make all videos look like images
-        if (typeof applyVideoImageStyle === 'function' && !window.videoImageStyleApplied) {
-          applyVideoImageStyle();
-          window.videoImageStyleApplied = true;
-        }
-        
-        // Load video APIs
-        if (typeof loadYouTubeAPI === 'function') loadYouTubeAPI();
-        if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
-        
-        // Initialize video controls and players
-        const initVideoControlsDelayed = () => {
-          if (typeof initVideoControls === 'function') {
-            initVideoControls();
-            // Re-initialize after APIs load
-            setTimeout(initVideoControls, 1000);
-            setTimeout(initVideoControls, 2000);
-          }
-          // Also initialize Vimeo players after content is inserted
-          if (typeof initVimeoPlayers === 'function') {
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 500);
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 1500);
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 2500);
-          }
-          // Setup click handlers for pause/resume
-          if (typeof setupVideoClickHandlers === 'function') {
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 200);
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 1200);
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 2200);
-          }
-        };
-        
-        // Try immediately, then after a short delay, and again after content renders
-        setTimeout(initDisplays, 50);
-        setTimeout(initDisplays, 200);
-        setTimeout(initDisplays, 500);
-        
-        // Initialize video controls
-        setTimeout(initVideoControlsDelayed, 100);
-        setTimeout(initVideoControlsDelayed, 500);
-        setTimeout(initVideoControlsDelayed, 1000);
+        // Start initialization
+        initPage();
       })();
     </script>
 </body>
