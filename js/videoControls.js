@@ -89,11 +89,22 @@ function applyVideoImageStyle() {
       z-index: 10;
     }
     
-    /* Show duration bar on hover */
-    .video-container:hover .video-controls-overlay,
-    .image-display.gallery .display-container:hover .video-controls-overlay {
+    /* Show duration bar on hover - only for video containers */
+    .video-container:hover .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
+    }
+    
+    /* Show duration bar on hover - only when an active video is present in gallery */
+    .image-display.gallery .display-container:has(.display-video.active):hover .video-controls-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    /* Hide duration bar when image is active (not video) */
+    .image-display.gallery .display-container:has(.display-image.active):not(:has(.display-video.active)) .video-controls-overlay {
+      opacity: 0 !important;
+      pointer-events: none !important;
     }
     
     /* Playback bar in the middle - shows on hover */
