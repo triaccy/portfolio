@@ -95,16 +95,17 @@ function applyVideoImageStyle() {
       pointer-events: auto;
     }
     
-    /* Show duration bar on hover - only when an active video is present in gallery */
+    /* For galleries: Only show duration bar when an active video is present AND on hover */
     .image-display.gallery .display-container:has(.display-video.active):hover .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
     }
     
-    /* Hide duration bar when image is active (not video) */
-    .image-display.gallery .display-container:has(.display-image.active):not(:has(.display-video.active)) .video-controls-overlay {
+    /* Hide duration bar completely when no active video (i.e., when image is active) */
+    .image-display.gallery .display-container:not(:has(.display-video.active)) .video-controls-overlay {
       opacity: 0 !important;
       pointer-events: none !important;
+      visibility: hidden !important;
     }
     
     /* Playback bar in the middle - shows on hover */
