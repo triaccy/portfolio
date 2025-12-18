@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -87,3 +88,19 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Large image files and source node_modules
+wine-bottle-flipbook-source/node_modules/
+wine-bottle-flipbook-source/dist/
+wine-bottle-flipbook-source/build/
+
+# Large TIFF files (should be converted to JPG/PNG)
+*.tiff
+*.tif
+
+# Large files that should be optimized before committing
+# Only ignore very large GIFs - keep small ones
+# *.gif
+
+# Very large files (over 10MB should use Git LFS or be optimized)
+# These patterns help prevent accidentally committing huge files
