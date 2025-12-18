@@ -428,10 +428,15 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         }
         
         // Create unique key for year-topic combination
-        const uniqueKey = year ? `${year}-${topic}` : topic;
+        // Try both hyphen and space formats for compatibility
+        const uniqueKeyHyphen = year ? `${year}-${topic}` : topic;
+        const uniqueKeySpace = year ? `${year} ${topic}` : topic;
         
         // Get topic data or use default
-        let topicData = topicContent[uniqueKey];
+        let topicData = topicContent[uniqueKeyHyphen];
+        if (!topicData) {
+          topicData = topicContent[uniqueKeySpace];
+        }
         if (!topicData) {
           topicData = topicContent[topic];
         }
@@ -472,7 +477,7 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
         }
         // Debug logging
         console.log('Content HTML:', contentHTML ? contentHTML.substring(0, 100) : 'empty');
-        console.log('Topic:', topic, 'Year:', year, 'Unique Key:', uniqueKey);
+        console.log('Topic:', topic, 'Year:', year, 'Keys tried:', uniqueKeyHyphen, uniqueKeySpace);
         
         content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
