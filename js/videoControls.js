@@ -90,8 +90,27 @@ function applyVideoImageStyle() {
     }
     
     /* Show duration bar on hover */
-    .video-container:hover .video-controls-overlay,
-    .image-display.gallery .display-container:hover .video-controls-overlay {
+    .video-container:hover .video-controls-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    /* For gallery videos, hide controls by default */
+    .image-display.gallery .display-container .video-controls-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    /* Show controls only when the associated video is active AND container is hovered */
+    .image-display.gallery .display-container:hover .display-video.active ~ .video-controls-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    /* Show controls only when the associated video is active */
+    .image-display.gallery .display-container .display-video.active ~ .video-controls-overlay,
+    .image-display.gallery .display-container:hover .display-video.active ~ .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
     }
@@ -515,17 +534,17 @@ function initVideoControls() {
   // Initialize controls for video galleries
   document.querySelectorAll('.display-video').forEach(iframe => {
     const container = iframe.closest('.display-container');
-    if (container && !container.querySelector('.video-controls-overlay')) {
+    const videoId = iframe.dataset.videoId;
+    
+    // Check if controls already exist for this video
+    if (container && videoId && !container.querySelector(`.video-controls-overlay[data-video-id="${videoId}"]`)) {
       const src = iframe.src;
       let videoType = 'youtube';
-      let videoId = null;
       
       if (src.includes('youtube.com') || src.includes('youtu.be')) {
         videoType = 'youtube';
-        videoId = getVideoId(src, 'youtube');
       } else if (src.includes('vimeo.com')) {
         videoType = 'vimeo';
-        videoId = getVideoId(src, 'vimeo');
       }
       
       if (videoId) {
@@ -533,8 +552,8 @@ function initVideoControls() {
         // Insert overlay inside container, controls after container
         const controlsHTML = createVideoControls(videoId, videoType);
         console.log('Created gallery controls HTML for', videoId);
-        // Insert overlay inside container
-        container.insertAdjacentHTML('beforeend', controlsHTML);
+        // Insert overlay inside container, right after the iframe
+        iframe.insertAdjacentHTML('afterend', controlsHTML);
         console.log(`Added video controls to gallery video: ${videoType} ${videoId}`);
         
         // Set cursor for video galleries (same as image galleries)
@@ -542,7 +561,7 @@ function initVideoControls() {
         if (allVideos.length > 1) {
           container.style.cursor = 'ew-resize';
         } else {
-          container.style.cursor = 'default';
+          container.style.cursor = 'ew-resize'; // Allow navigation even with one video if there are images
         }
         
         // Make click overlay match the actual video iframe size (not the container)
