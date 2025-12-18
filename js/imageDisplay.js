@@ -325,27 +325,7 @@ function initializeGallery(container, images, allImages) {
     }
     
     // Update click overlay size for videos when they become active
-    // Also show/hide video controls based on active state
     const activeVideo = container.querySelector('.display-video.active');
-    const allVideos = container.querySelectorAll('.display-video');
-    
-    // Hide controls for inactive videos, show for active video
-    allVideos.forEach(video => {
-      const videoId = video.dataset.videoId;
-      if (videoId) {
-        const controlsOverlay = container.querySelector(`.video-controls-overlay[data-video-id="${videoId}"]`);
-        if (controlsOverlay) {
-          if (video.classList.contains('active')) {
-            controlsOverlay.style.opacity = '0'; // Will show on hover
-            controlsOverlay.style.pointerEvents = 'auto';
-          } else {
-            controlsOverlay.style.opacity = '0';
-            controlsOverlay.style.pointerEvents = 'none';
-          }
-        }
-      }
-    });
-    
     if (activeVideo) {
       setTimeout(() => {
         const overlay = container.querySelector('.video-click-overlay');
@@ -491,12 +471,16 @@ function initializeGallery(container, images, allImages) {
       container.appendChild(navOverlay);
     }
     
-    // Update overlay visibility - allow navigation for all cases
+    // Update overlay visibility based on active video
     const updateNavOverlay = () => {
-      if (navOverlay) {
-        // Always show overlay for navigation
+      const activeVideo = container.querySelector('.display-video.active');
+      if (activeVideo && navOverlay) {
+        // Show overlay only when there's an active video
         navOverlay.style.display = 'block';
         navOverlay.style.pointerEvents = 'auto';
+      } else if (navOverlay) {
+        navOverlay.style.display = 'none';
+        navOverlay.style.pointerEvents = 'none';
       }
     };
     
@@ -505,26 +489,7 @@ function initializeGallery(container, images, allImages) {
     
     // Watch for active class changes on videos
     videos.forEach((video) => {
-      const observer = new MutationObserver(() => {
-        updateNavOverlay();
-        // Also update video controls visibility
-        const allVideos = container.querySelectorAll('.display-video');
-        allVideos.forEach(v => {
-          const vid = v.dataset.videoId;
-          if (vid) {
-            const controlsOverlay = container.querySelector(`.video-controls-overlay[data-video-id="${vid}"]`);
-            if (controlsOverlay) {
-              if (v.classList.contains('active')) {
-                controlsOverlay.style.opacity = '0'; // Will show on hover
-                controlsOverlay.style.pointerEvents = 'auto';
-              } else {
-                controlsOverlay.style.opacity = '0';
-                controlsOverlay.style.pointerEvents = 'none';
-              }
-            }
-          }
-        });
-      });
+      const observer = new MutationObserver(updateNavOverlay);
       observer.observe(video, { attributes: true, attributeFilter: ['class'] });
     });
     
@@ -557,10 +522,9 @@ function initializeGallery(container, images, allImages) {
         const clickX = e.clientX;
         const clickY = e.clientY;
         
-        // Check if click is within video bounds (with some padding to account for iframe)
-        const padding = 10; // Small padding to make navigation easier
-        const isOnVideo = clickX >= (videoRect.left - padding) && clickX <= (videoRect.right + padding) &&
-                         clickY >= (videoRect.top - padding) && clickY <= (videoRect.bottom + padding);
+        // Check if click is within video bounds
+        const isOnVideo = clickX >= videoRect.left && clickX <= videoRect.right &&
+                         clickY >= videoRect.top && clickY <= videoRect.bottom;
         
         if (!isOnVideo) {
           // Click is outside video boundaries - navigate to next video/image
@@ -568,7 +532,6 @@ function initializeGallery(container, images, allImages) {
           e.preventDefault();
           changeImage(1);
         }
-        // If click is on video, let the video click handler take care of it (pause/resume)
       } else {
         // No active video, navigate normally
         e.stopPropagation();

@@ -18,15 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,15 +30,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-
-      - name: Build flipbook submodule
-        run: |
-          if [ -d "wine-bottle-flipbook-source" ]; then
-            cd wine-bottle-flipbook-source
-            npm install --no-audit --no-fund
-            npm run build
-            cd ..
-          fi
 
       - name: Show vite version
         run: npx vite --version
