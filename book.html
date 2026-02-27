@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book 2025 — Portfolio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #f2f0ea; /* matches the flipbook's background */
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .back {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      z-index: 1000;
+      font-size: 12px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Helvetica, Arial, sans-serif;
+      color: #111111;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: 0.5;
+      transition: opacity 200ms ease;
+    }
+
+    .back:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <iframe
+    src="./wine-bottle-flipbook/index.html"
+    title="Wine Bottle Flipbook 2025"
+    allowfullscreen
+  ></iframe>
+
+  <a class="back" href="./">← back</a>
+</body>
+</html>

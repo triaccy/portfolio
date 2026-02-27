@@ -41,7 +41,9 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
     link.className = 'topic-link';
     const year = anchor.textContent.trim();
 
-    if (topic === 'installation') {
+    if (topic === 'book' && year === '2025') {
+      link.href = 'book.html';
+    } else if (topic === 'installation') {
       if (year === '2023') {
         link.href = `installations/2023/`;
       } else {
