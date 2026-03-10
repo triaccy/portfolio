@@ -28,7 +28,9 @@
 
       const occupied = [];
       anchors.forEach(a => {
-        const { w, h } = layout.measureSize(a);
+        const rect = a.getBoundingClientRect();
+        const w = Math.ceil(rect.width || 60);
+        const h = Math.ceil(rect.height || 16);
         const x = Number(a.dataset.x || 0);
         const y = Number(a.dataset.y || 0);
         if (!isNaN(x) && !isNaN(y)) occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
@@ -93,6 +95,7 @@
 
     layout.sizeWebToContainer(container, webSvg);
     layout.layoutYearsNoOverlap(container, anchors);
+    nav.classList.add('ready');
     updateWeb();
   });
 })();
