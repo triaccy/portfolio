@@ -1,95 +1,81 @@
 /**
  * Image Display Module
- * Provides reusable functions for creating different image display styles
+ * Provides reusable functions for creating gallery, vertical, and spread image displays.
  */
 
+// Escape characters that break HTML attributes (preserves URL characters like spaces)
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 /**
- * Main function to create image displays
- * @param {string} type - 'gallery' or 'vertical'
- * @param {Array} images - Array of image objects: [{src: 'path', alt: 'text'}, ...]
- * @param {Object} options - Optional configuration
+ * Main entry point — create an image display by type.
+ * @param {string} type - 'gallery', 'vertical', or 'spread'
+ * @param {Array}  images  - Array of { src, alt, type? } objects
+ * @param {Object} options - Optional config (id)
  * @returns {string} HTML string
  */
 function createImageDisplay(type, images, options = {}) {
   if (!images || images.length === 0) return '';
-  
   const displayId = options.id || `display-${Date.now()}`;
-  
-  switch(type) {
-    case 'gallery':
-      return createGalleryDisplay(images, displayId, options);
-    case 'vertical':
-      return createVerticalScrollDisplay(images, displayId, options);
-    case 'spread':
-      return createSpreadDisplay(images, displayId, options);
-    default:
-      return '';
+  switch (type) {
+    case 'gallery':  return createGalleryDisplay(images, displayId, options);
+    case 'vertical': return createVerticalScrollDisplay(images, displayId, options);
+    case 'spread':   return createSpreadDisplay(images, displayId, options);
+    default: return '';
   }
 }
 
 /**
- * Creates gallery-style display (full-width with navigation)
+ * Gallery-style display (full-width with prev/next navigation)
  */
 function createGalleryDisplay(images, displayId, options) {
-  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
-  const escapeAttr = (str) => {
-    if (!str) return '';
-    // Only escape characters that break HTML attributes
-    return String(str).replace(/&/g, '&amp;')
-                      .replace(/"/g, '&quot;');
-  };
-  
   const imageElements = images.map((img, index) => {
-    // Check if this is a video (YouTube, Vimeo, or explicitly marked as video)
-    const isVideo = img.type === 'video' || 
-                    img.src.includes('youtube.com') || 
-                    img.src.includes('youtu.be') || 
+    const isVideo = img.type === 'video' ||
+                    img.src.includes('youtube.com') ||
+                    img.src.includes('youtu.be') ||
                     img.src.includes('vimeo.com') ||
                     img.src.includes('player.vimeo.com') ||
                     img.src.includes('player.youtube.com');
-    
+
     if (isVideo) {
-      // Create video iframe
       let videoSrc = img.src;
-      // Convert YouTube watch URL to embed URL if needed
+      // Convert YouTube watch URL to embed URL
       if (videoSrc.includes('youtube.com/watch') || videoSrc.includes('youtu.be/')) {
-        const videoIdMatch = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-        if (videoIdMatch) {
-          videoSrc = `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=0&loop=0&muted=0&controls=0&rel=0&modestbranding=1`;
+        const match = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+        if (match) {
+          videoSrc = `https://www.youtube.com/embed/${match[1]}?autoplay=0&loop=0&muted=0&controls=0&rel=0&modestbranding=1`;
         }
       }
-      // Ensure Vimeo URLs are embed URLs
+      // Convert bare Vimeo URL to player embed URL
       if (videoSrc.includes('vimeo.com/') && !videoSrc.includes('player.vimeo.com')) {
-        const videoIdMatch = videoSrc.match(/vimeo\.com\/(\d+)/);
-        if (videoIdMatch) {
-          videoSrc = `https://player.vimeo.com/video/${videoIdMatch[1]}?autoplay=0&loop=0&muted=0&controls=0&title=0&byline=0&portrait=0`;
+        const match = videoSrc.match(/vimeo\.com\/(\d+)/);
+        if (match) {
+          videoSrc = `https://player.vimeo.com/video/${match[1]}?autoplay=0&loop=0&muted=0&controls=0&title=0&byline=0&portrait=0`;
         }
       }
-      
       const src = escapeAttr(videoSrc);
       const alt = escapeAttr(img.alt || 'Video');
-      return `<iframe src="${src}" 
-            class="display-video ${index === 0 ? 'active' : ''}" 
-            title="${alt}" 
-            frameborder="0" 
-            allow="autoplay; fullscreen; picture-in-picture" 
+      return `<iframe src="${src}"
+            class="display-video ${index === 0 ? 'active' : ''}"
+            title="${alt}"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
             allowfullscreen>
             </iframe>`;
     } else {
-      // Create image element
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || '');
-      // Check if it's a TIFF file - browsers don't support TIFF
-      const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
-      if (isTiff) {
+      if (src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif')) {
         console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
       }
-      return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}" 
-            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
+      return `<img src="${src}" class="display-image ${index === 0 ? 'active' : ''}"
+            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';"
             alt="${alt}" />`;
     }
   }).join('\n');
-  
+
   return `
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
@@ -103,32 +89,20 @@ function createGalleryDisplay(images, displayId, options) {
 }
 
 /**
- * Creates vertical scroll display
+ * Vertical scroll display — images stacked top-to-bottom
  */
 function createVerticalScrollDisplay(images, displayId, options) {
-  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
-  const escapeAttr = (str) => {
-    if (!str) return '';
-    // Only escape characters that break HTML attributes
-    return String(str).replace(/&/g, '&amp;')
-                      .replace(/"/g, '&quot;');
-  };
-  
   const imageElements = images.map(img => {
-    // For src, preserve URL as-is (browser will URL-encode when making request)
-    // Only escape HTML-breaking characters
     const src = escapeAttr(img.src);
     const alt = escapeAttr(img.alt || '');
-    // Check if it's a TIFF file - browsers don't support TIFF
-    const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
-    if (isTiff) {
+    if (src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif')) {
       console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
     }
-    return `<img src="${src}" class="display-image" 
-          onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
+    return `<img src="${src}" class="display-image"
+          onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';"
           alt="${alt}" />`;
   }).join('\n');
-  
+
   return `
     <div class="image-display vertical" data-display-id="${displayId}">
       ${imageElements}
@@ -137,42 +111,29 @@ function createVerticalScrollDisplay(images, displayId, options) {
 }
 
 /**
- * Creates spread display (side-by-side images like a book spread)
+ * Spread display — pairs of images side-by-side like a book spread
  */
 function createSpreadDisplay(images, displayId, options) {
-  // Escape HTML attribute values (preserves URL characters like spaces, which browsers encode automatically)
-  const escapeAttr = (str) => {
-    if (!str) return '';
-    // Only escape characters that break HTML attributes
-    return String(str).replace(/&/g, '&amp;')
-                      .replace(/"/g, '&quot;');
-  };
-  
-  // Group images into pairs for spreads
   const spreads = [];
   for (let i = 0; i < images.length; i += 2) {
     spreads.push(images.slice(i, i + 2));
   }
-  
-  const spreadElements = spreads.map((spread, spreadIndex) => {
-    const imageElements = spread.map((img, imgIndex) => {
+
+  const spreadElements = spreads.map((spread) => {
+    const imageElements = spread.map((img) => {
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || '');
-      // Check if it's a TIFF file - browsers don't support TIFF
-      const isTiff = src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif');
-      if (isTiff) {
+      if (src.toLowerCase().endsWith('.tiff') || src.toLowerCase().endsWith('.tif')) {
         console.warn(`TIFF file detected: ${src}. Browsers do not support TIFF format. Please convert to PNG or JPG.`);
       }
-      return `<img src="${src}" class="display-image" 
-            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';" 
+      return `<img src="${src}" class="display-image"
+            onerror="console.error('Failed to load image:', '${src}'); this.style.display='none';"
             alt="${alt}" />`;
     }).join('\n');
-    
-    return `<div class="spread-row">
-      ${imageElements}
-    </div>`;
+
+    return `<div class="spread-row">${imageElements}</div>`;
   }).join('\n');
-  
+
   return `
     <div class="image-display spread" data-display-id="${displayId}">
       ${spreadElements}
@@ -181,409 +142,187 @@ function createSpreadDisplay(images, displayId, options) {
 }
 
 /**
- * Initialize all image displays on the page
+ * Initialize all gallery displays on the page.
+ * Call after inserting gallery HTML into the DOM.
  */
 function initImageDisplays() {
-  // Initialize gallery displays
   const galleryContainers = document.querySelectorAll('.image-display.gallery .display-container');
-  
+
   if (galleryContainers.length === 0) {
     console.log('No gallery containers found');
     return;
   }
-  
+
   galleryContainers.forEach(container => {
-    // Get both images and videos
     const allImages = container.querySelectorAll('.display-image');
     const allVideos = container.querySelectorAll('.display-video');
     const allMedia = Array.from(allImages).concat(Array.from(allVideos));
-    
-    console.log(`Gallery container found: ${allImages.length} images, ${allVideos.length} videos`);
-    
-    // Filter out media that fail to load
-    // For dynamically inserted media, we need to wait for them to load
-    const checkMedia = () => {
-      const media = Array.from(allMedia).filter(item => {
-        // Skip if already hidden
-        if (item.style.display === 'none') {
-          return false;
-        }
-        // For videos (iframes), always include them
-        if (item.tagName === 'IFRAME') {
-          return true;
-        }
-        // For images that haven't loaded yet, include them (they'll be checked on load)
-        if (!item.complete) {
-          return true;
-        }
-        // If image loaded but has 0 height, it's broken
-        if (item.naturalHeight === 0) {
-          item.style.display = 'none';
-          return false;
-        }
-        return true;
-      });
-      
-      return media;
-    };
-    
+
+    const checkMedia = () => Array.from(allMedia).filter(item => {
+      if (item.style.display === 'none') return false;
+      if (item.tagName === 'IFRAME') return true;
+      if (!item.complete) return true;
+      if (item.naturalHeight === 0) { item.style.display = 'none'; return false; }
+      return true;
+    });
+
     let media = checkMedia();
-    
-    // If no media are ready yet, wait for images to load (videos don't need to wait)
+
     if (media.length === 0 && allImages.length > 0) {
-      // Wait for images to load, but don't wait too long
       const imagePromises = Array.from(allImages).map(img => {
         if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            // If image takes too long, still include it (might be loading)
-            resolve();
-          }, 2000);
-          img.addEventListener('load', () => {
-            clearTimeout(timeout);
-            resolve();
-          }, { once: true });
-          img.addEventListener('error', () => {
-            clearTimeout(timeout);
-            // Don't reject - just resolve so we can check if it's valid
-            resolve();
-          }, { once: true });
+        return new Promise(resolve => {
+          const timeout = setTimeout(resolve, 2000);
+          img.addEventListener('load',  () => { clearTimeout(timeout); resolve(); }, { once: true });
+          img.addEventListener('error', () => { clearTimeout(timeout); resolve(); }, { once: true });
         });
       });
-      
       Promise.allSettled(imagePromises).then(() => {
         media = checkMedia();
-        if (media.length > 0) {
-          initializeGallery(container, media, allMedia);
-        } else if (allMedia.length > 0) {
-          // If all media were filtered out but we have media, initialize anyway
-          // (they might be loading or videos)
-          console.log('All media filtered out, but initializing anyway with all media');
-          initializeGallery(container, Array.from(allMedia), allMedia);
-        }
+        initializeGallery(container, media.length > 0 ? media : Array.from(allMedia), allMedia);
       });
       return;
     }
-    
-    if (media.length === 0) {
-      // If no media passed the check but we have media elements, initialize anyway
-      // (they might be videos or images that are still loading)
-      if (allMedia.length > 0) {
-        console.log('No media passed check, but initializing with all media anyway');
-        initializeGallery(container, Array.from(allMedia), allMedia);
-      } else {
-        console.log('No valid media found in gallery container');
-      }
-      return;
-    }
-    
-    console.log(`Initializing gallery with ${media.length} media items`);
-    initializeGallery(container, media, allMedia);
+
+    initializeGallery(container, media.length > 0 ? media : Array.from(allMedia), allMedia);
   });
 }
 
 function initializeGallery(container, images, allImages) {
-  // Skip if already initialized (check for existing data attribute)
-  if (container.dataset.galleryInitialized === 'true') {
-    return;
-  }
+  if (container.dataset.galleryInitialized === 'true') return;
   container.dataset.galleryInitialized = 'true';
-  
-  // Each gallery has its own state
-  const galleryState = {
-    currentImageIndex: 0,
-    images: images
-  };
-  
-  // Hide navigation if only one image
+
+  const galleryState = { currentImageIndex: 0, images };
   const navButtons = container.querySelectorAll('.display-nav');
+
   if (images.length <= 1) {
     navButtons.forEach(btn => btn.style.display = 'none');
-    // Change cursor to default if only one item
     container.style.cursor = 'default';
     return;
   }
-  
-  // Set cursor to ew-resize for navigable galleries
+
   container.style.cursor = 'ew-resize';
-  
-  function updateGallery(direction = 0) {
-    galleryState.images.forEach(img => {
-      img.classList.remove('active', 'prev');
-    });
+
+  function updateGallery() {
+    galleryState.images.forEach(img => img.classList.remove('active', 'prev'));
     if (galleryState.images[galleryState.currentImageIndex]) {
       galleryState.images[galleryState.currentImageIndex].classList.add('active');
     }
-    
-    // Update counter - find counter outside container (sibling of display-container)
+
     const gallery = container.closest('.image-display.gallery');
     const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
-    if (counter && galleryState.images.length > 0) {
-      const current = galleryState.currentImageIndex + 1;
-      const total = galleryState.images.length;
-      counter.textContent = `${current}/${total}`;
+    if (counter) {
+      counter.textContent = `${galleryState.currentImageIndex + 1}/${galleryState.images.length}`;
     }
-    
-    // Update click overlay size for videos when they become active
+
+    // Sync video-nav overlay size when active video changes
     const activeVideo = container.querySelector('.display-video.active');
     if (activeVideo) {
       setTimeout(() => {
         const overlay = container.querySelector('.video-click-overlay');
-        if (overlay && activeVideo) {
-          const videoRect = activeVideo.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          
-          // Calculate relative position and size
-          const top = videoRect.top - containerRect.top;
-          const left = videoRect.left - containerRect.left;
-          const width = videoRect.width;
-          const height = videoRect.height;
-          
-          overlay.style.top = `${top}px`;
-          overlay.style.left = `${left}px`;
-          overlay.style.width = `${width}px`;
-          overlay.style.height = `${height}px`;
+        if (overlay) {
+          const vr = activeVideo.getBoundingClientRect();
+          const cr = container.getBoundingClientRect();
+          overlay.style.top    = `${vr.top  - cr.top}px`;
+          overlay.style.left   = `${vr.left - cr.left}px`;
+          overlay.style.width  = `${vr.width}px`;
+          overlay.style.height = `${vr.height}px`;
         }
       }, 50);
     }
   }
-  
+
   function changeImage(direction) {
-    let newIndex = galleryState.currentImageIndex + direction;
-    if (newIndex >= galleryState.images.length) {
-      newIndex = 0;
-    } else if (newIndex < 0) {
-      newIndex = galleryState.images.length - 1;
-    }
-    galleryState.currentImageIndex = newIndex;
-    updateGallery(direction);
+    let next = galleryState.currentImageIndex + direction;
+    if (next >= galleryState.images.length) next = 0;
+    else if (next < 0) next = galleryState.images.length - 1;
+    galleryState.currentImageIndex = next;
+    updateGallery();
   }
-  
-  // Add keyboard navigation for galleries (especially useful for video galleries)
-  // This allows navigating without clicking on the video (which would pause/resume)
-  const keyboardHandler = (e) => {
-    // Only handle if this gallery is visible
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
     const gallery = container.closest('.image-display.gallery');
     if (!gallery || !document.body.contains(gallery)) return;
-    
-    // Check if gallery is visible on screen
     const rect = gallery.getBoundingClientRect();
-    const isVisible = rect.top < window.innerHeight && rect.bottom > 0 && 
-                      rect.left < window.innerWidth && rect.right > 0;
-    if (!isVisible) return;
-    
-    // Don't handle if user is typing in an input/textarea
+    if (rect.top >= window.innerHeight || rect.bottom <= 0) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    
-    // Handle arrow keys - navigate without triggering pause/resume
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      e.stopPropagation();
-      changeImage(1);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      e.stopPropagation();
-      changeImage(-1);
-    }
-  };
-  
-  // Add keyboard listener
-  document.addEventListener('keydown', keyboardHandler);
-  
-  // Set up navigation buttons
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); changeImage(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); changeImage(-1); }
+  });
+
+  // Nav buttons
   const prevBtn = container.querySelector('.display-nav.prev');
   const nextBtn = container.querySelector('.display-nav.next');
-  
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => changeImage(-1));
-  }
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => changeImage(1));
-  }
-  
-  // Click on container to go to next (but not on video controls or videos)
+  if (prevBtn) prevBtn.addEventListener('click', () => changeImage(-1));
+  if (nextBtn) nextBtn.addEventListener('click', () => changeImage(1));
+
+  // Click to advance (skip nav buttons and video controls)
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('display-nav')) return;
-    if (e.target.closest('.video-controls-overlay')) return;
-    if (e.target.closest('.video-controls')) return;
-    if (e.target.closest('.video-control-btn')) return;
-    if (e.target.closest('.video-progress-container')) return;
-    if (e.target.closest('.video-progress-wrapper')) return;
-    if (e.target.closest('.video-progress-overlay')) return;
-    if (e.target.closest('.video-click-overlay')) return; // Don't navigate when clicking on video (pause/resume)
-    
-    // Check if there are videos in the gallery
-    const videos = container.querySelectorAll('.display-video');
-    if (videos.length > 0) {
-      // For video galleries, check if click is actually on the video or its overlay
-      const activeVideo = container.querySelector('.display-video.active');
-      if (activeVideo) {
-        const videoRect = activeVideo.getBoundingClientRect();
-        const clickX = e.clientX;
-        const clickY = e.clientY;
-        
-        // Check if click is within video bounds
-        const isOnVideo = clickX >= videoRect.left && clickX <= videoRect.right &&
-                         clickY >= videoRect.top && clickY <= videoRect.bottom;
-        
-        // Also check if click is on video-related elements
-        const isOnVideoElement = e.target.classList.contains('display-video') ||
-                                 e.target.closest('.display-video') ||
-                                 e.target.closest('.video-click-overlay');
-        
-        if (!isOnVideo && !isOnVideoElement) {
-          // Click is outside video boundaries - navigate to next
-          e.stopPropagation();
-          changeImage(1);
-          return;
-        }
-        // If click is on video, let the pause/resume handler take care of it
-        return;
-      }
+    if (e.target.closest('.video-controls-overlay') ||
+        e.target.closest('.video-controls') ||
+        e.target.closest('.video-click-overlay') ||
+        e.target.closest('.video-nav-overlay')) return;
+
+    const activeVideo = container.querySelector('.display-video.active');
+    if (activeVideo) {
+      const vr = activeVideo.getBoundingClientRect();
+      const onVideo = e.clientX >= vr.left && e.clientX <= vr.right &&
+                      e.clientY >= vr.top  && e.clientY <= vr.bottom;
+      if (onVideo) return; // let pause/resume handle it
     }
-    
-    // For image galleries or if no active video, navigate normally
     changeImage(1);
   });
-  
-  // Add click handlers for video navigation
-  // Videos need special handling because iframes from other domains capture clicks
-  // We'll add a transparent navigation overlay that allows clicks through to controls
+
+  // Transparent navigation overlay for video galleries (iframes capture clicks)
   const videos = container.querySelectorAll('.display-video');
-  
   if (videos.length > 0) {
-    // Create a single navigation overlay for the container
     let navOverlay = container.querySelector('.video-nav-overlay');
     if (!navOverlay) {
       navOverlay = document.createElement('div');
       navOverlay.className = 'video-nav-overlay';
-      navOverlay.style.cssText = `
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: transparent;
-        cursor: pointer;
-        z-index: 4;
-        pointer-events: auto;
-      `;
+      navOverlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;cursor:pointer;z-index:4;pointer-events:auto;';
       container.appendChild(navOverlay);
     }
-    
-    // Update overlay visibility based on active video
+
     const updateNavOverlay = () => {
-      const activeVideo = container.querySelector('.display-video.active');
-      if (activeVideo && navOverlay) {
-        // Show overlay only when there's an active video
-        navOverlay.style.display = 'block';
-        navOverlay.style.pointerEvents = 'auto';
-      } else if (navOverlay) {
-        navOverlay.style.display = 'none';
-        navOverlay.style.pointerEvents = 'none';
-      }
+      const hasActiveVideo = !!container.querySelector('.display-video.active');
+      navOverlay.style.display = hasActiveVideo ? 'block' : 'none';
+      navOverlay.style.pointerEvents = hasActiveVideo ? 'auto' : 'none';
     };
-    
-    // Initial update
     updateNavOverlay();
-    
-    // Watch for active class changes on videos
-    videos.forEach((video) => {
-      const observer = new MutationObserver(updateNavOverlay);
-      observer.observe(video, { attributes: true, attributeFilter: ['class'] });
-    });
-    
-    // Add click handler to navigation overlay - navigate when clicking outside video
+    videos.forEach(v => new MutationObserver(updateNavOverlay).observe(v, { attributes: true, attributeFilter: ['class'] }));
+
     navOverlay.addEventListener('click', (e) => {
-      // Check what element is actually at the click point
-      const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
-      
-      if (clickTarget) {
-        // Don't navigate if click is on controls, progress bar, video click overlay, or video itself
-        if (clickTarget.closest('.video-controls-overlay') ||
-            clickTarget.closest('.video-controls') ||
-            clickTarget.closest('.video-control-btn') ||
-            clickTarget.closest('.video-progress-container') ||
-            clickTarget.closest('.video-progress-wrapper') ||
-            clickTarget.closest('.video-progress-overlay') ||
-            clickTarget.closest('.video-click-overlay') ||
-            clickTarget.closest('.display-nav') ||
-            clickTarget.classList.contains('display-nav') ||
-            clickTarget.classList.contains('display-video') ||
-            clickTarget.tagName === 'IFRAME') {
-          return;
-        }
+      const t = document.elementFromPoint(e.clientX, e.clientY);
+      if (t && (t.closest('.video-controls-overlay') || t.closest('.video-controls') ||
+                t.closest('.video-click-overlay') || t.closest('.display-nav') ||
+                t.tagName === 'IFRAME')) return;
+      const av = container.querySelector('.display-video.active');
+      if (av) {
+        const vr = av.getBoundingClientRect();
+        if (e.clientX >= vr.left && e.clientX <= vr.right &&
+            e.clientY >= vr.top  && e.clientY <= vr.bottom) return;
       }
-      
-      // Get active video to check if click is within its bounds
-      const activeVideo = container.querySelector('.display-video.active');
-      if (activeVideo) {
-        const videoRect = activeVideo.getBoundingClientRect();
-        const clickX = e.clientX;
-        const clickY = e.clientY;
-        
-        // Check if click is within video bounds
-        const isOnVideo = clickX >= videoRect.left && clickX <= videoRect.right &&
-                         clickY >= videoRect.top && clickY <= videoRect.bottom;
-        
-        if (!isOnVideo) {
-          // Click is outside video boundaries - navigate to next video/image
-          e.stopPropagation();
-          e.preventDefault();
-          changeImage(1);
-        }
-      } else {
-        // No active video, navigate normally
-        e.stopPropagation();
-        e.preventDefault();
-        changeImage(1);
-      }
-    });
-    
-    // Also handle mousedown to ensure we catch the event
-    navOverlay.addEventListener('mousedown', (e) => {
-      const clickTarget = document.elementFromPoint(e.clientX, e.clientY);
-      if (clickTarget && (
-        clickTarget.closest('.video-controls-overlay') ||
-        clickTarget.closest('.video-controls') ||
-        clickTarget.closest('.video-control-btn') ||
-        clickTarget.closest('.video-progress-container') ||
-        clickTarget.closest('.display-nav')
-      )) {
-        return; // Let controls handle it
-      }
-      // Don't prevent default here, just mark for navigation on click
+      e.stopPropagation();
+      e.preventDefault();
+      changeImage(1);
     });
   }
-  
+
   // Handle image load errors
   allImages.forEach(img => {
-    img.addEventListener('error', function() {
+    img.addEventListener('error', function () {
       this.style.display = 'none';
-      const validImages = Array.from(allImages).filter(i => 
-        i.style.display !== 'none' && (i.complete && i.naturalHeight > 0)
-      );
-      if (validImages.length <= 1) {
-        navButtons.forEach(btn => btn.style.display = 'none');
-      }
+      const valid = Array.from(allImages).filter(i => i.style.display !== 'none' && i.complete && i.naturalHeight > 0);
+      if (valid.length <= 1) navButtons.forEach(btn => btn.style.display = 'none');
     });
   });
-  
-  // Initialize gallery
+
   updateGallery();
-  
-  // Update counter with actual number of valid images - find counter outside container
+
   const gallery = container.closest('.image-display.gallery');
   const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
-  if (counter && images.length > 0) {
-    counter.textContent = `1/${images.length}`;
-  }
-  
-  // Update cursor based on number of items
-  if (images.length <= 1) {
-    container.style.cursor = 'default';
-  } else {
-    container.style.cursor = 'ew-resize';
-  }
+  if (counter) counter.textContent = `1/${images.length}`;
 }
-

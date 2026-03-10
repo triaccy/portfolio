@@ -8,24 +8,17 @@
     <link rel="stylesheet" href="css/imageDisplay.css">
     <script src="js/videoControls.js?v=5"></script>
     <style>
-      body { 
-        padding: 24px; 
-        max-width: 1200px; 
-        margin: 0 auto; 
+      body {
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
       }
-      .topic-title { 
-        font-size: 24px; 
-        text-decoration: underline; 
-        text-underline-offset: 4px; 
-        margin-bottom: 20px;
-        display: none; /* Hide title by default */
-      }
-      .back { 
+      .back {
         position: fixed;
         bottom: 12px;
         left: 12px;
         z-index: 1000;
-        font-size: 12px; 
+        font-size: 12px;
         color: var(--fg);
         text-decoration: underline;
         text-underline-offset: 3px;
@@ -34,18 +27,13 @@
       .back:hover {
         opacity: 0.7;
       }
-      .content { 
-        font-size: 14px; 
-        color: var(--fg); 
+      .content {
+        font-size: 14px;
+        color: var(--fg);
         line-height: 1.6;
       }
-      
+
       /* Video container */
-      :root {
-        --video-width: 720px;
-        --video-height: 405px;
-      }
-      
       .video-container {
         display: flex;
         justify-content: center;
@@ -56,7 +44,7 @@
         pointer-events: none;
         position: relative;
       }
-      
+
       .video-container iframe {
         width: 100%;
         height: auto;
@@ -65,22 +53,15 @@
         pointer-events: auto !important;
         user-select: none;
         -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         object-fit: contain;
         display: block;
         margin: 0 auto;
       }
-      
-      /* Vimeo video styling */
+
       .video-container iframe[src*="vimeo.com"] {
-        width: 100%;
-        height: auto;
         aspect-ratio: 16 / 9;
-        display: block;
-        margin: 0 auto;
       }
-      
+
       @media (max-width: 768px) {
         .video-container {
           width: 70%;
@@ -94,152 +75,65 @@
           margin: 0 auto;
         }
       }
-      
-      .video-container media-item {
-        width: 100%;
-        max-width: 800px;
-        height: auto;
-      }
-      
-      /* Project grid */
-      .project-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
-      }
-      
-      .project-card {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 16px;
-        background: #fafafa;
-      }
-      
-      .project-title {
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      
-      .project-description {
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 12px;
-      }
-      
-      .project-link {
-        font-size: 12px;
-        color: var(--accent);
-        text-decoration: none;
-      }
-      
-      .project-link:hover {
-        text-decoration: underline;
-      }
-      
-      /* Grid style (for backwards compatibility) */
-      .image-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
-      }
-      
-      .image-item {
-        text-align: center;
-      }
-      
-      .image-item img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 8px;
-      }
-      
-      .image-item p {
-        font-size: 12px;
-        color: var(--muted);
-        margin: 0;
-      }
     </style>
 </head>
 <body>
     <a class="back" href="./">← back</a>
-    <h1 class="topic-title" id="title">Topic</h1>
     <div class="content" id="content">Loading…</div>
 
     <script src="js/imageDisplay.js"></script>
     <script>
       // ============================================
       // TOPIC CONTENT CONFIGURATION
+      // All keys are in year-topic (hyphen) format, lowercase.
       // ============================================
-      
-      // Helper function to safely create image displays
+
       function safeCreateImageDisplay(type, images, options) {
         if (typeof createImageDisplay === 'undefined') {
           console.error('createImageDisplay is not available');
-          return '<p style="color: red;">Error: Image display function not loaded. Please refresh the page.</p>';
+          return '<p>Error: image display not loaded.</p>';
         }
         try {
-          const result = createImageDisplay(type, images, options);
-          if (!result || result.trim() === '') {
-            console.warn('createImageDisplay returned empty result', { type, images, options });
-            return '<p>No images to display.</p>';
-          }
-          return result;
+          return createImageDisplay(type, images, options) || '<p>No images to display.</p>';
         } catch (e) {
           console.error('Error calling createImageDisplay:', e);
-          return '<p style="color: red;">Error creating image display. Check console for details.</p>';
+          return '<p>Error creating image display.</p>';
         }
       }
-      
-      // Helper function to safely create video galleries
+
       function safeCreateVideoGallery(videos, options) {
         if (typeof createVideoGallery === 'undefined') {
           console.error('createVideoGallery is not available');
-          return '<p style="color: red;">Error: Video gallery function not loaded. Please refresh the page.</p>';
+          return '<p>Error: video gallery not loaded.</p>';
         }
         try {
-          const result = createVideoGallery(videos, options);
-          if (!result || result.trim() === '') {
-            console.warn('createVideoGallery returned empty result', { videos, options });
-            return '<p>No videos to display.</p>';
-          }
-          return result;
+          return createVideoGallery(videos, options) || '<p>No videos to display.</p>';
         } catch (e) {
           console.error('Error calling createVideoGallery:', e);
-          return '<p style="color: red;">Error creating video gallery. Check console for details.</p>';
+          return '<p>Error creating video gallery.</p>';
         }
       }
-      
-      // Video-related functions are now in js/videoControls.js
-      
-      const topicContent = 
-        {
+
+      const topicContent = {
         '2025-interaction': {
+          title: 'Interaction (2025)',
           content: `
             <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1" 
-                      title="YouTube video player" 
-                      frameborder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1"
+                      title="YouTube video player"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowfullscreen>
               </iframe>
             </div>
           `
         },
 
-        '3dxpaper': {
-          title: '3DxPaper',
-          content: safeCreateImageDisplay('gallery', [
-            { src: 'images/paper/IMG_7059.jpg', alt: '3DxPaper Image 1' },
-            { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
-            { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
-            { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
-            { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
-          ], { id: 'paper-gallery' })
+        '2025-food': {
+          title: 'Food (2025)',
+          content: `None`
         },
+
         '2025-3dxpaper': {
           title: '3DxPaper (2025)',
           content: safeCreateImageDisplay('gallery', [
@@ -250,41 +144,20 @@
             { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
           ], { id: 'paper-gallery' })
         },
-        
-        '2025 food': {
-          content: `None`
-        },
-        '2025 magazine': {
+
+        '2025-magazine': {
           title: 'Magazine (2025)',
           content: safeCreateImageDisplay('gallery', [
             { src: 'images/magazine 2025/FRONT COVER REFERENCE.jpg', alt: 'Front Cover Reference' },
-            { src: 'images/magazine 2025/BACK COVER REFERENCE.jpg', alt: 'Back Cover Reference' },
-            // Add more magazine images here as they become available:
-            // { src: 'images/magazine 2025/page-01.jpg', alt: 'Page 1' },
-            // { src: 'images/magazine 2025/page-02.jpg', alt: 'Page 2' },
-            // etc.
+            { src: 'images/magazine 2025/BACK COVER REFERENCE.jpg', alt: 'Back Cover Reference' }
           ], { id: 'magazine-2025-gallery' })
         },
-        '2025 book': {
-          title: 'Book (2025)',
-          content: `
-            <div class="flipbook-container" style="width: 100%; height: 80vh; margin: 40px auto; border: none; overflow: hidden;">
-              <iframe src="./wine-bottle-flipbook/index.html" 
-                      style="width: 100%; height: 100%; border: none; display: block;"
-                      title="Wine Bottle Flipbook"
-                      allowfullscreen>
-              </iframe>
-            </div>
-          `
-        },
-        
 
-        '2024 food': {
+        '2024-food': {
+          title: 'Food (2024)',
           content: `None`
         },
-        '2024 textile': {
-          content: `None`
-        },
+
         '2024-machine': {
           title: 'Knitting Machine (2024)',
           content: safeCreateImageDisplay('gallery', [
@@ -293,33 +166,35 @@
             { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
           ], { id: 'machine-gallery' })
         },
+
         '2024-biology/material': {
           title: 'biology/material (2024)',
           content: `<p>"Circwool" project: aims to develop innovative recycling technology for wool waste and reintegrate it into a circular textile cycle.
 My work focused on pioneering the optimization of a green chemical extraction method for keratin from upcycled local wool and develop potential applications. Through this initial research phase, we successfully synthesized the first batch of working sizing, which was then applied to glass fibers for mechanical properties and wettability testing, including embedded fiber testing and pull-out tests. This foundational research lays the groundwork for creating a new, sustainable feedstock for industries like plastics (producing film through crosslinking keratin with enzymes) and fertilizers (soil enrichment through keratin degradation studies), moving beyond reliance on petroleum-based materials.
 </p>`
         },
-        '2024-textile': {
+
+        '2024-chemistry/material': {
+          title: 'chemistry/material (2024)',
           content: `None`
         },
-        '2024-graphics': {
-          content: `None`
+
+        '2024-conservation': {
+          title: 'Conservation (2024)',
+          content: safeCreateVideoGallery([
+            {
+              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 2',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            },
+            {
+              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
+              title: 'Conservation Video 1',
+              allow: 'autoplay; fullscreen; picture-in-picture'
+            }
+          ], { id: 'conservation-video-gallery' })
         },
-    
-        '2021-installation': {
-          title: 'Installation (2021)',
-          content: `
-            <div class="video-container">
-              <iframe src="https://player.vimeo.com/video/1135686954?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0" 
-                      title="Vimeo video player" 
-                      frameborder="0" 
-                      allow="autoplay; fullscreen; picture-in-picture" 
-                      allowfullscreen>
-              </iframe>
-            </div>
-          `
-        },
-        
+
         '2023-installation': {
           title: 'Installation (2023)',
           content: safeCreateImageDisplay('gallery', [
@@ -327,9 +202,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
             { src: 'images/installation-3.jpg', alt: 'Installation 3' }
           ], { id: 'installation-2023-gallery' })
         },
-       
-       
-        
+
         '2023-speculation': {
           title: 'Speculation (2023)',
           content: safeCreateImageDisplay('gallery', [
@@ -339,44 +212,16 @@ My work focused on pioneering the optimization of a green chemical extraction me
             { src: 'images/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
           ], { id: 'whale-gallery' })
         },
-        '2024-conservation': {
-          title: 'Conservation (2024)',
-          content: safeCreateVideoGallery([
-            { 
-              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 2',
-              allow: 'autoplay; fullscreen; picture-in-picture'
-            },
-            { 
-              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 1',
-              allow: 'autoplay; fullscreen; picture-in-picture'
-            }
-          ], { id: 'conservation-video-gallery' })
-        },
+
         '2023-conservation': {
+          title: 'Conservation (2023)',
           content: safeCreateImageDisplay('gallery', [
-            { src: 'images/conservation/Untitled-1.png', alt: 'Conservation Image 1' },
-            { src: 'images/conservation/c-02-1.png', alt: 'Conservation Image 2' },
-            { src: 'https://www.youtube.com/watch?v=jKCMreZw1CQ', alt: 'Conservation Video', type: 'video' },
-            ], { id: 'whale-gallery' })
+            { src: 'images/conservation/Untitled-1.jpg', alt: 'Conservation Image 1' },
+            { src: 'images/conservation/c-02-1.jpg', alt: 'Conservation Image 2' },
+            { src: 'https://www.youtube.com/watch?v=jKCMreZw1CQ', alt: 'Conservation Video', type: 'video' }
+          ], { id: 'conservation-2023-gallery' })
         },
-        '2024-chemistry': {
-          content: `None`
-        },
-        '2022-chemistry': {
-          content: `<p>Efficient energy storage systems and innovative material production processes are major challenges that require contributions from chemists towards achieving a sustainable society. The Noonan Lab works on the development of new conjugated materials and polymers that incorporate main group elements. 
-My work focues on sythesising tunable systems for fluorescence and electronic applications. 
- </p>
-<p>Great appreciation to my mentor Dhruv Sharma and the Noonan Lab!</p>`
-        },
-        '2022-architecture': {
-          title: 'Architecture (2022)',
-          content: safeCreateImageDisplay('gallery', [
-            { src: 'images/archi 3/architecture portfolio spread  Page 007.png', alt: 'Architecture Portfolio Page 007' },
-            { src: 'images/archi 3/architecture portfolio spread  Page 008.png', alt: 'Architecture Portfolio Page 008' },
-          ], { id: 'architecture-2022-gallery' })
-        },
+
         '2023-architecture': {
           title: 'Architecture (2023)',
           content: safeCreateImageDisplay('gallery', [
@@ -384,14 +229,15 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
             { src: 'images/archi/a-01-2.png', alt: 'Architecture Image 2' },
             { src: 'images/archi/a-01-3.png', alt: 'Architecture Image 3' },
             { src: 'images/archi/a-01-5.png', alt: 'Architecture Image 5' },
-            { src: 'images/archi/a-01-6.png', alt: 'Architecture Image 6' },
+            { src: 'images/archi/a-01-6.webp', alt: 'Architecture Image 6' },
             { src: 'images/archi/a-01-7.png', alt: 'Architecture Image 7' },
             { src: 'images/archi/a-01-8.png', alt: 'Architecture Image 8' },
             { src: 'images/archi/a-01-10.png', alt: 'Architecture Image 10' },
             { src: 'images/archi/a-01-11.png', alt: 'Architecture Image 11' },
-            { src: 'images/archi/a-01-12.png', alt: 'Architecture Image 12' },
+            { src: 'images/archi/a-01-12.png', alt: 'Architecture Image 12' }
           ], { id: 'architecture-2023-gallery' })
         },
+
         '2023-ecosystem': {
           title: 'Ecosystem (2023)',
           content: safeCreateImageDisplay('gallery', [
@@ -402,11 +248,42 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
             { src: 'images/archi2/architecture portfolio5.jpg', alt: 'Architecture Portfolio 5' },
             { src: 'images/archi2/architecture portfolio6.jpg', alt: 'Architecture Portfolio 6' },
             { src: 'images/archi2/architecture portfolio7.jpg', alt: 'Architecture Portfolio 7' },
-            { src: 'images/archi2/architecture portfolio 8.png', alt: 'Architecture Portfolio 8' },
-            { src: 'images/archi2/architecture portfolio9.jpg', alt: 'Architecture Portfolio 9' },
+            { src: 'images/archi2/architecture portfolio9.jpg', alt: 'Architecture Portfolio 9' }
           ], { id: 'ecosystem-2023-gallery' })
         },
+
+        '2022-architecture': {
+          title: 'Architecture (2022)',
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/archi 3/architecture portfolio spread  Page 007.webp', alt: 'Architecture Portfolio Page 007' },
+            { src: 'images/archi 3/architecture portfolio spread  Page 008.webp', alt: 'Architecture Portfolio Page 008' }
+          ], { id: 'architecture-2022-gallery' })
+        },
+
+        '2022-chemistry': {
+          title: 'Chemistry (2022)',
+          content: `<p>Efficient energy storage systems and innovative material production processes are major challenges that require contributions from chemists towards achieving a sustainable society. The Noonan Lab works on the development of new conjugated materials and polymers that incorporate main group elements.
+My work focuses on synthesising tunable systems for fluorescence and electronic applications.
+</p>
+<p>Great appreciation to my mentor Dhruv Sharma and the Noonan Lab!</p>`
+        },
+
+        '2021-installation': {
+          title: 'Installation (2021)',
+          content: `
+            <div class="video-container">
+              <iframe src="https://player.vimeo.com/video/1135686954?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0"
+                      title="Vimeo video player"
+                      frameborder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowfullscreen>
+              </iframe>
+            </div>
+          `
+        },
+
         '2021-motion': {
+          title: 'Motion (2021)',
           content: `None`
         }
       };
@@ -414,151 +291,59 @@ My work focues on sythesising tunable systems for fluorescence and electronic ap
       // ============================================
       // PAGE INITIALIZATION
       // ============================================
-      
-      (function(){
+
+      (function () {
         const params = new URLSearchParams(location.search);
         const topic = (params.get('t') || '').trim();
-        const year = (params.get('y') || '').trim();
-        const title = document.getElementById('title');
+        const year  = (params.get('y') || '').trim();
         const content = document.getElementById('content');
-        
+
         if (!topic) {
-          title.style.display = 'none';
           content.textContent = 'No topic specified.';
           return;
         }
-        
-        // Create unique key for year-topic combination
-        // Try both hyphen and space formats for compatibility
-        const uniqueKeyHyphen = year ? `${year}-${topic}` : topic;
-        const uniqueKeySpace = year ? `${year} ${topic}` : topic;
-        
-        // Get topic data or use default
-        let topicData = topicContent[uniqueKeyHyphen];
-        if (!topicData) {
-          topicData = topicContent[uniqueKeySpace];
-        }
-        if (!topicData) {
-          topicData = topicContent[topic];
-        }
-        if (!topicData) {
-          topicData = {
-            title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
-            content: `<p>This is a placeholder page for "${topic}"${year ? ` from ${year}` : ''}. Add your projects, text, and media here.</p>`
-          };
-        }
-        
-        // Set title - use topicData.title if available, otherwise generate one
-        const pageTitle = topicData.title || (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
-        // Hide the title element
-        title.style.display = 'none';
-        
-        // Get content - if it's a function, call it; otherwise use it directly
+
+        // Key is always year-topic (hyphen), lowercase
+        const key = year ? `${year}-${topic}` : topic;
+        const topicData = topicContent[key] || {
+          title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
+          content: `<p>Content for "${topic}"${year ? ` from ${year}` : ''} is coming soon.</p>`
+        };
+
+        const pageTitle = topicData.title ||
+          (year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1));
+
         let contentHTML = topicData.content;
-        if (typeof contentHTML === 'function') {
-          try {
-            contentHTML = contentHTML();
-          } catch (e) {
-            console.error('Error executing content function:', e);
-            contentHTML = '<p>Error loading content. Please refresh the page.</p>';
-          }
-        }
-        // Treat "None" string as empty content
-        if (contentHTML === 'None' || contentHTML === 'none') {
+        if (contentHTML === 'None' || contentHTML === 'none' || !contentHTML || !contentHTML.trim()) {
           contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
         }
-        // Check if contentHTML is empty or just whitespace
-        if (!contentHTML || (typeof contentHTML === 'string' && !contentHTML.trim())) {
-          // If we have a topic but no content, show a more helpful message
-          if (topicData && topicData.content === undefined) {
-            contentHTML = `<p>Content for "${pageTitle}" is coming soon.</p>`;
-          } else {
-            contentHTML = '<p>No content available. Please check the browser console for errors.</p>';
-          }
-        }
-        // Debug logging
-        console.log('Content HTML:', contentHTML ? contentHTML.substring(0, 100) : 'empty');
-        console.log('Topic:', topic, 'Year:', year, 'Keys tried:', uniqueKeyHyphen, uniqueKeySpace);
-        
+
         content.innerHTML = contentHTML;
         document.title = `${pageTitle} — Portfolio`;
-        
-        // Add page title below the counter at the bottom
-        let pageTitleElement = document.querySelector('.gallery-page-title');
-        if (!pageTitleElement) {
-          pageTitleElement = document.createElement('div');
-          pageTitleElement.className = 'gallery-page-title';
-          document.body.appendChild(pageTitleElement);
+
+        // Page title at bottom
+        let pageTitleEl = document.querySelector('.gallery-page-title');
+        if (!pageTitleEl) {
+          pageTitleEl = document.createElement('div');
+          pageTitleEl.className = 'gallery-page-title';
+          document.body.appendChild(pageTitleEl);
         }
-        pageTitleElement.textContent = pageTitle;
-        
-        // Initialize image displays after content is loaded
-        // Use multiple attempts to ensure galleries/videos are initialized
-        const initDisplays = () => {
-          if (typeof initImageDisplays === 'function') {
-            // Wait a bit for DOM to update after innerHTML
-            setTimeout(() => {
-              initImageDisplays();
-            }, 10);
-          } else {
-            console.warn('initImageDisplays function not available yet, retrying...');
-            setTimeout(initDisplays, 100);
-          }
-        };
-        
-        // Apply video styling to make all videos look like images
+        pageTitleEl.textContent = pageTitle;
+
+        // Initialize image galleries (imageDisplay.js is sync-loaded above, DOM is ready)
+        if (typeof initImageDisplays === 'function') initImageDisplays();
+
+        // Initialize video controls
         if (typeof applyVideoImageStyle === 'function' && !window.videoImageStyleApplied) {
           applyVideoImageStyle();
           window.videoImageStyleApplied = true;
         }
-        
-        // Load video APIs
         if (typeof loadYouTubeAPI === 'function') loadYouTubeAPI();
         if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
-        
-        // Initialize video controls and players
-        const initVideoControlsDelayed = () => {
-          if (typeof initVideoControls === 'function') {
-            initVideoControls();
-            // Re-initialize after APIs load
-            setTimeout(initVideoControls, 1000);
-            setTimeout(initVideoControls, 2000);
-          }
-          // Also initialize Vimeo players after content is inserted
-          if (typeof initVimeoPlayers === 'function') {
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 500);
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 1500);
-            setTimeout(() => {
-              initVimeoPlayers();
-            }, 2500);
-          }
-          // Setup click handlers for pause/resume
-          if (typeof setupVideoClickHandlers === 'function') {
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 200);
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 1200);
-            setTimeout(() => {
-              setupVideoClickHandlers();
-            }, 2200);
-          }
-        };
-        
-        // Try immediately, then after a short delay, and again after content renders
-        setTimeout(initDisplays, 50);
-        setTimeout(initDisplays, 200);
-        setTimeout(initDisplays, 500);
-        
-        // Initialize video controls
-        setTimeout(initVideoControlsDelayed, 100);
-        setTimeout(initVideoControlsDelayed, 500);
-        setTimeout(initVideoControlsDelayed, 1000);
+        if (typeof initVideoControls === 'function') initVideoControls();
+        // Vimeo/YouTube players need a short delay for iframe to render
+        if (typeof initVimeoPlayers === 'function') setTimeout(initVimeoPlayers, 500);
+        if (typeof setupVideoClickHandlers === 'function') setTimeout(setupVideoClickHandlers, 200);
       })();
     </script>
 </body>

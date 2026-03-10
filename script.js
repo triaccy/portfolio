@@ -1,9 +1,5 @@
-// Landing has no JS requirements yet — reserved for future interactions
-(function () {
-  console.log('Landing loaded');
-})();
+// Landing page — handles year/topic placement and web visualization
 
-// Randomize year link positions and show separate topic links on hover
 (function () {
   const container = document.getElementById('app');
   const nav = document.querySelector('.years');
@@ -11,8 +7,6 @@
   const webSvg = document.getElementById('web');
   if (!container || !nav || !topicsLayer || !webSvg) return;
 
-  import('./js/constants.js');
-  import('./js/utils.js');
   Promise.all([
     import('./js/layout.js'),
     import('./js/topics.js')
@@ -34,12 +28,10 @@
 
       const occupied = [];
       anchors.forEach(a => {
-        const { w, h } = layout.measureSize ? layout.measureSize(a) : a.getBoundingClientRect();
+        const { w, h } = layout.measureSize(a);
         const x = Number(a.dataset.x || 0);
         const y = Number(a.dataset.y || 0);
-        const width = 'w' in (layout.measureSize ? layout.measureSize(a) : { w: a.offsetWidth }) ? (layout.measureSize ? layout.measureSize(a).w : a.offsetWidth) : a.offsetWidth;
-        const height = 'h' in (layout.measureSize ? layout.measureSize(a) : { h: a.offsetHeight }) ? (layout.measureSize ? layout.measureSize(a).h : a.offsetHeight) : a.offsetHeight;
-        if (!isNaN(x) && !isNaN(y)) occupied.push({ left: x, top: y, right: x + width, bottom: y + height });
+        if (!isNaN(x) && !isNaN(y)) occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
       });
       Array.from(topicsLayer.querySelectorAll('.topic-link')).forEach(el => {
         const pos = layout.getNodeCenter(container, el);

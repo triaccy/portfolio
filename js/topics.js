@@ -32,6 +32,7 @@ export function updateWeb(container, webSvg, topicMap) {
 
 export function createTopicsForYear(container, topicsLayer, topicMap, anchor, occupied) {
   const topics = parseTopics(anchor);
+  const year = anchor.textContent.trim();
   const ax = Number(anchor.dataset.x || 0);
   const ay = Number(anchor.dataset.y || 0);
 
@@ -39,17 +40,12 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
   topics.forEach(topic => {
     const link = document.createElement('a');
     link.className = 'topic-link';
-    const year = anchor.textContent.trim();
 
+    // Special-cased routes; everything else goes to topic.html
     if (topic === 'book' && year === '2025') {
       link.href = 'book.html';
-    } else if (topic === 'installation') {
-      if (year === '2023') {
-        link.href = `installations/2023/`;
-      } else {
-        // Route all installation topics (including 2021) to topic.html
-        link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
-      }
+    } else if (topic === 'installation' && year === '2023') {
+      link.href = 'installations/2023/';
     } else {
       link.href = `topic.html?y=${encodeURIComponent(year)}&t=${encodeURIComponent(topic)}`;
     }
@@ -70,6 +66,3 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
   topicsLayer.setAttribute('aria-hidden', 'false');
   return created;
 }
-
-
-
