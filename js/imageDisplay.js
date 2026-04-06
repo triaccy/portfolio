@@ -45,14 +45,14 @@ function createGalleryDisplay(images, displayId, options) {
       if (videoSrc.includes('youtube.com/watch') || videoSrc.includes('youtu.be/')) {
         const match = videoSrc.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
         if (match) {
-          videoSrc = `https://www.youtube.com/embed/${match[1]}?autoplay=0&loop=0&muted=0&controls=0&rel=0&modestbranding=1`;
+          videoSrc = `https://www.youtube.com/embed/${match[1]}?autoplay=1&loop=0&mute=1&controls=0&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
         }
       }
       // Convert bare Vimeo URL to player embed URL
       if (videoSrc.includes('vimeo.com/') && !videoSrc.includes('player.vimeo.com')) {
         const match = videoSrc.match(/vimeo\.com\/(\d+)/);
         if (match) {
-          videoSrc = `https://player.vimeo.com/video/${match[1]}?autoplay=0&loop=0&muted=0&controls=0&title=0&byline=0&portrait=0`;
+          videoSrc = `https://player.vimeo.com/video/${match[1]}?autoplay=1&loop=0&muted=1&controls=0&title=0&byline=0&portrait=0`;
         }
       }
       const src = escapeAttr(videoSrc);
@@ -214,7 +214,7 @@ function initializeGallery(container, images, allImages) {
     if (active) {
       active.classList.add('active');
       // Load video iframe only when its slide becomes active
-      if (active.tagName === 'IFRAME' && active.dataset.src && !active.src) {
+      if (active.tagName === 'IFRAME' && active.dataset.src && !active.getAttribute('src')) {
         active.src = active.dataset.src;
       }
     }
@@ -225,20 +225,15 @@ function initializeGallery(container, images, allImages) {
       counter.textContent = `${galleryState.currentImageIndex + 1}/${galleryState.images.length}`;
     }
 
-    // Sync video-nav overlay size when active video changes
-    const activeVideo = container.querySelector('.display-video.active');
-    if (activeVideo) {
-      setTimeout(() => {
-        const overlay = container.querySelector('.video-click-overlay');
-        if (overlay) {
-          const vr = activeVideo.getBoundingClientRect();
-          const cr = container.getBoundingClientRect();
-          overlay.style.top    = `${vr.top  - cr.top}px`;
-          overlay.style.left   = `${vr.left - cr.left}px`;
-          overlay.style.width  = `${vr.width}px`;
-          overlay.style.height = `${vr.height}px`;
-        }
-      }, 50);
+    // Show nav buttons on video slide; images use click-to-advance
+    const isVideoActive = active && active.tagName === 'IFRAME';
+    navButtons.forEach(btn => btn.style.display = isVideoActive ? 'flex' : 'none');
+    // Match container aspect-ratio to video content so controls land on the video, not in black bars
+    const isYouTubeActive = isVideoActive && (active.dataset.src || active.src || '').includes('youtube.com');
+    container.style.aspectRatio = isYouTubeActive ? '16 / 9' : '';
+    // Rewire controls overlay to whichever video is now active
+    if (isVideoActive && typeof activateVideoInGallery === 'function') {
+      activateVideoInGallery(container, active);
     }
   }
 
@@ -267,59 +262,25 @@ function initializeGallery(container, images, allImages) {
   if (prevBtn) prevBtn.addEventListener('click', () => changeImage(-1));
   if (nextBtn) nextBtn.addEventListener('click', () => changeImage(1));
 
-  // Click to advance (skip nav buttons and video controls)
+  // Capture-phase click handler — fires before any child (including video-click-overlay)
+  // Image slides: full width click-to-advance
+  // Video slides: left/right 30% navigates, center 40% falls through to play/pause overlay
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('display-nav')) return;
-    if (e.target.closest('.video-controls-overlay') ||
-        e.target.closest('.video-controls') ||
-        e.target.closest('.video-click-overlay') ||
-        e.target.closest('.video-nav-overlay')) return;
-
+    const cr = container.getBoundingClientRect();
+    const clickX = e.clientX - cr.left;
     const activeVideo = container.querySelector('.display-video.active');
     if (activeVideo) {
-      const vr = activeVideo.getBoundingClientRect();
-      const onVideo = e.clientX >= vr.left && e.clientX <= vr.right &&
-                      e.clientY >= vr.top  && e.clientY <= vr.bottom;
-      if (onVideo) return; // let pause/resume handle it
-    }
-    changeImage(1);
-  });
-
-  // Transparent navigation overlay for video galleries (iframes capture clicks)
-  const videos = container.querySelectorAll('.display-video');
-  if (videos.length > 0) {
-    let navOverlay = container.querySelector('.video-nav-overlay');
-    if (!navOverlay) {
-      navOverlay = document.createElement('div');
-      navOverlay.className = 'video-nav-overlay';
-      navOverlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;cursor:pointer;z-index:4;pointer-events:auto;';
-      container.appendChild(navOverlay);
-    }
-
-    const updateNavOverlay = () => {
-      const hasActiveVideo = !!container.querySelector('.display-video.active');
-      navOverlay.style.display = hasActiveVideo ? 'block' : 'none';
-      navOverlay.style.pointerEvents = hasActiveVideo ? 'auto' : 'none';
-    };
-    updateNavOverlay();
-    videos.forEach(v => new MutationObserver(updateNavOverlay).observe(v, { attributes: true, attributeFilter: ['class'] }));
-
-    navOverlay.addEventListener('click', (e) => {
-      const t = document.elementFromPoint(e.clientX, e.clientY);
-      if (t && (t.closest('.video-controls-overlay') || t.closest('.video-controls') ||
-                t.closest('.video-click-overlay') || t.closest('.display-nav') ||
-                t.tagName === 'IFRAME')) return;
-      const av = container.querySelector('.display-video.active');
-      if (av) {
-        const vr = av.getBoundingClientRect();
-        if (e.clientX >= vr.left && e.clientX <= vr.right &&
-            e.clientY >= vr.top  && e.clientY <= vr.bottom) return;
+      const isLeft  = clickX < cr.width * 0.3;
+      const isRight = clickX > cr.width * 0.7;
+      if (isLeft || isRight) {
+        e.stopPropagation();
+        changeImage(isLeft ? -1 : 1);
       }
-      e.stopPropagation();
-      e.preventDefault();
-      changeImage(1);
-    });
-  }
+    } else {
+      changeImage(clickX < cr.width / 2 ? -1 : 1);
+    }
+  }, true); // capture phase
 
   // Handle image load errors
   allImages.forEach(img => {

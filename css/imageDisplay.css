@@ -51,7 +51,7 @@
   border: none;
   opacity: 0;
   transition: none;
-  pointer-events: auto !important;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -61,15 +61,12 @@
 
 .image-display.gallery .display-video.active {
   opacity: 1;
+  pointer-events: auto;
 }
 
 /* Allow clicking on video galleries to navigate - same cursor as image galleries */
 .image-display.gallery .display-container:has(.display-video) {
   cursor: ew-resize;
-}
-
-.image-display.gallery .display-container:has(.display-video):hover .display-video {
-  pointer-events: auto !important;
 }
 
 .image-display.gallery .display-nav {
