@@ -57,7 +57,8 @@ function createGalleryDisplay(images, displayId, options) {
       }
       const src = escapeAttr(videoSrc);
       const alt = escapeAttr(img.alt || 'Video');
-      return `<iframe src="${src}"
+      // src is intentionally omitted — set via data-src only when slide becomes active
+      return `<iframe data-src="${src}"
             class="display-video ${index === 0 ? 'active' : ''}"
             title="${alt}"
             frameborder="0"
@@ -204,9 +205,18 @@ function initializeGallery(container, images, allImages) {
   container.style.cursor = 'ew-resize';
 
   function updateGallery() {
-    galleryState.images.forEach(img => img.classList.remove('active', 'prev'));
-    if (galleryState.images[galleryState.currentImageIndex]) {
-      galleryState.images[galleryState.currentImageIndex].classList.add('active');
+    galleryState.images.forEach(img => {
+      img.classList.remove('active', 'prev');
+      // Unload video iframes when not active so they stop playing
+      if (img.tagName === 'IFRAME' && img.dataset.src) img.removeAttribute('src');
+    });
+    const active = galleryState.images[galleryState.currentImageIndex];
+    if (active) {
+      active.classList.add('active');
+      // Load video iframe only when its slide becomes active
+      if (active.tagName === 'IFRAME' && active.dataset.src && !active.src) {
+        active.src = active.dataset.src;
+      }
     }
 
     const gallery = container.closest('.image-display.gallery');
