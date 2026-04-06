@@ -103,12 +103,12 @@ export const FlipBook = () => {
     return () => clearTimeout(t);
   }, []);
 
-  const pendingSpread = turning ? activeSpread + turnDir : null;
+  const pendingSpread = turning ? (activeSpread + turnDir + TOTAL) % TOTAL : null;
 
-  const goNext = () => { if (turning || activeSpread >= TOTAL - 1) return; setTurnDir(1);  setTurning(true); };
-  const goPrev = () => { if (turning || activeSpread <= 0)         return; setTurnDir(-1); setTurning(true); };
+  const goNext = () => { if (turning) return; setTurnDir(1);  setTurning(true); };
+  const goPrev = () => { if (turning) return; setTurnDir(-1); setTurning(true); };
   const onTurnComplete = () => {
-    setActiveSpread(s => s + turnDir);
+    setActiveSpread(s => (s + turnDir + TOTAL) % TOTAL);
     setTurning(false);
   };
 
@@ -195,13 +195,13 @@ export const FlipBook = () => {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}
               onClick={e => e.stopPropagation()}>
-              <button onClick={goPrev} disabled={activeSpread === 0 || turning}
-                style={navBtnStyle(activeSpread === 0 || turning)}>←</button>
+              <button onClick={goPrev} disabled={turning}
+                style={navBtnStyle(turning)}>←</button>
               <span style={{ fontSize: "11px", fontFamily: "ui-monospace, monospace", color: "#888", letterSpacing: "0.06em", width: "48px", textAlign: "center" }}>
                 {String((pendingSpread ?? activeSpread) + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
               </span>
-              <button onClick={goNext} disabled={activeSpread === TOTAL - 1 || turning}
-                style={navBtnStyle(activeSpread === TOTAL - 1 || turning)}>→</button>
+              <button onClick={goNext} disabled={turning}
+                style={navBtnStyle(turning)}>→</button>
             </div>
             <button onClick={() => setIsZoomed(false)} style={{
               background: "none", border: "none", fontSize: "10px",
