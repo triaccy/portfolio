@@ -32,14 +32,21 @@ function createImageDisplay(type, images, options = {}) {
  */
 function createGalleryDisplay(images, displayId, options) {
   const imageElements = images.map((img, index) => {
-    const isVideo = img.type === 'video' ||
+    const isLocalVideo = /\.(mp4|webm|mov|ogg)(\?|$)/i.test(img.src);
+    const isEmbedVideo = !isLocalVideo && (img.type === 'video' ||
                     img.src.includes('youtube.com') ||
                     img.src.includes('youtu.be') ||
                     img.src.includes('vimeo.com') ||
                     img.src.includes('player.vimeo.com') ||
-                    img.src.includes('player.youtube.com');
+                    img.src.includes('player.youtube.com'));
 
-    if (isVideo) {
+    if (isLocalVideo) {
+      const src = escapeAttr(img.src);
+      const alt = escapeAttr(img.alt || 'Video');
+      return `<video src="${src}" class="display-video ${index === 0 ? 'active' : ''}"
+            autoplay muted loop playsinline preload="metadata"
+            title="${alt}"></video>`;
+    } else if (isEmbedVideo) {
       let videoSrc = img.src;
       // Convert YouTube watch URL to embed URL
       if (videoSrc.includes('youtube.com/watch') || videoSrc.includes('youtu.be/')) {
@@ -204,11 +211,38 @@ function initializeGallery(container, images, allImages) {
 
   container.style.cursor = 'ew-resize';
 
+  function setContainerRatio(active) {
+    if (!active) return;
+    if (active.tagName === 'IFRAME') {
+      container.style.aspectRatio = '16 / 9';
+    } else if (active.tagName === 'VIDEO') {
+      if (active.videoWidth && active.videoHeight) {
+        container.style.aspectRatio = `${active.videoWidth} / ${active.videoHeight}`;
+      } else {
+        active.addEventListener('loadedmetadata', () => {
+          if (active.videoWidth && active.videoHeight)
+            container.style.aspectRatio = `${active.videoWidth} / ${active.videoHeight}`;
+        }, { once: true });
+      }
+    } else if (active.tagName === 'IMG') {
+      if (active.naturalWidth && active.naturalHeight) {
+        container.style.aspectRatio = `${active.naturalWidth} / ${active.naturalHeight}`;
+      } else {
+        active.addEventListener('load', () => {
+          if (active.naturalWidth && active.naturalHeight)
+            container.style.aspectRatio = `${active.naturalWidth} / ${active.naturalHeight}`;
+        }, { once: true });
+      }
+    }
+  }
+
   function updateGallery() {
     galleryState.images.forEach(img => {
       img.classList.remove('active', 'prev');
       // Unload video iframes when not active so they stop playing
       if (img.tagName === 'IFRAME' && img.dataset.src) img.removeAttribute('src');
+      // Pause local videos when not active
+      if (img.tagName === 'VIDEO') img.pause();
     });
     const active = galleryState.images[galleryState.currentImageIndex];
     if (active) {
@@ -217,22 +251,23 @@ function initializeGallery(container, images, allImages) {
       if (active.tagName === 'IFRAME' && active.dataset.src && !active.getAttribute('src')) {
         active.src = active.dataset.src;
       }
+      // Play local video when its slide becomes active
+      if (active.tagName === 'VIDEO') active.play().catch(() => {});
     }
 
     const gallery = container.closest('.image-display.gallery');
     const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
     if (counter) {
-      counter.textContent = `${galleryState.currentImageIndex + 1}/${galleryState.images.length}`;
+      counter.textContent = `${galleryState.currentImageIndex + 1} / ${galleryState.images.length}`;
     }
 
+    setContainerRatio(active);
+
     // Show nav buttons on video slide; images use click-to-advance
-    const isVideoActive = active && active.tagName === 'IFRAME';
+    const isVideoActive = active && (active.tagName === 'IFRAME' || active.tagName === 'VIDEO');
     navButtons.forEach(btn => btn.style.display = isVideoActive ? 'flex' : 'none');
-    // Match container aspect-ratio to video content so controls land on the video, not in black bars
-    const isYouTubeActive = isVideoActive && (active.dataset.src || active.src || '').includes('youtube.com');
-    container.style.aspectRatio = isYouTubeActive ? '16 / 9' : '';
-    // Rewire controls overlay to whichever video is now active
-    if (isVideoActive && typeof activateVideoInGallery === 'function') {
+    // Rewire controls overlay to whichever video slide is now active
+    if (active && (active.tagName === 'IFRAME' || active.tagName === 'VIDEO') && typeof activateVideoInGallery === 'function') {
       activateVideoInGallery(container, active);
     }
   }
@@ -295,5 +330,5 @@ function initializeGallery(container, images, allImages) {
 
   const gallery = container.closest('.image-display.gallery');
   const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
-  if (counter) counter.textContent = `1/${images.length}`;
+  if (counter) counter.textContent = `1 / ${images.length}`;
 }

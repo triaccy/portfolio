@@ -1,3 +1,6 @@
+# Large video files (exceed GitHub 100MB limit)
+videos/Kojimachi Junior High School 3_1.mp4
+
 # Dependencies
 node_modules/
 npm-debug.log*

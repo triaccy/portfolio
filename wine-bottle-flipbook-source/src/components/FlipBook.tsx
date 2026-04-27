@@ -13,32 +13,40 @@ const STEP  = 360 / TOTAL;
 const spreadAngle = (i: number) => (i - 6) * STEP;
 
 // ── 3D Cap geometry ───────────────────────────────────────────────────────────
-const FOIL_N    = 64;   // polygon faces for foil sleeve
-const FOIL_R    = 32;   // foil cylinder radius
-const FOIL_H    = 76;   // foil sleeve height
-const FOIL_DROP = 70;   // px to lower the foil + band
-const CORK_N    = 24;   // polygon faces for cork
-const CORK_R    = 32;   // cork cylinder radius
-const CORK_H    = 16;   // cork height
-const CORK_DROP = 70;   // px to lower the cork into the foil
-const BAND_N    = 32;   // polygon faces for gold band
-const BAND_R    = 34;   // gold band radius (slightly wider than foil)
-const BAND_H    = 12;   // gold band height
-const OVERLAP   = 22;   // px the band bottom sinks into the top of pages
+const FOIL_N  = 64;        // polygon faces for foil sleeve
+const FOIL_R  = 32;        // foil cylinder radius
+const FOIL_H  = 76;        // foil sleeve height
+const FOIL_DROP = 70;      // px to lower the foil + band
+const CORK_N  = 24;        // polygon faces for cork
+const CORK_R  = 32;        // cork cylinder radius
+const CORK_H  = 16;        // cork height
+const CORK_DROP = 70;      // px to lower the cork into the foil
+const BAND_N  = 32;        // polygon faces for gold band
+const BAND_R  = 34;        // gold band radius (slightly wider than foil)
+const BAND_H  = 12;        // gold band height
+const OVERLAP = 22;        // px the band bottom sinks into the top of pages
 
-// panel width formula shared by all three cylinders
-const panelWidth = (r: number, n: number) => 2 * r * Math.sin(Math.PI / n) + 1.5;
-const foilPW = panelWidth(FOIL_R, FOIL_N);
-const corkPW = panelWidth(CORK_R, CORK_N);
-const bandPW = panelWidth(BAND_R, BAND_N);
+const foilPW  = 2 * FOIL_R * Math.sin(Math.PI / FOIL_N) + 1.5;
+const corkPW  = 2 * CORK_R * Math.sin(Math.PI / CORK_N) + 1.5;
+const bandPW  = 2 * BAND_R * Math.sin(Math.PI / BAND_N) + 1.5;
 
-// shade factory: cosine-based lightness variation across cylinder faces
-const makeShade = (n: number, hue: number, sat: number, lMid: number, lAmp: number) =>
-  (i: number) => `hsl(${hue}, ${sat}%, ${lMid + Math.cos((i / n) * 2 * Math.PI) * lAmp}%)`;
-
-const foilShade = makeShade(FOIL_N, 33, 12, 82, 13);
-const corkShade = makeShade(CORK_N, 36, 16, 85, 10);
-const goldShade = makeShade(BAND_N, 42, 72, 55, 13);
+// shade(i, n) → css color for each face based on viewing angle
+const foilShade = (i: number) => {
+  const cos = Math.cos((i / FOIL_N) * 2 * Math.PI);
+  const l = 82 + cos * 13;
+  return `hsl(33, 12%, ${l}%)`;
+};
+const corkShade = (i: number) => {
+  const cos = Math.cos((i / CORK_N) * 2 * Math.PI);
+  const l = 85 + cos * 10;
+  return `hsl(36, 16%, ${l}%)`;
+};
+const goldShade = (i: number) => {
+  const cos = Math.cos((i / BAND_N) * 2 * Math.PI);
+  // gold hue, lightness 42–68
+  const l = 55 + cos * 13;
+  return `hsl(42, 72%, ${l}%)`;
+};
 
 // ── PageTurn (lightbox half-page fold) ────────────────────────────────────────
 interface PageTurnProps {
@@ -90,7 +98,7 @@ export const FlipBook = () => {
   const [turning,      setTurning]      = useState(false);
   const [turnDir,      setTurnDir]      = useState<1 | -1>(1);
   const [open,         setOpen]         = useState(false);
-  const [animated,     setAnimated]     = useState(false);
+  const [animated,     setAnimated]     = useState(false); // true = fan with animation
   const [visible,      setVisible]      = useState(false);
   const [capGone,      setCapGone]      = useState(false);
   const [capY,         setCapY]         = useState(0);
@@ -103,12 +111,19 @@ export const FlipBook = () => {
     return () => clearTimeout(t);
   }, []);
 
-  const pendingSpread = turning ? (activeSpread + turnDir + TOTAL) % TOTAL : null;
+  const turningRef = useRef(false);
+  const turnDirRef = useRef<1 | -1>(1);
+  useEffect(() => { turningRef.current = turning; }, [turning]);
+  useEffect(() => { turnDirRef.current = turnDir; }, [turnDir]);
 
-  const goNext = () => { if (turning) return; setTurnDir(1);  setTurning(true); };
-  const goPrev = () => { if (turning) return; setTurnDir(-1); setTurning(true); };
+  const pendingSpread = turning ? activeSpread + turnDir : null;
+
+  const goNext = () => { if (turningRef.current || activeSpread >= TOTAL - 1) return; setTurnDir(1); setTurning(true); };
+  const goPrev = () => { if (turningRef.current || activeSpread <= 0) return; setTurnDir(-1); setTurning(true); };
   const onTurnComplete = () => {
-    setActiveSpread(s => (s + turnDir + TOTAL) % TOTAL);
+    if (!turningRef.current) return;
+    turningRef.current = false;
+    setActiveSpread(s => s + turnDirRef.current);
     setTurning(false);
   };
 
@@ -132,7 +147,7 @@ export const FlipBook = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isZoomed, activeSpread, turning]);
+  }, [isZoomed, activeSpread]);
 
   const handleSpreadClick = (i: number) => {
     if (!capGone) return;
@@ -148,7 +163,8 @@ export const FlipBook = () => {
   const onCapMove = (e: React.PointerEvent) => {
     if (capDragStart.current === null) return;
     e.stopPropagation();
-    setCapY(-Math.max(0, capDragStart.current - e.clientY));
+    const dy = capDragStart.current - e.clientY;
+    setCapY(-Math.max(0, dy));
   };
   const onCapUp = (e: React.PointerEvent) => {
     if (capDragStart.current === null) return;
@@ -156,6 +172,7 @@ export const FlipBook = () => {
     capDragStart.current = null;
     if (dy > 55) {
       setCapGone(true);
+      // Close instantly, then fan open with animation
       setOpen(false);
       setTimeout(() => { setAnimated(true); setOpen(true); }, 80);
     } else { setCapY(0); }
@@ -195,13 +212,13 @@ export const FlipBook = () => {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}
               onClick={e => e.stopPropagation()}>
-              <button onClick={goPrev} disabled={turning}
-                style={navBtnStyle(turning)}>←</button>
+              <button onClick={goPrev} disabled={activeSpread === 0 || turning}
+                style={navBtnStyle(activeSpread === 0 || turning)}>←</button>
               <span style={{ fontSize: "11px", fontFamily: "ui-monospace, monospace", color: "#888", letterSpacing: "0.06em", width: "48px", textAlign: "center" }}>
                 {String((pendingSpread ?? activeSpread) + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
               </span>
-              <button onClick={goNext} disabled={turning}
-                style={navBtnStyle(turning)}>→</button>
+              <button onClick={goNext} disabled={activeSpread === TOTAL - 1 || turning}
+                style={navBtnStyle(activeSpread === TOTAL - 1 || turning)}>→</button>
             </div>
             <button onClick={() => setIsZoomed(false)} style={{
               background: "none", border: "none", fontSize: "10px",
@@ -229,15 +246,15 @@ export const FlipBook = () => {
           transformStyle: "preserve-3d", transformOrigin: "center center",
           zIndex: 1,
         }}
-          initial={{ rotateX: -5, opacity: 0 }}
-          animate={{ rotateX: -5, opacity: visible ? 1 : 0 }}
+          //animate={{ opacity: visible ? 1 : 0 }}
+          animate={‹ rotateX: -5, opacity: visible ? 1: 0
           transition={{ type: "spring", stiffness: 50, damping: 22, opacity: { duration: 0.4 } }}
         >
           {/* Spine */}
           <div style={{
             position: "absolute", top: 0, left: -SPINE_W / 2,
             width: SPINE_W, height: PANEL_H,
-            transform: "rotateY(90deg)", transformOrigin: "center center",
+            transform: "rotateY(90deg)", transformOrigin: "cen1ter center",
             background: "linear-gradient(to bottom, #ccc7bc 0%, #d8d4cc 40%, #ccc7bc 100%)",
             backfaceVisibility: "visible",
           }} />
@@ -255,8 +272,8 @@ export const FlipBook = () => {
             {book2025Images.map((img, i) => {
               const openTransition = { duration: 0.65, ease: [0.32, 0, 0.18, 1] as const, delay: i * 0.06 };
               const bgSize  = `${PANEL_W * 2}px ${PANEL_H}px`;
+              const nextImg = book2025Images[(i + 1) % TOTAL];
               const nextIdx = (i + 1) % TOTAL;
-              const nextImg = book2025Images[nextIdx];
               return (
                 <motion.div key={i} style={{
                   position: "absolute", top: 0, left: 0,
@@ -296,26 +313,32 @@ export const FlipBook = () => {
                   key="cap"
                   style={{
                     position: "absolute",
-                    top: OVERLAP, left: 0,
+                    top: OVERLAP,
+                    left: 0,
                     width: 0, height: 0,
                     transformStyle: "preserve-3d",
-                    zIndex: 30, cursor: "grab", touchAction: "none",
+                    zIndex: 30,
+                    cursor: "grab",
+                    touchAction: "none",
                   }}
                   animate={{ y: capY }}
                   transition={{ duration: 0 }}
-                  exit={{ y: capY - 500, transition: { duration: 0.46, ease: [0.32, 0, 0.08, 1] } }}
+                  exit={{
+                    y: capY - 500,
+                    transition: { duration: 0.46, ease: [0.32, 0, 0.08, 1] },
+                  }}
                   onPointerDown={onCapDown}
                   onPointerMove={onCapMove}
                   onPointerUp={onCapUp}
                 >
-                  {/* Cork top disc */}
+                  {/* Cork top disc (horizontal, faces up) */}
                   <div style={{
                     position: "absolute",
                     width: CORK_R * 2, height: CORK_R * 2,
                     borderRadius: "50%",
                     left: -CORK_R,
                     top: -(BAND_H + FOIL_H + CORK_H) + CORK_DROP - CORK_R,
-                    transform: "rotateX(90deg)",
+                    transform: `rotateX(90deg)`,
                     transformOrigin: `${CORK_R}px ${CORK_R}px 0`,
                     background: "radial-gradient(circle at 40% 40%, #f8f5f0, #d8d4ce)",
                     boxShadow: "inset 0 0 8px rgba(0,0,0,0.1)",
@@ -323,7 +346,7 @@ export const FlipBook = () => {
 
                   {/* Cork cylinder panels */}
                   {Array.from({ length: CORK_N }, (_, i) => (
-                    <div key={i} style={{
+                    <div key={`cork-${i}`} style={{
                       position: "absolute",
                       width: corkPW, height: CORK_H,
                       left: -corkPW / 2,
@@ -336,7 +359,7 @@ export const FlipBook = () => {
 
                   {/* Foil sleeve panels */}
                   {Array.from({ length: FOIL_N }, (_, i) => (
-                    <div key={i} style={{
+                    <div key={`foil-${i}`} style={{
                       position: "absolute",
                       width: foilPW, height: FOIL_H,
                       left: -foilPW / 2,
@@ -345,6 +368,7 @@ export const FlipBook = () => {
                       backfaceVisibility: "hidden",
                       transform: `rotateY(${i * 360 / FOIL_N}deg) translateZ(${FOIL_R}px)`,
                     }}>
+                      {/* Emboss rib on each face */}
                       {[14, 28, 44, 58].map(y => (
                         <div key={y} style={{
                           position: "absolute", left: 0, right: 0, top: y, height: 1,
@@ -356,7 +380,7 @@ export const FlipBook = () => {
 
                   {/* Gold band panels */}
                   {Array.from({ length: BAND_N }, (_, i) => (
-                    <div key={i} style={{
+                    <div key={`band-${i}`} style={{
                       position: "absolute",
                       width: bandPW, height: BAND_H,
                       left: -bandPW / 2,

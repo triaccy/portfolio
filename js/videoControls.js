@@ -58,6 +58,16 @@ function formatTime(seconds) {
   return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
 }
 
+function ensureLocalVideoId(video) {
+  if (!video) return null;
+  if (!window.localVideoPlayers) window.localVideoPlayers = {};
+  if (!video.dataset.localVideoId) {
+    video.dataset.localVideoId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+  window.localVideoPlayers[video.dataset.localVideoId] = video;
+  return video.dataset.localVideoId;
+}
+
 // ─── CSS injection ────────────────────────────────────────────────────────────
 
 function applyVideoImageStyle() {
@@ -68,7 +78,7 @@ function applyVideoImageStyle() {
       object-fit: contain;
     }
 
-    /* Controls overlay — hidden, shown on hover */
+    /* Controls overlay — appears on hover */
     .video-controls-overlay {
       position: absolute;
       inset: 0;
@@ -77,7 +87,8 @@ function applyVideoImageStyle() {
       pointer-events: none;
       z-index: 10;
     }
-    .video-container:hover .video-controls-overlay {
+    .video-container:hover .video-controls-overlay,
+    .lv-wrap:hover .video-controls-overlay {
       opacity: 1;
       pointer-events: auto;
     }
@@ -90,7 +101,7 @@ function applyVideoImageStyle() {
       pointer-events: none !important;
     }
 
-    /* Always-on blocker — sits between iframe and controls so YouTube never receives hover events */
+    /* Always-on blocker — sits between iframe and controls so YouTube never receives events */
     .video-iframe-blocker {
       position: absolute;
       inset: 0;
@@ -100,28 +111,7 @@ function applyVideoImageStyle() {
       cursor: default;
     }
 
-    /* Full cover while YouTube player is loading — removed on onReady */
-    .video-yt-loading-mask {
-      position: absolute;
-      inset: 0;
-      background: #ffffff;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    /* Covers YouTube logo in top-left corner (shows when paused/interacted) */
-    .video-yt-logo-mask {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 120px;
-      height: 48px;
-      background: linear-gradient(135deg, #ffffff 40%, transparent 100%);
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    /* Click overlay — transparent, handles pause/resume on video click */
+    /* Click overlay — handles pause/resume on video body click */
     .video-click-overlay {
       position: absolute;
       inset: 0;
@@ -131,7 +121,7 @@ function applyVideoImageStyle() {
       pointer-events: auto;
     }
 
-    /* Bottom control bar */
+    /* Bottom control bar — overlaid at bottom of video */
     .video-bottom-bar {
       position: absolute;
       bottom: 0;
@@ -169,9 +159,7 @@ function applyVideoImageStyle() {
 
     .video-ctrl-left .play-pause-btn:hover,
     .video-ctrl-left .fullscreen-btn:hover,
-    .video-ctrl-left .mute-btn:hover {
-      opacity: 0.7;
-    }
+    .video-ctrl-left .mute-btn:hover { opacity: 0.7; }
 
     .video-timestamp {
       color: white;
@@ -196,14 +184,11 @@ function applyVideoImageStyle() {
       cursor: pointer;
     }
 
-    .video-seek-track:hover {
-      height: 2px;
-    }
+    .video-seek-track:hover { height: 2px; }
 
     .video-seek-fill {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       height: 100%;
       background: white;
       pointer-events: none;
@@ -221,7 +206,17 @@ function applyVideoImageStyle() {
       left: 0%;
     }
 
-    /* Nav overlay for video galleries (iframes capture clicks) */
+    /* Dark overlay theme — for videos with white/light backgrounds */
+    .lv-overlay-dark .video-ctrl-left,
+    .lv-overlay-dark .play-pause-btn,
+    .lv-overlay-dark .fullscreen-btn,
+    .lv-overlay-dark .mute-btn,
+    .lv-overlay-dark .video-timestamp { color: #444 !important; }
+    .lv-overlay-dark .video-seek-track { background: rgba(0,0,0,0.15) !important; }
+    .lv-overlay-dark .video-seek-fill,
+    .lv-overlay-dark .video-seek-handle { background: #444 !important; }
+
+    /* Nav overlay for video galleries */
     .video-nav-overlay {
       position: absolute;
       inset: 0;
@@ -244,7 +239,7 @@ function createVideoControls(videoId, videoType) {
           <button class="play-pause-btn" data-video-id="${videoId}">Play</button>
           <button class="fullscreen-btn" data-video-id="${videoId}">Fullscreen</button>
           <button class="mute-btn" data-video-id="${videoId}">Unmute</button>
-          <span class="video-timestamp" data-video-id="${videoId}">00:00/00:00</span>
+          <span class="video-timestamp" data-video-id="${videoId}">00:00 / 00:00</span>
         </div>
         <div class="video-seek-area" data-video-id="${videoId}">
           <div class="video-seek-track" data-video-id="${videoId}" data-video-type="${videoType}">
@@ -260,7 +255,7 @@ function createVideoControls(videoId, videoType) {
 // ─── Single-video initializer ─────────────────────────────────────────────────
 
 function initSingleVideoControls(iframe) {
-  const container = iframe.closest('.video-container, .display-container');
+  const container = iframe.closest('.video-container, .display-container, .lv-wrap');
   if (!container) return;
 
   const src = iframe.src;
@@ -298,18 +293,6 @@ function initSingleVideoControls(iframe) {
     blocker.className = 'video-iframe-blocker';
     container.appendChild(blocker);
   }
-  if (videoType === 'youtube') {
-    if (!container.querySelector('.video-yt-loading-mask')) {
-      const loadingMask = document.createElement('div');
-      loadingMask.className = 'video-yt-loading-mask';
-      container.appendChild(loadingMask);
-    }
-    if (!container.querySelector('.video-yt-logo-mask')) {
-      const logoMask = document.createElement('div');
-      logoMask.className = 'video-yt-logo-mask';
-      container.appendChild(logoMask);
-    }
-  }
   container.insertAdjacentHTML('beforeend', createVideoControls(videoId, videoType));
 
   const overlay = container.querySelector('.video-controls-overlay');
@@ -335,41 +318,108 @@ function initSingleVideoControls(iframe) {
   setTimeout(() => updateVideoProgress(videoId, videoType), 500);
 }
 
+function initSingleLocalVideoControls(video) {
+  const container = video.closest('.display-container');
+  if (!container) return;
+
+  const videoId = ensureLocalVideoId(video);
+  if (!videoId) return;
+
+  if (!container.querySelector('.video-controls-overlay')) {
+    container.style.position = 'relative';
+    container.insertAdjacentHTML('beforeend', createVideoControls(videoId, 'local'));
+    const overlay = container.querySelector('.video-controls-overlay');
+    setupControlsForOverlay(overlay);
+  }
+
+  const overlay = container.querySelector('.video-controls-overlay');
+  if (overlay) {
+    overlay.dataset.videoId = videoId;
+    overlay.dataset.videoType = 'local';
+    overlay.dataset.playing = String(!video.paused);
+    overlay.dataset.muted = String(!!video.muted);
+    overlay.querySelectorAll('[data-video-id]').forEach(el => el.dataset.videoId = videoId);
+    overlay.querySelectorAll('[data-video-type]').forEach(el => el.dataset.videoType = 'local');
+    const muteBtn = overlay.querySelector('.mute-btn');
+    const playBtn = overlay.querySelector('.play-pause-btn');
+    if (muteBtn) muteBtn.textContent = video.muted ? 'Unmute' : 'Mute';
+    if (playBtn) playBtn.textContent = video.paused ? 'Play' : 'Pause';
+  }
+
+  if (video.dataset.localControlsBound !== 'true') {
+    const syncOverlay = () => {
+      const activeOverlay = container.querySelector(`.video-controls-overlay[data-video-id="${videoId}"][data-video-type="local"]`);
+      if (!activeOverlay) return;
+      activeOverlay.dataset.playing = String(!video.paused);
+      activeOverlay.dataset.muted = String(!!video.muted);
+      const playBtn = activeOverlay.querySelector('.play-pause-btn');
+      const muteBtn = activeOverlay.querySelector('.mute-btn');
+      if (playBtn) playBtn.textContent = video.paused ? 'Play' : 'Pause';
+      if (muteBtn) muteBtn.textContent = video.muted ? 'Unmute' : 'Mute';
+    };
+    video.addEventListener('play', syncOverlay);
+    video.addEventListener('pause', syncOverlay);
+    video.addEventListener('volumechange', syncOverlay);
+    video.dataset.localControlsBound = 'true';
+  }
+
+  setTimeout(() => updateVideoProgress(videoId, 'local'), 150);
+}
+
 // Rewire the controls overlay to a different video in the same gallery container.
 // Called by imageDisplay.js whenever the active video slide changes.
 function activateVideoInGallery(container, iframe) {
-  const src = iframe.src || iframe.getAttribute('data-src') || '';
-  if (!src) return;
-
   let videoType = null, videoId = null;
-  if (src.includes('youtube.com') || src.includes('youtu.be')) {
-    videoType = 'youtube';
-    videoId = getVideoId(src, 'youtube');
-  } else if (src.includes('vimeo.com')) {
-    videoType = 'vimeo';
-    videoId = getVideoId(src, 'vimeo');
+  if (iframe?.tagName === 'VIDEO') {
+    videoType = 'local';
+    videoId = ensureLocalVideoId(iframe);
+  } else {
+    const src = iframe?.src || iframe?.getAttribute?.('data-src') || '';
+    if (!src) return;
+    if (src.includes('youtube.com') || src.includes('youtu.be')) {
+      videoType = 'youtube';
+      videoId = getVideoId(src, 'youtube');
+    } else if (src.includes('vimeo.com')) {
+      videoType = 'vimeo';
+      videoId = getVideoId(src, 'vimeo');
+    }
   }
   if (!videoId) return;
 
   const overlay = container.querySelector('.video-controls-overlay');
-  if (!overlay) return;
+  if (!overlay) {
+    if (videoType === 'local' && iframe?.tagName === 'VIDEO') {
+      initSingleLocalVideoControls(iframe);
+    } else {
+      return;
+    }
+  }
+  const activeOverlay = container.querySelector('.video-controls-overlay');
+  if (!activeOverlay) return;
 
   // Rewire all data attributes to the new video
-  overlay.dataset.videoId   = videoId;
-  overlay.dataset.videoType = videoType;
-  overlay.dataset.playing   = 'false';
-  overlay.dataset.muted     = 'false';
-  overlay.querySelectorAll('[data-video-id]').forEach(el => el.dataset.videoId = videoId);
-  overlay.querySelectorAll('[data-video-type]').forEach(el => el.dataset.videoType = videoType);
+  activeOverlay.dataset.videoId = videoId;
+  activeOverlay.dataset.videoType = videoType;
+  activeOverlay.querySelectorAll('[data-video-id]').forEach(el => el.dataset.videoId = videoId);
+  activeOverlay.querySelectorAll('[data-video-type]').forEach(el => el.dataset.videoType = videoType);
 
   // Reset UI
-  const playBtn = overlay.querySelector('.play-pause-btn');
-  const muteBtn = overlay.querySelector('.mute-btn');
-  const ts      = overlay.querySelector('.video-timestamp');
-  const fill    = overlay.querySelector('.video-seek-fill');
-  const handle  = overlay.querySelector('.video-seek-handle');
-  if (playBtn) playBtn.textContent = 'Play';
-  if (muteBtn) muteBtn.textContent = 'Mute';
+  const playBtn = activeOverlay.querySelector('.play-pause-btn');
+  const muteBtn = activeOverlay.querySelector('.mute-btn');
+  const ts = activeOverlay.querySelector('.video-timestamp');
+  const fill = activeOverlay.querySelector('.video-seek-fill');
+  const handle = activeOverlay.querySelector('.video-seek-handle');
+  if (videoType === 'local' && iframe?.tagName === 'VIDEO') {
+    activeOverlay.dataset.playing = String(!iframe.paused);
+    activeOverlay.dataset.muted = String(!!iframe.muted);
+    if (playBtn) playBtn.textContent = iframe.paused ? 'Play' : 'Pause';
+    if (muteBtn) muteBtn.textContent = iframe.muted ? 'Unmute' : 'Mute';
+  } else {
+    activeOverlay.dataset.playing = 'false';
+    activeOverlay.dataset.muted = 'false';
+    if (playBtn) playBtn.textContent = 'Play';
+    if (muteBtn) muteBtn.textContent = 'Mute';
+  }
   if (ts)      ts.textContent = '00:00/00:00';
   if (fill)    fill.style.width = '0%';
   if (handle)  handle.style.left = '0%';
@@ -386,18 +436,22 @@ function initVideoControls() {
   });
 
   // Gallery .display-video iframes — may or may not have src yet
-  document.querySelectorAll('.display-video').forEach(iframe => {
-    if (iframe.src && iframe.src.startsWith('http')) {
-      initSingleVideoControls(iframe);
+  document.querySelectorAll('.display-video').forEach(mediaEl => {
+    if (mediaEl.tagName === 'VIDEO') {
+      initSingleLocalVideoControls(mediaEl);
+      return;
+    }
+    if (mediaEl.src && mediaEl.src.startsWith('http')) {
+      initSingleVideoControls(mediaEl);
     } else {
       // Watch for when the gallery makes this slide active
       const obs = new MutationObserver(() => {
-        if (iframe.src && iframe.src.startsWith('http')) {
+        if (mediaEl.src && mediaEl.src.startsWith('http')) {
           obs.disconnect();
-          setTimeout(() => initSingleVideoControls(iframe), 150);
+          setTimeout(() => initSingleVideoControls(mediaEl), 150);
         }
       });
-      obs.observe(iframe, { attributes: true, attributeFilter: ['src'] });
+      obs.observe(mediaEl, { attributes: true, attributeFilter: ['src'] });
     }
   });
 }
@@ -410,8 +464,12 @@ function setupControlsForOverlay(overlay) {
   const videoId = overlay.dataset.videoId;
   const videoType = overlay.dataset.videoType;
 
-  // Play / Pause
   const playBtn = overlay.querySelector('.play-pause-btn');
+  const muteBtn = overlay.querySelector('.mute-btn');
+  const fsBtn   = overlay.querySelector('.fullscreen-btn');
+  const track   = overlay.querySelector('.video-seek-track');
+
+  // Play / Pause
   if (playBtn) {
     playBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -421,22 +479,16 @@ function setupControlsForOverlay(overlay) {
   }
 
   // Fullscreen
-  const fsBtn = overlay.querySelector('.fullscreen-btn');
   if (fsBtn) {
     fsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const target = overlay.closest('.image-display, .video-container') || overlay.closest('.display-container');
+      const target = overlay.closest('.image-display, .video-container, .lv-wrap') || overlay.closest('.display-container');
       if (!target) return;
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        target.requestFullscreen?.();
-      }
+      document.fullscreenElement ? document.exitFullscreen() : target.requestFullscreen?.();
     });
   }
 
   // Mute / Unmute
-  const muteBtn = overlay.querySelector('.mute-btn');
   if (muteBtn) {
     muteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -445,6 +497,8 @@ function setupControlsForOverlay(overlay) {
         isMuted ? window.ytPlayers[videoId].unMute() : window.ytPlayers[videoId].mute();
       } else if (videoType === 'vimeo' && window.vimeoPlayers?.[videoId]) {
         isMuted ? window.vimeoPlayers[videoId].setVolume(1).catch(() => {}) : window.vimeoPlayers[videoId].setVolume(0).catch(() => {});
+      } else if (videoType === 'local' && window.localVideoPlayers?.[videoId]) {
+        window.localVideoPlayers[videoId].muted = !isMuted;
       }
       overlay.dataset.muted = String(!isMuted);
       muteBtn.textContent = isMuted ? 'Mute' : 'Unmute';
@@ -452,31 +506,21 @@ function setupControlsForOverlay(overlay) {
   }
 
   // Seek bar — click + drag
-  const track = overlay.querySelector('.video-seek-track');
   if (track) {
     let isDragging = false;
-
     const seek = (clientX) => {
       const rect = track.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
       if (!window.videoSeeking) window.videoSeeking = {};
       window.videoSeeking[videoId] = true;
-      // Immediate UI update
-      const fill = track.querySelector('.video-seek-fill');
+      const fill   = track.querySelector('.video-seek-fill');
       const handle = track.querySelector('.video-seek-handle');
-      if (fill) fill.style.width = (pct * 100) + '%';
+      if (fill)   fill.style.width  = (pct * 100) + '%';
       if (handle) handle.style.left = (pct * 100) + '%';
       performSeek(videoId, videoType, pct);
       setTimeout(() => { if (window.videoSeeking) window.videoSeeking[videoId] = false; }, 400);
     };
-
-    track.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      isDragging = true;
-      seek(e.clientX);
-    });
-
+    track.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); isDragging = true; seek(e.clientX); });
     document.addEventListener('mousemove', (e) => { if (isDragging) seek(e.clientX); });
     document.addEventListener('mouseup', () => { isDragging = false; });
   }
@@ -498,6 +542,8 @@ function togglePlayPause(videoId, videoType, isPlaying, overlay, btn) {
     isPlaying ? window.ytPlayers[videoId].pauseVideo() : window.ytPlayers[videoId].playVideo();
   } else if (videoType === 'vimeo' && window.vimeoPlayers?.[videoId]) {
     isPlaying ? window.vimeoPlayers[videoId].pause().catch(() => {}) : window.vimeoPlayers[videoId].play().catch(() => {});
+  } else if (videoType === 'local' && window.localVideoPlayers?.[videoId]) {
+    isPlaying ? window.localVideoPlayers[videoId].pause() : window.localVideoPlayers[videoId].play().catch(() => {});
   }
   if (overlay) overlay.dataset.playing = String(!isPlaying);
   if (btn) btn.textContent = isPlaying ? 'Play' : 'Pause';
@@ -535,6 +581,12 @@ function performSeek(videoId, videoType, percent) {
         if (ts) ts.textContent = formatTime(t) + '/' + formatTime(dur);
       }
     }).catch(() => {});
+  } else if (videoType === 'local') {
+    const p = window.localVideoPlayers?.[videoId];
+    if (!p || !isFinite(p.duration) || p.duration <= 0) return;
+    p.currentTime = p.duration * percent;
+    const ts = document.querySelector(`.video-timestamp[data-video-id="${videoId}"]`);
+    if (ts) ts.textContent = formatTime(p.currentTime) + '/' + formatTime(p.duration);
   }
 }
 
@@ -555,7 +607,7 @@ function updateVideoProgress(videoId, videoType) {
       const ts = document.querySelector(`.video-timestamp[data-video-id="${videoId}"]`);
       if (fill) fill.style.width = pct + '%';
       if (handle) handle.style.left = pct + '%';
-      if (ts) ts.textContent = formatTime(current) + '/' + formatTime(duration);
+      if (ts) ts.textContent = formatTime(current) + ' / ' + formatTime(duration);
     });
   };
 
@@ -586,6 +638,11 @@ function updateVideoProgress(videoId, videoType) {
           if (!window.videoSeeking?.[videoId] && dur > 0 && !isNaN(cur)) updateUI(Math.min(cur, dur), dur);
         }))
         .catch(() => {});
+    } else if (videoType === 'local' && window.localVideoPlayers?.[videoId]) {
+      const p = window.localVideoPlayers[videoId];
+      const cur = p.currentTime || 0;
+      const dur = p.duration || 0;
+      if (dur > 0 && !isNaN(cur)) updateUI(Math.min(cur, dur), dur);
     }
   };
 
@@ -632,7 +689,7 @@ function initYouTubePlayerForIframe(iframe, videoId) {
           } catch (err) {}
           // Remove loading cover now that the player is ready
           const c = iframe.closest('.video-container, .display-container');
-          c?.querySelector('.video-yt-loading-mask')?.remove();
+
           updateVideoProgress(videoId, 'youtube');
         },
         onStateChange(e) {

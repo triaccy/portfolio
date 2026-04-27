@@ -6,12 +6,22 @@
     <title>Topic</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="css/imageDisplay.css">
-    <script src="js/videoControls.js?v=5"></script>
+    <script src="js/videoControls.js?v=14"></script>
     <style>
+      html, body {
+        height: 100%;
+      }
       body {
         padding: 24px;
         max-width: 1200px;
         margin: 0 auto;
+      }
+      body.topic-no-scroll {
+        overflow: hidden;
+      }
+      body.topic-no-scroll .content {
+        height: 100%;
+        overflow: hidden;
       }
       .back {
         position: fixed;
@@ -32,48 +42,121 @@
         color: var(--fg);
         line-height: 1.6;
       }
+      body.topic-no-scroll .image-display.gallery,
+      body.topic-no-scroll .image-display.vertical,
+      body.topic-no-scroll .image-display.spread,
+      body.topic-no-scroll .local-video-stack,
+      body.topic-no-scroll .lv-gallery,
+      body.topic-no-scroll .video-container {
+        margin-top: 110px;
+        margin-bottom: 150px;
+      }
+      body.topic-no-scroll .image-display.gallery .display-container,
+      body.topic-no-scroll .local-video-stack .lv-wrap,
+      body.topic-no-scroll .lv-gallery .lv-wrap,
+      body.topic-no-scroll .video-container {
+        height: calc(100vh - 260px);
+        max-height: calc(100vh - 260px);
+      }
+      body.topic-no-scroll .image-display.gallery .display-image,
+      body.topic-no-scroll .image-display.gallery .display-video,
+      body.topic-no-scroll .local-video-stack .lv-wrap video,
+      body.topic-no-scroll .lv-gallery .lv-wrap video,
+      body.topic-no-scroll .lv-gallery .lv-wrap iframe,
+      body.topic-no-scroll .video-container iframe {
+        object-fit: contain;
+      }
+
+      /* Local self-hosted video stack (vertical) */
+      .local-video-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: calc(100vw - 300px);
+        max-width: calc(100vw - 300px);
+        margin: 110px auto 150px auto;
+      }
+      .lv-wrap {
+        position: relative;
+        width: 100%;
+      }
+      .lv-wrap video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      /* Flip-through video gallery */
+      .lv-gallery {
+        width: calc(100vw - 300px);
+        max-width: calc(100vw - 300px);
+        margin: 110px auto 150px auto;
+      }
+      .lv-slide { display: none; }
+      .lv-slide.lv-slide-active { display: block; }
+      .lv-gallery .lv-wrap { cursor: ew-resize; width: 100%; }
+      .lv-gallery-nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .lv-gallery-counter {
+        position: fixed;
+        bottom: 24px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: #999;
+        font-size: 14px;
+        pointer-events: none;
+        z-index: 100;
+      }
+      .lv-prev, .lv-next {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--fg);
+        padding: 0;
+      }
+      .lv-prev:hover, .lv-next:hover { opacity: 0.5; }
 
       /* Video container */
       .video-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin: 40px auto 80px auto;
-        width: 70%;
-        max-width: 70vw;
+        margin: 110px auto 150px auto;
+        width: calc(100vw - 300px);
+        max-width: calc(100vw - 300px);
         pointer-events: none;
         position: relative;
+        overflow: hidden;
       }
 
       .video-container iframe {
         width: 100%;
         height: auto;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 16 / 9;
         border-radius: 0;
         pointer-events: auto !important;
         user-select: none;
         -webkit-user-select: none;
-        object-fit: contain;
         display: block;
         margin: 0 auto;
-      }
-
-      .video-container iframe[src*="vimeo.com"],
-      .video-container iframe[src*="youtube.com"] {
-        aspect-ratio: 16 / 9;
+        /* scale up slightly to clip any black edge artifacts from the player */
+        transform: scale(1.004);
       }
 
       @media (max-width: 768px) {
         .video-container {
-          width: 70%;
-          max-width: 70vw;
-        }
-        .video-container iframe {
-          width: 100%;
-          height: auto;
-          aspect-ratio: 16 / 9;
-          display: block;
-          margin: 0 auto;
+          width: calc(100vw - 300px);
+          max-width: calc(100vw - 300px);
         }
       }
     </style>
@@ -119,15 +202,21 @@
         '2025-interaction': {
           title: 'Interaction (2025)',
           content: `
-            <div class="video-container">
-              <iframe src="https://www.youtube.com/embed/iZ_jGXTwNPw?autoplay=1&mute=1&loop=1&playlist=iZ_jGXTwNPw&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1"
-                      title="YouTube video player"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowfullscreen>
-              </iframe>
+            <div class="local-video-stack">
+              <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:16/9">
+                <video src="videos/Birefringence.mp4" autoplay muted loop playsinline preload="metadata"></video>
+              </div>
             </div>
           `
+        },
+
+        '2024-f&b branding': {
+          title: 'F&B Branding (2024)',
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/F&B branding/PEDDLERS_GIN-2024.12.28-Peddlers-Gin-23-scaled.jpg', alt: 'Peddlers Gin 1' },
+            { src: 'images/F&B branding/PEDDLERS_GIN-2024.12.28-Peddlers-Gin-25-scaled.jpg', alt: 'Peddlers Gin 2' },
+            { src: 'images/F&B branding/PEDDLERS_GIN-2024.12.28-Peddlers-Gin-01533-scaled.jpg', alt: 'Peddlers Gin 3' }
+          ], { id: 'fb-branding-gallery' })
         },
 
         '2025-food': {
@@ -142,7 +231,8 @@
             { src: 'images/paper/before_screening.jpg', alt: 'Before Screening' },
             { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
             { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
-            { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' }
+            { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' },
+            { src: 'videos/chi26c-sub3885-i14.mp4', alt: '3DxPaper Video' }
           ], { id: 'paper-gallery' })
         },
 
@@ -162,17 +252,24 @@
         '2024-machine': {
           title: 'Knitting Machine (2024)',
           content: safeCreateImageDisplay('gallery', [
-            { src: 'images/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
-            { src: 'images/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
-            { src: 'images/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
+            { src: 'videos/YouTubeVideo0255-crop-1.gif', alt: 'Knitting Machine Video 1' },
+            { src: 'videos/Knitted-Sandals.gif', alt: 'Knitted Sandals' },
+            { src: 'videos/Solid-Knitting-Machine-1.gif', alt: 'Solid Knitting Machine' }
           ], { id: 'machine-gallery' })
         },
 
         '2024-biology/material': {
           title: 'biology/material (2024)',
-          content: `<p>"Circwool" project: aims to develop innovative recycling technology for wool waste and reintegrate it into a circular textile cycle.
+          content: `
+            <p>"Circwool" project: aims to develop innovative recycling technology for wool waste and reintegrate it into a circular textile cycle.
 My work focused on pioneering the optimization of a green chemical extraction method for keratin from upcycled local wool and develop potential applications. Through this initial research phase, we successfully synthesized the first batch of working sizing, which was then applied to glass fibers for mechanical properties and wettability testing, including embedded fiber testing and pull-out tests. This foundational research lays the groundwork for creating a new, sustainable feedstock for industries like plastics (producing film through crosslinking keratin with enzymes) and fertilizers (soil enrichment through keratin degradation studies), moving beyond reliance on petroleum-based materials.
-</p>`
+            </p>
+            <div class="local-video-stack">
+              <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:3/4"><video src="videos/IMG_9255.mp4" autoplay muted loop playsinline preload="metadata"></video></div>
+              <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:3/4"><video src="videos/IMG_9256.mp4" autoplay muted loop playsinline preload="metadata"></video></div>
+              <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:3/4"><video src="videos/IMG_9257.mp4" autoplay muted loop playsinline preload="metadata"></video></div>
+            </div>
+          `
         },
 
         '2024-chemistry/material': {
@@ -182,18 +279,26 @@ My work focused on pioneering the optimization of a green chemical extraction me
 
         '2024-conservation': {
           title: 'Conservation (2024)',
-          content: safeCreateVideoGallery([
-            {
-              src: 'https://player.vimeo.com/video/1017712698?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 1',
-              allow: 'autoplay; fullscreen; picture-in-picture'
-            },
-            {
-              src: 'https://player.vimeo.com/video/1031316365?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0',
-              title: 'Conservation Video 2',
-              allow: 'autoplay; fullscreen; picture-in-picture'
-            }
-          ], { id: 'conservation-video-gallery' })
+          content: `
+            <div class="lv-gallery" id="conservation-2024-gallery">
+              <div class="lv-slide lv-slide-active">
+                <div class="lv-wrap" style="aspect-ratio:16/9">
+                  <video src="videos/Kojimachi Junior High School 3_1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                </div>
+              </div>
+              <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
+                <div class="lv-wrap" style="aspect-ratio:16/9"></div>
+              </div>
+              <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1017712698?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
+                <div class="lv-wrap" style="aspect-ratio:16/9"></div>
+              </div>
+              <div class="lv-gallery-nav">
+                <button class="lv-prev">←</button>
+                <span class="lv-gallery-counter">1 / 3</span>
+                <button class="lv-next">→</button>
+              </div>
+            </div>
+          `
         },
 
         '2023-installation': {
@@ -207,10 +312,10 @@ My work focused on pioneering the optimization of a green chemical extraction me
         '2023-speculation': {
           title: 'Speculation (2023)',
           content: safeCreateImageDisplay('gallery', [
-            { src: 'images/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
-            { src: 'images/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
-            { src: 'images/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
-            { src: 'images/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
+            { src: 'images/speculation/Sustainably-Honoring-Beached-Whales--2-dragged.png', alt: 'Sustainably Honoring Beached Whales 2' },
+            { src: 'images/speculation/Sustainably-Honoring-Beached-Whales--3-dragged.png', alt: 'Sustainably Honoring Beached Whales 3' },
+            { src: 'images/speculation/Sustainably-Honoring-Beached-Whales--4-dragged.png', alt: 'Sustainably Honoring Beached Whales 4' },
+            { src: 'images/speculation/Sustainably-Honoring-Beached-Whales--5-dragged.png', alt: 'Sustainably Honoring Beached Whales 5' }
           ], { id: 'whale-gallery' })
         },
 
@@ -226,16 +331,16 @@ My work focused on pioneering the optimization of a green chemical extraction me
         '2023-architecture': {
           title: 'Architecture (2023)',
           content: safeCreateImageDisplay('gallery', [
-            { src: 'images/archi/1.png',  alt: 'Architecture Image 1' },
+            { src: 'images/archi/1.png', alt: 'Architecture Image 1' },
+            { src: 'images/archi/5.png', alt: 'Architecture Image 5' },
+            { src: 'images/archi/6.png', alt: 'Architecture Image 6' },
+            { src: 'images/archi/8.png', alt: 'Architecture Image 8' },
             { src: 'images/archi/2.webp', alt: 'Architecture Image 2' },
-            { src: 'images/archi/3.png',  alt: 'Architecture Image 3' },
-            { src: 'images/archi/4.png',  alt: 'Architecture Image 4' },
-            { src: 'images/archi/5.png',  alt: 'Architecture Image 5' },
-            { src: 'images/archi/6.png',  alt: 'Architecture Image 6' },
-            { src: 'images/archi/7.png',  alt: 'Architecture Image 7' },
-            { src: 'images/archi/8.png',  alt: 'Architecture Image 8' },
-            { src: 'images/archi/9.png',  alt: 'Architecture Image 9' },
-            { src: 'images/archi/10.png', alt: 'Architecture Image 10' }
+            { src: 'images/archi/4.png', alt: 'Architecture Image 4' },
+            { src: 'images/archi/3.png', alt: 'Architecture Image 3' },
+            { src: 'images/archi/10.png', alt: 'Architecture Image 10' },
+            { src: 'images/archi/7.png', alt: 'Architecture Image 7' },
+            { src: 'images/archi/9.png', alt: 'Architecture Image 9' }
           ], { id: 'architecture-2023-gallery' })
         },
 
@@ -267,6 +372,16 @@ My work focused on pioneering the optimization of a green chemical extraction me
 My work focuses on synthesising tunable systems for fluorescence and electronic applications.
 </p>
 <p>Great appreciation to my mentor Dhruv Sharma and the Noonan Lab!</p>`
+        },
+
+        '2022-conservation': {
+          title: 'Conservation (2022)',
+          content: safeCreateImageDisplay('gallery', [
+            { src: 'images/conservation/c-03-1.jpg', alt: 'Conservation 2022 1' },
+            { src: 'images/conservation/c-03-2.png', alt: 'Conservation 2022 2' },
+            { src: 'images/conservation/c-03-3.png', alt: 'Conservation 2022 3' },
+            { src: 'images/conservation/c-03-4.png', alt: 'Conservation 2022 4' }
+          ], { id: 'conservation-2022-gallery' })
         },
 
         '2021-installation': {
@@ -306,6 +421,8 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
 
         // Key is always year-topic (hyphen), lowercase
         const key = year ? `${year}-${topic}` : topic;
+        const isBiologyMaterialTopic = key === '2024-biology/material';
+        document.body.classList.toggle('topic-no-scroll', !isBiologyMaterialTopic);
         const topicData = topicContent[key] || {
           title: year ? `${topic} (${year})` : topic.charAt(0).toUpperCase() + topic.slice(1),
           content: `<p>Content for "${topic}"${year ? ` from ${year}` : ''} is coming soon.</p>`
@@ -345,6 +462,174 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
         // Vimeo/YouTube players need a short delay for iframe to render
         if (typeof initVimeoPlayers === 'function') setTimeout(initVimeoPlayers, 500);
         if (typeof setupVideoClickHandlers === 'function') setTimeout(setupVideoClickHandlers, 200);
+
+        // Flip-through video gallery (conservation 2024)
+        document.querySelectorAll('.lv-gallery').forEach(gallery => {
+          const slides = Array.from(gallery.querySelectorAll('.lv-slide'));
+          const counter = gallery.querySelector('.lv-gallery-counter');
+          let current = 0;
+
+          function vimeoPlayerForSlide(slide) {
+            const iframe = slide.querySelector('iframe');
+            if (!iframe) return null;
+            const vid = iframe.src.match(/vimeo\.com\/video\/(\d+)/)?.[1];
+            return vid ? window.vimeoPlayers?.[vid] : null;
+          }
+
+          function pauseSlide(slide) {
+            slide.querySelector('video')?.pause();
+            vimeoPlayerForSlide(slide)?.pause().catch(() => {});
+          }
+
+          function playSlide(slide) {
+            const video = slide.querySelector('video');
+            if (video) {
+              video.play().catch(() => {});
+              // sync overlay button
+              const btn = slide.querySelector('.play-pause-btn');
+              const ovl = slide.querySelector('.video-controls-overlay');
+              if (btn) btn.textContent = 'Pause';
+              if (ovl) ovl.dataset.playing = 'true';
+            }
+            vimeoPlayerForSlide(slide)?.play().catch(() => {});
+          }
+
+          function applyVimeoRatio(iframe, wrap, attempts) {
+            const vid = (iframe.src || '').match(/vimeo\.com\/video\/(\d+)/)?.[1];
+            const player = vid && window.vimeoPlayers?.[vid];
+            if (player) {
+              Promise.all([player.getVideoWidth(), player.getVideoHeight()])
+                .then(([w, h]) => { if (w && h) wrap.style.aspectRatio = `${w} / ${h}`; })
+                .catch(() => {});
+            } else if (attempts > 0) {
+              setTimeout(() => applyVimeoRatio(iframe, wrap, attempts - 1), 500);
+            }
+          }
+
+          function loadVimeoSlide(slide, thenPlay) {
+            const wrap = slide.querySelector('.lv-wrap');
+            if (wrap.querySelector('iframe')) {
+              if (thenPlay) playSlide(slide);
+              return;
+            }
+            const iframe = document.createElement('iframe');
+            iframe.src = slide.dataset.vimeoSrc;
+            iframe.frameBorder = '0';
+            iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+            iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+            wrap.appendChild(iframe);
+            if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
+            setTimeout(() => {
+              if (typeof initSingleVideoControls === 'function') initSingleVideoControls(iframe);
+              if (thenPlay) playSlide(slide);
+              applyVimeoRatio(iframe, wrap, 6);
+            }, 400);
+          }
+
+          function goTo(index) {
+            pauseSlide(slides[current]);
+            slides[current].classList.remove('lv-slide-active');
+            current = (index + slides.length) % slides.length;
+            slides[current].classList.add('lv-slide-active');
+            if (counter) counter.textContent = (current + 1) + ' / ' + slides.length;
+            if (slides[current].dataset.vimeoSrc) {
+              loadVimeoSlide(slides[current], true);
+            } else {
+              playSlide(slides[current]);
+            }
+          }
+
+          gallery.querySelector('.lv-prev')?.addEventListener('click', () => goTo(current - 1));
+          gallery.querySelector('.lv-next')?.addEventListener('click', () => goTo(current + 1));
+
+          // Ensure first slide autoplays
+          playSlide(slides[0]);
+        });
+
+        // Native video controls — same overlay style as YouTube/Vimeo
+        function fmtNative(s) {
+          s = Math.floor(s || 0);
+          const m = Math.floor(s / 60), sec = s % 60;
+          return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+        document.querySelectorAll('.lv-wrap').forEach((wrap, i) => {
+          const video = wrap.querySelector('video');
+          if (!video) return;
+          const uid = 'lv-' + i;
+          wrap.insertAdjacentHTML('beforeend', `
+            <div class="video-controls-overlay" data-playing="true" data-muted="true">
+              <div class="video-click-overlay"></div>
+              <div class="video-bottom-bar">
+                <div class="video-ctrl-left">
+                  <button class="play-pause-btn">Pause</button>
+                  <button class="fullscreen-btn">Fullscreen</button>
+                  <button class="mute-btn">Unmute</button>
+                  <span class="video-timestamp">00:00 / 00:00</span>
+                </div>
+                <div class="video-seek-area">
+                  <div class="video-seek-track">
+                    <div class="video-seek-fill"></div>
+                    <div class="video-seek-handle"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `);
+          const overlay   = wrap.querySelector('.video-controls-overlay');
+          const playBtn   = overlay.querySelector('.play-pause-btn');
+          const muteBtn   = overlay.querySelector('.mute-btn');
+          const fsBtn     = overlay.querySelector('.fullscreen-btn');
+          const ts        = overlay.querySelector('.video-timestamp');
+          const track     = overlay.querySelector('.video-seek-track');
+          const fill      = overlay.querySelector('.video-seek-fill');
+          const handle    = overlay.querySelector('.video-seek-handle');
+          const clickOvl  = overlay.querySelector('.video-click-overlay');
+
+          const updateUI = () => {
+            const dur = video.duration || 0, cur = video.currentTime || 0;
+            const pct = dur ? (cur / dur * 100) : 0;
+            fill.style.width  = pct + '%';
+            handle.style.left = pct + '%';
+            ts.textContent = fmtNative(cur) + ' / ' + fmtNative(dur);
+          };
+          video.addEventListener('timeupdate', updateUI);
+          video.addEventListener('loadedmetadata', () => {
+            if (video.videoWidth && video.videoHeight) {
+              wrap.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+            }
+            updateUI();
+          });
+          video.play().catch(() => {});
+
+          playBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            if (video.paused) { video.play(); playBtn.textContent = 'Pause'; overlay.dataset.playing = 'true'; }
+            else              { video.pause(); playBtn.textContent = 'Play';  overlay.dataset.playing = 'false'; }
+          });
+          clickOvl.addEventListener('click', e => { e.stopPropagation(); playBtn.click(); });
+
+          muteBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            muteBtn.textContent = video.muted ? 'Unmute' : 'Mute';
+            overlay.dataset.muted = String(video.muted);
+          });
+
+          fsBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            document.fullscreenElement ? document.exitFullscreen() : wrap.requestFullscreen?.();
+          });
+
+          let dragging = false;
+          const seekTo = (clientX) => {
+            const rect = track.getBoundingClientRect();
+            const pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            video.currentTime = (video.duration || 0) * pct;
+          };
+          track.addEventListener('mousedown', e => { e.stopPropagation(); e.preventDefault(); dragging = true; seekTo(e.clientX); });
+          document.addEventListener('mousemove', e => { if (dragging) seekTo(e.clientX); });
+          document.addEventListener('mouseup', () => { dragging = false; });
+        });
       })();
     </script>
 </body>
