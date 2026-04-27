@@ -246,8 +246,7 @@ export const FlipBook = () => {
           transformStyle: "preserve-3d", transformOrigin: "center center",
           zIndex: 1,
         }}
-          //animate={{ opacity: visible ? 1 : 0 }}
-          animate={‹ rotateX: -5, opacity: visible ? 1: 0
+          animate={{ rotateX: -5, opacity: visible ? 1 : 0 }}
           transition={{ type: "spring", stiffness: 50, damping: 22, opacity: { duration: 0.4 } }}
         >
           {/* Spine */}
