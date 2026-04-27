@@ -281,10 +281,8 @@ My work focused on pioneering the optimization of a green chemical extraction me
           title: 'Conservation (2024)',
           content: `
             <div class="lv-gallery" id="conservation-2024-gallery">
-              <div class="lv-slide lv-slide-active">
-                <div class="lv-wrap" style="aspect-ratio:16/9">
-                  <video src="videos/Kojimachi Junior High School 3_1.mp4" autoplay muted loop playsinline preload="metadata"></video>
-                </div>
+              <div class="lv-slide lv-slide-active" data-vimeo-src="https://player.vimeo.com/video/1187112925?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
+                <div class="lv-wrap" style="aspect-ratio:16/9"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
@@ -543,7 +541,11 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
           gallery.querySelector('.lv-next')?.addEventListener('click', () => goTo(current + 1));
 
           // Ensure first slide autoplays
-          playSlide(slides[0]);
+          if (slides[0].dataset.vimeoSrc) {
+            loadVimeoSlide(slides[0], true);
+          } else {
+            playSlide(slides[0]);
+          }
         });
 
         // Native video controls — same overlay style as YouTube/Vimeo
