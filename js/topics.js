@@ -44,6 +44,8 @@ export function createTopicsForYear(container, topicsLayer, topicMap, anchor, oc
     // Special-cased routes; everything else goes to topic.html
     if (topic === 'book' && year === '2025') {
       link.href = 'book.html';
+    } else if (topic === 'interpunct' && year === '2025') {
+      link.href = 'interpunct-book.html';
     } else if (topic === 'installation' && year === '2023') {
       link.href = 'installations/2023/';
     } else {
