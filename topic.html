@@ -150,7 +150,6 @@
       }
       .lv-nav-prev { left: 0; }
       .lv-nav-next { right: 0; }
-      .lv-gallery .video-bottom-bar { bottom: 12px; }
 
       /* Video container */
       .video-container {
@@ -308,7 +307,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
           content: `
             <div class="lv-gallery" id="conservation-2024-gallery">
               <div class="lv-slide lv-slide-active" data-vimeo-src="https://player.vimeo.com/video/1187112925?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
-                <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:16/9"></div>
+                <div class="lv-wrap" style="aspect-ratio:16/9"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
@@ -560,7 +559,6 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
             wrap.appendChild(iframe);
             if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
             setTimeout(() => {
-              if (typeof initSingleVideoControls === 'function') initSingleVideoControls(iframe);
               addNavOverlay(slide);
               if (thenPlay) playSlide(slide);
               applyVimeoRatio(iframe, wrap, 6);
