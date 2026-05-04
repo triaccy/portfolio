@@ -61,14 +61,15 @@ export function MagazineFlipBook() {
   const padH = 80
   const padV = 80
 
-  // Each page is roughly A4 portrait (210×297mm → ~0.707 aspect)
+  // Pages are 585×594 pts (nearly square, w/h ≈ 0.985)
   // Two-page spread = 2× page width side by side
+  const PAGE_RATIO = 585 / 594  // width / height
   const pageH = vh - padV * 2
-  const pageW = Math.floor(pageH * 0.707)
+  const pageW = Math.floor(pageH * PAGE_RATIO)
   // Cap total spread width to viewport
   const maxSpreadW = vw - padH * 2
   const finalPageW = Math.min(pageW, Math.floor(maxSpreadW / 2))
-  const finalPageH = Math.floor(finalPageW / 0.707)
+  const finalPageH = Math.floor(finalPageW / PAGE_RATIO)
 
   return (
     <div
