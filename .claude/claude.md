@@ -11,6 +11,7 @@
 - A page counter is displayed at the bottom of each gallery (e.g. `1 / 5`), wrapping back to 1 after the last item. the current number should be one a dark grey. 
 - Counter color: medium gray.
 - This behavior applies to every page that contains a gallery.
+- Videos in flipthrough should always have the 5px section on the left and irght end of the 4
 
 ### Navigation
 - Every page must have a `←  Back` button in the same fixed position across all pages.
