@@ -1,33 +1,29 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, forwardRef } from 'react'
 import HTMLFlipBook from 'react-pageflip'
 import { interpunctPages } from '../data/interpunct'
 
 const TOTAL = interpunctPages.length
 
-// react-pageflip exposes its API through a ref with this shape
+// react-pageflip requires forwardRef on page components so it can attach its own refs
+const Page = forwardRef<HTMLDivElement, { src: string; alt: string; pageNum: number }>(
+  ({ src, alt, pageNum }, ref) => (
+    <div ref={ref} style={{ width: '100%', height: '100%', background: '#fff', overflow: 'hidden' }}>
+      <img
+        src={src}
+        alt={alt || `Page ${pageNum}`}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
+    </div>
+  )
+)
+Page.displayName = 'Page'
+
 interface FlipBookRef {
   pageFlip: () => {
-    flipNext: (corner?: 'top' | 'bottom') => void
-    flipPrev: (corner?: 'top' | 'bottom') => void
+    flipNext: () => void
+    flipPrev: () => void
     getCurrentPageIndex: () => number
   }
-}
-
-function Page({ src, alt, pageNum }: { src: string; alt: string; pageNum: number }) {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        backgroundImage: `url(${src})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundColor: '#fff',
-      }}
-      aria-label={alt || `Page ${pageNum}`}
-    />
-  )
 }
 
 export function MagazineFlipBook() {
@@ -37,10 +33,6 @@ export function MagazineFlipBook() {
   const handleFlip = useCallback((e: { data: number }) => {
     setCurrentPage(e.data)
   }, [])
-
-  // Spread index → display label (cover = 1, then each spread = next page pair)
-  const pageLabel = currentPage + 1
-  const totalLabel = TOTAL
 
   if (TOTAL === 0) {
     return (
@@ -55,34 +47,29 @@ export function MagazineFlipBook() {
     )
   }
 
-  // Fit the book inside the viewport with padding
+  // Pages are 585×594 pts (nearly square, w/h ≈ 0.985)
+  const PAGE_RATIO = 585 / 594
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800
   const padH = 80
   const padV = 80
 
-  // Pages are 585×594 pts (nearly square, w/h ≈ 0.985)
-  // Two-page spread = 2× page width side by side
-  const PAGE_RATIO = 585 / 594  // width / height
   const pageH = vh - padV * 2
   const pageW = Math.floor(pageH * PAGE_RATIO)
-  // Cap total spread width to viewport
   const maxSpreadW = vw - padH * 2
   const finalPageW = Math.min(pageW, Math.floor(maxSpreadW / 2))
   const finalPageH = Math.floor(finalPageW / PAGE_RATIO)
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-        background: '#f0f0f0',
-      }}
-    >
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      height: '100%',
+      background: '#f0f0f0',
+    }}>
       <HTMLFlipBook
         ref={bookRef}
         width={finalPageW}
@@ -115,24 +102,21 @@ export function MagazineFlipBook() {
         ))}
       </HTMLFlipBook>
 
-      {/* Page counter — matches portfolio lv-gallery-counter style */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 24,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          fontFamily: 'ui-sans-serif, system-ui, -apple-system, Helvetica, Arial, sans-serif',
-          fontSize: 14,
-          color: '#999',
-          pointerEvents: 'none',
-          userSelect: 'none',
-        }}
-      >
-        <span style={{ color: '#333' }}>{pageLabel}</span>
+      <div style={{
+        position: 'fixed',
+        bottom: 24,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, Helvetica, Arial, sans-serif',
+        fontSize: 14,
+        color: '#999',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}>
+        <span style={{ color: '#333' }}>{currentPage + 1}</span>
         {' / '}
-        {totalLabel}
+        {TOTAL}
       </div>
     </div>
   )
