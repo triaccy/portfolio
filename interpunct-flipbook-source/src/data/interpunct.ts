@@ -1,6 +1,8 @@
-// Paths are relative to interpunct-flipbook/index.html (two levels up = portfolio root)
+// Paths are relative to interpunct-flipbook/index.html (one level up = portfolio root)
+// page-00 = front cover, page-87 = back cover; react-pageflip showCover renders them as single pages
 export const interpunctPages: { src: string; alt: string }[] = [
-  { src: '../images/interpunct/FRONT COVER REFERENCE.jpg', alt: 'Front Cover' },
+  { src: '../images/interpunct/page-00.jpg', alt: 'Front Cover' },
+  { src: '../images/interpunct/page-01.jpg', alt: 'Page 1' },
   { src: '../images/interpunct/page-02.jpg', alt: 'Page 2' },
   { src: '../images/interpunct/page-03.jpg', alt: 'Page 3' },
   { src: '../images/interpunct/page-04.jpg', alt: 'Page 4' },
@@ -85,5 +87,6 @@ export const interpunctPages: { src: string; alt: string }[] = [
   { src: '../images/interpunct/page-83.jpg', alt: 'Page 83' },
   { src: '../images/interpunct/page-84.jpg', alt: 'Page 84' },
   { src: '../images/interpunct/page-85.jpg', alt: 'Page 85' },
-  { src: '../images/interpunct/BACK COVER REFERENCE.jpg', alt: 'Back Cover' },
+  { src: '../images/interpunct/page-86.jpg', alt: 'Page 86' },
+  { src: '../images/interpunct/page-87.jpg', alt: 'Back Cover' },
 ]
