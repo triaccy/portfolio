@@ -79,7 +79,7 @@ export function MagazineFlipBook() {
         maxWidth={finalPageW}
         minHeight={finalPageH}
         maxHeight={finalPageH}
-        showCover={false}
+        showCover={true}
         flippingTime={700}
         maxShadowOpacity={0.4}
         mobileScrollSupport={false}
