@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
+import { useRef, useState, useEffect, useCallback, forwardRef, RefObject } from 'react'
 import HTMLFlipBook from 'react-pageflip'
 import { interpunctPages } from '../data/interpunct'
 
@@ -29,67 +29,74 @@ const Page = forwardRef<
     pageHeight: number
   }
 >(({ src, alt, pageNum, foldConfig, animate, pageWidth, pageHeight }, ref) => {
-  let flapContainerStyle: React.CSSProperties = {}
-  let flapImgStyle: React.CSSProperties = {}
+  const flapRef = useRef<HTMLDivElement>(null)
 
-  if (foldConfig) {
-    const { flapSide, foldLinePercent: flp } = foldConfig
+  // Drive the fold animation imperatively to avoid the CSS gotcha where changing
+  // `transition` and `transform` in the same render prevents the transition from firing.
+  useEffect(() => {
+    const el = (flapRef as RefObject<HTMLDivElement>).current
+    if (!el || !foldConfig) return
 
-    if (flapSide === 'right') {
-      // Pivot at fold line (left edge of flap). rotateY(90deg) sends right edge away from viewer.
-      flapContainerStyle = {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: `${flp}%`,
-        right: 0,
-        overflow: 'hidden',
-        transformOrigin: '0% 50%',
-        transform: animate
-          ? 'perspective(1000px) rotateY(90deg)'
-          : 'perspective(1000px) rotateY(0deg)',
-        transition: animate ? 'transform 1.1s cubic-bezier(0.45, 0, 0.55, 1)' : 'none',
-        pointerEvents: 'none',
-        willChange: 'transform',
-      }
-      // Overlay image covers full page, offset left so only the flap portion is visible.
-      flapImgStyle = {
-        position: 'absolute',
-        top: 0,
-        left: -(flp / 100) * pageWidth,
-        width: pageWidth,
-        height: pageHeight,
-        objectFit: 'cover',
-        display: 'block',
-      }
+    const targetDeg = foldConfig.flapSide === 'right' ? '90deg' : '-90deg'
+
+    if (animate) {
+      // Snap to 0deg without transition, force a reflow so the browser commits
+      // that state, then apply the transition + target in the next paint frame.
+      el.style.transition = 'none'
+      el.style.transform = 'perspective(1000px) rotateY(0deg)'
+      void el.offsetWidth // force reflow
+      requestAnimationFrame(() => {
+        el.style.transition = 'transform 1.1s cubic-bezier(0.45, 0, 0.55, 1)'
+        el.style.transform = `perspective(1000px) rotateY(${targetDeg})`
+      })
     } else {
-      // Pivot at fold line (right edge of flap). rotateY(-90deg) sends left edge away from viewer.
-      flapContainerStyle = {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        width: `${flp}%`,
-        overflow: 'hidden',
-        transformOrigin: '100% 50%',
-        transform: animate
-          ? 'perspective(1000px) rotateY(-90deg)'
-          : 'perspective(1000px) rotateY(0deg)',
-        transition: animate ? 'transform 1.1s cubic-bezier(0.45, 0, 0.55, 1)' : 'none',
-        pointerEvents: 'none',
-        willChange: 'transform',
-      }
-      flapImgStyle = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: pageWidth,
-        height: pageHeight,
-        objectFit: 'cover',
-        display: 'block',
-      }
+      el.style.transition = 'none'
+      el.style.transform = 'perspective(1000px) rotateY(0deg)'
     }
-  }
+  }, [animate, foldConfig])
+
+  const flapContainerStyle: React.CSSProperties = foldConfig
+    ? foldConfig.flapSide === 'right'
+      ? {
+          position: 'absolute',
+          top: 0, bottom: 0,
+          left: `${foldConfig.foldLinePercent}%`, right: 0,
+          overflow: 'hidden',
+          transformOrigin: '0% 50%',
+          pointerEvents: 'none',
+          willChange: 'transform',
+        }
+      : {
+          position: 'absolute',
+          top: 0, bottom: 0,
+          left: 0, width: `${foldConfig.foldLinePercent}%`,
+          overflow: 'hidden',
+          transformOrigin: '100% 50%',
+          pointerEvents: 'none',
+          willChange: 'transform',
+        }
+    : {}
+
+  const flapImgStyle: React.CSSProperties = foldConfig
+    ? foldConfig.flapSide === 'right'
+      ? {
+          position: 'absolute',
+          top: 0,
+          left: -(foldConfig.foldLinePercent / 100) * pageWidth,
+          width: pageWidth,
+          height: pageHeight,
+          objectFit: 'cover',
+          display: 'block',
+        }
+      : {
+          position: 'absolute',
+          top: 0, left: 0,
+          width: pageWidth,
+          height: pageHeight,
+          objectFit: 'cover',
+          display: 'block',
+        }
+    : {}
 
   return (
     <div
@@ -102,7 +109,7 @@ const Page = forwardRef<
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
       {foldConfig && (
-        <div style={flapContainerStyle}>
+        <div ref={flapRef} style={flapContainerStyle}>
           <img src={src} alt="" style={flapImgStyle} />
         </div>
       )}
