@@ -43,9 +43,10 @@ function createGalleryDisplay(images, displayId, options) {
     if (isLocalVideo) {
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || 'Video');
+      const overlayDarkAttr = img.overlayDark ? ' data-overlay-dark="true"' : '';
       return `<video src="${src}" class="display-video ${index === 0 ? 'active' : ''}"
             autoplay muted loop playsinline preload="metadata"
-            title="${alt}"></video>`;
+            title="${alt}"${overlayDarkAttr}></video>`;
     } else if (isEmbedVideo) {
       let videoSrc = img.src;
       // Convert YouTube watch URL to embed URL
@@ -258,14 +259,21 @@ function initializeGallery(container, images, allImages) {
     const gallery = container.closest('.image-display.gallery');
     const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
     if (counter) {
-      counter.textContent = `${galleryState.currentImageIndex + 1} / ${galleryState.images.length}`;
+      counter.innerHTML = `<span class="counter-current">${galleryState.currentImageIndex + 1}</span> / ${galleryState.images.length}`;
     }
 
     setContainerRatio(active);
 
-    // Show nav buttons on video slide; images use click-to-advance
-    const isVideoActive = active && (active.tagName === 'IFRAME' || active.tagName === 'VIDEO');
-    navButtons.forEach(btn => btn.style.display = isVideoActive ? 'flex' : 'none');
+    // Nav buttons removed — navigation is click-to-advance only
+    navButtons.forEach(btn => btn.style.display = 'none');
+
+    // Dark overlay theme for videos with white/light backgrounds
+    if (active && active.dataset.overlayDark === 'true') {
+      container.classList.add('lv-overlay-dark');
+    } else {
+      container.classList.remove('lv-overlay-dark');
+    }
+
     // Rewire controls overlay to whichever video slide is now active
     if (active && (active.tagName === 'IFRAME' || active.tagName === 'VIDEO') && typeof activateVideoInGallery === 'function') {
       activateVideoInGallery(container, active);
@@ -330,5 +338,5 @@ function initializeGallery(container, images, allImages) {
 
   const gallery = container.closest('.image-display.gallery');
   const counter = gallery ? gallery.querySelector('.gallery-counter') : null;
-  if (counter) counter.textContent = `1 / ${images.length}`;
+  if (counter) counter.innerHTML = `<span class="counter-current">1</span> / ${images.length}`;
 }

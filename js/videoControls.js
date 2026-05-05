@@ -873,7 +873,7 @@ function createVideoGallery(videos, options = {}) {
         <button class="display-nav prev" data-display-id="${displayId}" style="display: none;">&lt;</button>
         <button class="display-nav next" data-display-id="${displayId}" style="display: none;">&gt;</button>
       </div>
-      <div class="gallery-counter" data-display-id="${displayId}">1/${videos.length}</div>
+      <div class="gallery-counter" data-display-id="${displayId}"><span class="counter-current">1</span> / ${videos.length}</div>
     </div>
   `;
 }

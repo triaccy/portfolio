@@ -53,29 +53,16 @@
       }
       body.topic-no-scroll .image-display.gallery .display-container,
       body.topic-no-scroll .local-video-stack .lv-wrap,
+      body.topic-no-scroll .lv-gallery .lv-wrap,
       body.topic-no-scroll .video-container {
         height: calc(100vh - 260px);
         max-height: calc(100vh - 260px);
       }
-      /* lv-gallery: flex-center chain so portrait wraps shrink to their aspect ratio */
-      body.topic-no-scroll .lv-gallery {
-        display: flex;
-        justify-content: center;
-      }
-      body.topic-no-scroll .lv-gallery .lv-slide.lv-slide-active {
-        display: flex;
-        justify-content: center;
-      }
-      body.topic-no-scroll .lv-gallery .lv-wrap {
-        height: calc(100vh - 260px);
-        max-height: calc(100vh - 260px);
-        width: auto;
-        max-width: 100%;
-        flex-shrink: 0;
-      }
       body.topic-no-scroll .image-display.gallery .display-image,
       body.topic-no-scroll .image-display.gallery .display-video,
       body.topic-no-scroll .local-video-stack .lv-wrap video,
+      body.topic-no-scroll .lv-gallery .lv-wrap video,
+      body.topic-no-scroll .lv-gallery .lv-wrap iframe,
       body.topic-no-scroll .video-container iframe {
         object-fit: contain;
       }
@@ -110,7 +97,7 @@
       }
       .lv-slide { display: none; }
       .lv-slide.lv-slide-active { display: block; }
-      .lv-gallery .lv-wrap { cursor: ew-resize; width: 100%; }
+      .lv-gallery .lv-wrap { cursor: ew-resize; width: calc(100% - 10px); margin: 0 auto; }
       .lv-gallery-nav {
         display: flex;
         align-items: center;
@@ -129,7 +116,6 @@
         pointer-events: none;
         z-index: 100;
       }
-      .lv-counter-current { color: #333; }
       .lv-prev, .lv-next {
         background: none;
         border: none;
@@ -139,17 +125,7 @@
         padding: 0;
       }
       .lv-prev:hover, .lv-next:hover { opacity: 0.5; }
-      .lv-nav-strip {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 5px;
-        z-index: 15;
-        background: transparent;
-        cursor: ew-resize;
-      }
-      .lv-nav-prev { left: 0; }
-      .lv-nav-next { right: 0; }
+      .lv-gallery-counter .counter-current { color: #333; }
 
       /* Video container */
       .video-container {
@@ -257,7 +233,7 @@
             { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
             { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
             { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' },
-            { src: 'videos/chi26c-sub3885-i14.mp4', alt: '3DxPaper Video' }
+            { src: 'videos/chi26c-sub3885-i14.mp4', alt: '3DxPaper Video', overlayDark: true }
           ], { id: 'paper-gallery' })
         },
 
@@ -306,8 +282,10 @@ My work focused on pioneering the optimization of a green chemical extraction me
           title: 'Conservation (2024)',
           content: `
             <div class="lv-gallery" id="conservation-2024-gallery">
-              <div class="lv-slide lv-slide-active" data-vimeo-src="https://player.vimeo.com/video/1187112925?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
-                <div class="lv-wrap" style="aspect-ratio:16/9"></div>
+              <div class="lv-slide lv-slide-active">
+                <div class="lv-wrap" style="aspect-ratio:16/9">
+                  <video src="videos/Kojimachi Junior High School 3_1.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                </div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
@@ -315,7 +293,11 @@ My work focused on pioneering the optimization of a green chemical extraction me
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1017712698?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
               </div>
-              <span class="lv-gallery-counter"><span class="lv-counter-current">1</span> / 3</span>
+              <div class="lv-gallery-nav">
+                <button class="lv-prev">←</button>
+                <span class="lv-gallery-counter"><span class="counter-current">1</span> / 3</span>
+                <button class="lv-next">→</button>
+              </div>
             </div>
           `
         },
@@ -525,29 +507,9 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
             }
           }
 
-          function updateCounter() {
-            if (!counter) return;
-            counter.innerHTML = '<span class="lv-counter-current">' + (current + 1) + '</span> / ' + slides.length;
-          }
-
-          function addNavOverlay(slide) {
-            const wrap = slide.querySelector('.lv-wrap');
-            if (wrap.querySelector('.lv-nav-strip')) return;
-            [['prev', current - 1], ['next', current + 1]].forEach(([dir]) => {
-              const strip = document.createElement('div');
-              strip.className = 'lv-nav-strip lv-nav-' + dir;
-              strip.addEventListener('click', e => {
-                e.stopPropagation();
-                goTo(dir === 'prev' ? current - 1 : current + 1);
-              });
-              wrap.appendChild(strip);
-            });
-          }
-
           function loadVimeoSlide(slide, thenPlay) {
             const wrap = slide.querySelector('.lv-wrap');
             if (wrap.querySelector('iframe')) {
-              addNavOverlay(slide);
               if (thenPlay) playSlide(slide);
               return;
             }
@@ -559,7 +521,7 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
             wrap.appendChild(iframe);
             if (typeof loadVimeoAPI === 'function') loadVimeoAPI();
             setTimeout(() => {
-              addNavOverlay(slide);
+              if (typeof initSingleVideoControls === 'function') initSingleVideoControls(iframe);
               if (thenPlay) playSlide(slide);
               applyVimeoRatio(iframe, wrap, 6);
             }, 400);
@@ -570,7 +532,7 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
             slides[current].classList.remove('lv-slide-active');
             current = (index + slides.length) % slides.length;
             slides[current].classList.add('lv-slide-active');
-            updateCounter();
+            if (counter) counter.innerHTML = '<span class="counter-current">' + (current + 1) + '</span> / ' + slides.length;
             if (slides[current].dataset.vimeoSrc) {
               loadVimeoSlide(slides[current], true);
             } else {
@@ -578,10 +540,31 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
             }
           }
 
-          // Initialize first slide and counter
-          updateCounter();
-          if (slides[0]?.dataset.vimeoSrc) loadVimeoSlide(slides[0], true);
-          else playSlide(slides[0]);
+          gallery.querySelector('.lv-prev')?.addEventListener('click', () => goTo(current - 1));
+          gallery.querySelector('.lv-next')?.addEventListener('click', () => goTo(current + 1));
+
+          // Click-to-navigate: left 30% = back, right 30% = forward, center = play/pause
+          gallery.addEventListener('click', (e) => {
+            if (e.target.closest('.lv-prev, .lv-next')) return;
+            const wrap = slides[current].querySelector('.lv-wrap');
+            if (!wrap) return;
+            const rect = wrap.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            if (clickX < rect.width * 0.3) { e.stopPropagation(); goTo(current - 1); }
+            else if (clickX > rect.width * 0.7) { e.stopPropagation(); goTo(current + 1); }
+          }, true);
+
+          // Keyboard navigation (ArrowLeft/ArrowRight)
+          document.addEventListener('keydown', (e) => {
+            if (!document.body.contains(gallery)) return;
+            const rect = gallery.getBoundingClientRect();
+            if (rect.top >= window.innerHeight || rect.bottom <= 0) return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+          });
+
+          // Ensure first slide autoplays
+          playSlide(slides[0]);
         });
 
         // Native video controls — same overlay style as YouTube/Vimeo

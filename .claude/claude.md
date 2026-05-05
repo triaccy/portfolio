@@ -12,6 +12,7 @@
 - Counter color: medium gray.
 - This behavior applies to every page that contains a gallery.
 - Videos in flipthrough should always have the 5px section on the left and irght end of the 4
+- click left or right on the keepboard to advance and go back and content should always be wrapped. 
 
 ### Navigation
 - Every page must have a `←  Back` button in the same fixed position across all pages.
