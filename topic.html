@@ -543,15 +543,13 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
           gallery.querySelector('.lv-prev')?.addEventListener('click', () => goTo(current - 1));
           gallery.querySelector('.lv-next')?.addEventListener('click', () => goTo(current + 1));
 
-          // Click-to-navigate: left 30% = back, right 30% = forward, center = play/pause
+          // Click-to-navigate: only the 5px side strips navigate; rest falls through to play/pause
           gallery.addEventListener('click', (e) => {
             if (e.target.closest('.lv-prev, .lv-next')) return;
-            const wrap = slides[current].querySelector('.lv-wrap');
-            if (!wrap) return;
-            const rect = wrap.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            if (clickX < rect.width * 0.3) { e.stopPropagation(); goTo(current - 1); }
-            else if (clickX > rect.width * 0.7) { e.stopPropagation(); goTo(current + 1); }
+            const galleryRect = gallery.getBoundingClientRect();
+            const clickX = e.clientX - galleryRect.left;
+            if (clickX < 5) { e.stopPropagation(); goTo(current - 1); }
+            else if (clickX > galleryRect.width - 5) { e.stopPropagation(); goTo(current + 1); }
           }, true);
 
           // Keyboard navigation (ArrowLeft/ArrowRight)

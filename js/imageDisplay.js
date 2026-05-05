@@ -314,8 +314,8 @@ function initializeGallery(container, images, allImages) {
     const clickX = e.clientX - cr.left;
     const activeVideo = container.querySelector('.display-video.active');
     if (activeVideo) {
-      const isLeft  = clickX < cr.width * 0.3;
-      const isRight = clickX > cr.width * 0.7;
+      const isLeft  = clickX < 5;
+      const isRight = clickX > cr.width - 5;
       if (isLeft || isRight) {
         e.stopPropagation();
         changeImage(isLeft ? -1 : 1);
