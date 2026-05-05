@@ -124,7 +124,7 @@ function applyVideoImageStyle() {
     /* Bottom control bar — overlaid at bottom of video */
     .video-bottom-bar {
       position: absolute;
-      bottom: 0;
+      bottom: 10px;
       left: 0;
       right: 0;
       display: flex;
