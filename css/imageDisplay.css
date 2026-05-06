@@ -64,10 +64,22 @@
   pointer-events: auto;
 }
 
-/* Allow clicking on video galleries to navigate - same cursor as image galleries */
-.image-display.gallery .display-container:has(.display-video) {
-  cursor: ew-resize;
+/* Video active: default cursor on body, ew-resize only on 5px edge strips */
+.image-display.gallery .display-container.video-active {
+  cursor: default;
 }
+.image-display.gallery .display-container.video-active::before,
+.image-display.gallery .display-container.video-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 15;
+}
+.image-display.gallery .display-container.video-active::before { left: 0; }
+.image-display.gallery .display-container.video-active::after  { right: 0; }
 
 /* Gallery counter - at the very bottom of the page */
 .gallery-counter {

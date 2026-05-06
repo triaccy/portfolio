@@ -261,6 +261,13 @@ function initializeGallery(container, images, allImages) {
 
     setContainerRatio(active);
 
+    // ew-resize cursor: full container for images, 5px edge strips only for videos
+    if (active && (active.tagName === 'VIDEO' || active.tagName === 'IFRAME')) {
+      container.classList.add('video-active');
+    } else {
+      container.classList.remove('video-active');
+    }
+
     // Dark overlay theme for videos with white/light backgrounds
     if (active && active.dataset.overlayDark === 'true') {
       container.classList.add('lv-overlay-dark');
