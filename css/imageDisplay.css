@@ -35,6 +35,7 @@
   opacity: 0;
   transition: none;
   display: block;
+  cursor: inherit;
 }
 
 .image-display.gallery .display-image.active {

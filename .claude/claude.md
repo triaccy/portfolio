@@ -7,7 +7,7 @@
 
 ### Gallery / Image Flip-through
 - Clicking activates flip-through navigation (not hover or drag).
-- The cursor must change to a left-right resize cursor (`cursor: ew-resize`) when hovering over a flippable gallery, to signal interactivity.
+- The cursor must change to a left-right resize cursor (`cursor: ew-resize`) when hovering over a flippable gallery in area that is active to flip (for example the 5px on the left and right of videos and the whole image) to signal interactivity.
 - A page counter is displayed at the bottom of each gallery (e.g. `1 / 5`), wrapping back to 1 after the last item. the current number should be one a dark grey. 
 - Counter color: medium gray.
 - This behavior applies to every page that contains a gallery.
