@@ -69,59 +69,6 @@
   cursor: ew-resize;
 }
 
-.image-display.gallery .display-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  color: white;
-  border: none;
-  width: 48px;
-  height: 48px;
-  cursor: pointer;
-  font-size: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  opacity: 0.8;
-  padding: 0;
-}
-
-.image-display.gallery .display-nav:hover { 
-  opacity: 1; 
-}
-
-.image-display.gallery .display-nav:focus { 
-  outline: none; 
-}
-
-.image-display.gallery .display-nav::before {
-  content: "";
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-left: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  opacity: 0.9;
-}
-
-.image-display.gallery .display-nav.prev { 
-  left: 12px; 
-}
-
-.image-display.gallery .display-nav.prev::before { 
-  transform: rotate(45deg); 
-}
-
-.image-display.gallery .display-nav.next { 
-  right: 12px; 
-}
-
-.image-display.gallery .display-nav.next::before { 
-  transform: rotate(-135deg); 
-}
-
 /* Gallery counter - at the very bottom of the page */
 .gallery-counter {
   position: fixed;

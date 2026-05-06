@@ -216,13 +216,17 @@ function applyVideoImageStyle() {
     .lv-overlay-dark .video-seek-fill,
     .lv-overlay-dark .video-seek-handle { background: #444 !important; }
 
-    /* Nav overlay for video galleries */
-    .video-nav-overlay {
-      position: absolute;
-      inset: 0;
-      background: transparent;
-      cursor: pointer;
-      z-index: 4;
+    /* Below-video overlay: bar floats 8px below the video frame */
+    .gallery-overlay-below {
+      padding-bottom: 60px;
+    }
+    .gallery-overlay-below .video-bottom-bar {
+      top: calc(100% + 8px);
+      bottom: auto;
+    }
+    .gallery-overlay-below:has(.display-video.active):hover .video-controls-overlay {
+      opacity: 1;
+      pointer-events: auto;
     }
   `;
   document.head.appendChild(style);
@@ -549,9 +553,6 @@ function togglePlayPause(videoId, videoType, isPlaying, overlay, btn) {
   if (btn) btn.textContent = isPlaying ? 'Play' : 'Pause';
 }
 
-// Legacy entry point (called from topic.html)
-function setupVideoControlListeners() {}
-function setupVideoClickHandlers() {}
 
 // ─── Seek ─────────────────────────────────────────────────────────────────────
 
@@ -834,46 +835,4 @@ function initVimeoPlayers() {
     const videoId = getVideoId(iframe.src, 'vimeo');
     if (videoId) initVimeoPlayerForIframe(iframe, videoId);
   });
-}
-
-// ─── Video gallery (createVideoGallery) ─────────────────────────────────────
-
-function createVideoGallery(videos, options = {}) {
-  if (!videos || videos.length === 0) return '';
-  const displayId = options.id || `video-gallery-${Date.now()}`;
-
-  if (!window.videoImageStyleApplied) {
-    applyVideoImageStyle();
-    window.videoImageStyleApplied = true;
-  }
-
-  loadYouTubeAPI();
-  loadVimeoAPI();
-
-  const escapeAttr = (str) => String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-
-  const videoElements = videos.map((video, index) => {
-    let src = ensureVideoNoInterface(video.src);
-    src = escapeAttr(src);
-    const title = escapeAttr(video.title || 'Video');
-    const allow = escapeAttr(video.allow || 'autoplay; fullscreen; picture-in-picture');
-    return `<iframe src="${src}"
-            class="display-video ${index === 0 ? 'active' : ''}"
-            title="${title}"
-            frameborder="0"
-            allow="${allow}"
-            allowfullscreen>
-            </iframe>`;
-  }).join('\n');
-
-  return `
-    <div class="image-display gallery" data-display-id="${displayId}">
-      <div class="display-container">
-        ${videoElements}
-        <button class="display-nav prev" data-display-id="${displayId}" style="display: none;">&lt;</button>
-        <button class="display-nav next" data-display-id="${displayId}" style="display: none;">&gt;</button>
-      </div>
-      <div class="gallery-counter" data-display-id="${displayId}"><span class="counter-current">1</span> / ${videos.length}</div>
-    </div>
-  `;
 }

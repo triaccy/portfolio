@@ -186,20 +186,7 @@
         }
       }
 
-      function safeCreateVideoGallery(videos, options) {
-        if (typeof createVideoGallery === 'undefined') {
-          console.error('createVideoGallery is not available');
-          return '<p>Error: video gallery not loaded.</p>';
-        }
-        try {
-          return createVideoGallery(videos, options) || '<p>No videos to display.</p>';
-        } catch (e) {
-          console.error('Error calling createVideoGallery:', e);
-          return '<p>Error creating video gallery.</p>';
-        }
-      }
-
-      const topicContent = {
+const topicContent = {
         '2025-interaction': {
           title: 'Interaction (2025)',
           content: `
@@ -233,7 +220,7 @@
             { src: 'images/paper/after_screening.jpg', alt: 'After Screening' },
             { src: 'images/paper/IMG_7181.jpg', alt: '3DxPaper Image 2' },
             { src: 'images/paper/IMG_6925 (1).jpg', alt: '3DxPaper Image 3' },
-            { src: 'videos/chi26c-sub3885-i14.mp4', alt: '3DxPaper Video', overlayDark: true }
+            { src: 'videos/chi26c-sub3885-i14.mp4', alt: '3DxPaper Video', overlayDark: true, overlayBelow: true }
           ], { id: 'paper-gallery' })
         },
 
@@ -462,7 +449,6 @@ My work focuses on synthesising tunable systems for fluorescence and electronic 
         if (typeof initVideoControls === 'function') initVideoControls();
         // Vimeo/YouTube players need a short delay for iframe to render
         if (typeof initVimeoPlayers === 'function') setTimeout(initVimeoPlayers, 500);
-        if (typeof setupVideoClickHandlers === 'function') setTimeout(setupVideoClickHandlers, 200);
 
         // Flip-through video gallery (conservation 2024)
         document.querySelectorAll('.lv-gallery').forEach(gallery => {

@@ -44,9 +44,10 @@ function createGalleryDisplay(images, displayId, options) {
       const src = escapeAttr(img.src);
       const alt = escapeAttr(img.alt || 'Video');
       const overlayDarkAttr = img.overlayDark ? ' data-overlay-dark="true"' : '';
+      const overlayBelowAttr = img.overlayBelow ? ' data-overlay-below="true"' : '';
       return `<video src="${src}" class="display-video ${index === 0 ? 'active' : ''}"
             autoplay muted loop playsinline preload="metadata"
-            title="${alt}"${overlayDarkAttr}></video>`;
+            title="${alt}"${overlayDarkAttr}${overlayBelowAttr}></video>`;
     } else if (isEmbedVideo) {
       let videoSrc = img.src;
       // Convert YouTube watch URL to embed URL
@@ -89,10 +90,8 @@ function createGalleryDisplay(images, displayId, options) {
     <div class="image-display gallery" data-display-id="${displayId}">
       <div class="display-container">
         ${imageElements}
-        <button class="display-nav prev" data-display-id="${displayId}" style="display: none;">&lt;</button>
-        <button class="display-nav next" data-display-id="${displayId}" style="display: none;">&gt;</button>
       </div>
-      <div class="gallery-counter" data-display-id="${displayId}">1/${images.length}</div>
+      <div class="gallery-counter" data-display-id="${displayId}"><span class="counter-current">1</span> / ${images.length}</div>
     </div>
   `;
 }
@@ -202,10 +201,8 @@ function initializeGallery(container, images, allImages) {
   container.dataset.galleryInitialized = 'true';
 
   const galleryState = { currentImageIndex: 0, images };
-  const navButtons = container.querySelectorAll('.display-nav');
 
   if (images.length <= 1) {
-    navButtons.forEach(btn => btn.style.display = 'none');
     container.style.cursor = 'default';
     return;
   }
@@ -264,14 +261,18 @@ function initializeGallery(container, images, allImages) {
 
     setContainerRatio(active);
 
-    // Nav buttons removed — navigation is click-to-advance only
-    navButtons.forEach(btn => btn.style.display = 'none');
-
     // Dark overlay theme for videos with white/light backgrounds
     if (active && active.dataset.overlayDark === 'true') {
       container.classList.add('lv-overlay-dark');
     } else {
       container.classList.remove('lv-overlay-dark');
+    }
+
+    // Below-video overlay position (bar floats 8px below the video frame)
+    if (active && active.dataset.overlayBelow === 'true') {
+      gallery?.classList.add('gallery-overlay-below');
+    } else {
+      gallery?.classList.remove('gallery-overlay-below');
     }
 
     // Rewire controls overlay to whichever video slide is now active
@@ -299,17 +300,8 @@ function initializeGallery(container, images, allImages) {
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); changeImage(-1); }
   });
 
-  // Nav buttons
-  const prevBtn = container.querySelector('.display-nav.prev');
-  const nextBtn = container.querySelector('.display-nav.next');
-  if (prevBtn) prevBtn.addEventListener('click', () => changeImage(-1));
-  if (nextBtn) nextBtn.addEventListener('click', () => changeImage(1));
-
-  // Capture-phase click handler — fires before any child (including video-click-overlay)
-  // Image slides: full width click-to-advance
-  // Video slides: left/right 30% navigates, center 40% falls through to play/pause overlay
+  // Capture-phase click handler: image slides full-width, video slides 5px edge strips only
   container.addEventListener('click', (e) => {
-    if (e.target.classList.contains('display-nav')) return;
     const cr = container.getBoundingClientRect();
     const clickX = e.clientX - cr.left;
     const activeVideo = container.querySelector('.display-video.active');
@@ -329,8 +321,6 @@ function initializeGallery(container, images, allImages) {
   allImages.forEach(img => {
     img.addEventListener('error', function () {
       this.style.display = 'none';
-      const valid = Array.from(allImages).filter(i => i.style.display !== 'none' && i.complete && i.naturalHeight > 0);
-      if (valid.length <= 1) navButtons.forEach(btn => btn.style.display = 'none');
     });
   });
 
