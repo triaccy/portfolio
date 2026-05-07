@@ -18,6 +18,25 @@
 
     function updateWeb() {
       topics.updateWeb(container, webSvg, topicMap);
+
+      // Custom cross-year connections between different topic names
+      const customConnections = [
+        { a: { topic: 'interaction', year: '2025' }, b: { topic: 'speculation', year: '2023' } },
+        { a: { topic: '3dxpaper',   year: '2025' }, b: { topic: 'chemistry',   year: '2022' } }
+      ];
+      customConnections.forEach(({ a, b }) => {
+        const elA = topicsLayer.querySelector(`[data-topic="${a.topic}"][data-year="${a.year}"]`);
+        const elB = topicsLayer.querySelector(`[data-topic="${b.topic}"][data-year="${b.year}"]`);
+        if (!elA || !elB) return;
+        const aPos = layout.getNodeCenter(container, elA);
+        const bPos = layout.getNodeCenter(container, elB);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', String(aPos.x));
+        line.setAttribute('y1', String(aPos.y));
+        line.setAttribute('x2', String(bPos.x));
+        line.setAttribute('y2', String(bPos.y));
+        webSvg.appendChild(line);
+      });
     }
 
     function activateYear(anchor) {
