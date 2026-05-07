@@ -118,6 +118,14 @@
       }
       .lv-gallery.lv-video-active .lv-wrap::before { left: 0; }
       .lv-gallery.lv-video-active .lv-wrap::after  { right: 0; }
+      .lv-overlay-black .video-ctrl-left,
+      .lv-overlay-black .play-pause-btn,
+      .lv-overlay-black .fullscreen-btn,
+      .lv-overlay-black .mute-btn,
+      .lv-overlay-black .video-timestamp { color: #000 !important; }
+      .lv-overlay-black .video-seek-track { background: rgba(0,0,0,0.25) !important; }
+      .lv-overlay-black .video-seek-fill,
+      .lv-overlay-black .video-seek-handle { background: #000 !important; }
       .lv-gallery-nav {
         display: flex;
         align-items: center;
@@ -300,7 +308,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
                 <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:16/9"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
-                <div class="lv-wrap lv-overlay-dark lv-portrait" style="aspect-ratio:240/332"></div>
+                <div class="lv-wrap lv-overlay-black lv-portrait" style="aspect-ratio:240/332"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1017712698?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
