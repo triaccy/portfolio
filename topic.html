@@ -100,6 +100,11 @@
       .lv-slide.lv-slide-active { display: block; }
       .lv-gallery { cursor: default; }
       .lv-gallery .lv-wrap { cursor: default; }
+      .lv-gallery .lv-wrap.lv-portrait {
+        height: calc(100vh - 260px);
+        width: calc((100vh - 260px) * (240 / 332));
+        margin: 0 auto;
+      }
       .lv-gallery .lv-wrap:has(img) { cursor: ew-resize; }
       .lv-gallery.lv-video-active .lv-wrap::before,
       .lv-gallery.lv-video-active .lv-wrap::after {
@@ -295,7 +300,7 @@ My work focused on pioneering the optimization of a green chemical extraction me
                 <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:16/9"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1031316365?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
-                <div class="lv-wrap lv-overlay-dark" style="aspect-ratio:240/332"></div>
+                <div class="lv-wrap lv-overlay-dark lv-portrait" style="aspect-ratio:240/332"></div>
               </div>
               <div class="lv-slide" data-vimeo-src="https://player.vimeo.com/video/1017712698?autoplay=1&muted=1&loop=1&controls=0&title=0&byline=0&portrait=0&badge=0&autopause=0">
                 <div class="lv-wrap" style="aspect-ratio:16/9"></div>
